@@ -6,7 +6,7 @@ import { SubscriptionChange } from './subscription_change';
 import { SubscriptionPeriod } from './subscription_period';
 
 export class Subscription extends AbstractEntity {
-  readonly objectId!: string; // id of the object that is subscription is related to
+  readonly objectId!: string; // id of the object that this subscription is related to
   readonly anchorDate!: Date; // first date a user ever started a subscription for the object
   readonly customer?: { id?: string; name: string; email: string };
   readonly changes: SubscriptionChange[] = [];
