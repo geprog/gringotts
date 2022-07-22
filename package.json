@@ -20,6 +20,7 @@
   "dependencies": {
     "@fastify/swagger": "^7.4.1",
     "@mollie/api-client": "^3.6.0",
+    "@vitest/ui": "^0.18.1",
     "dayjs": "^1.11.4",
     "dotenv": "^16.0.1",
     "fastify": "^4.3.0",
