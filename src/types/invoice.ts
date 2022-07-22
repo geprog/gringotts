@@ -47,7 +47,7 @@ export class Invoice {
   }
 
   toString(): string {
-    const formatDate = (date: Date) => dayjs(date).format('DD.MM.YYYY');
+    const formatDate = (date: Date) => dayjs(date).format('DD.MM.YYYY HH:mm');
     const diffMsToDates = (diffMs: number) => Math.round(diffMs / (1000 * 60 * 60 * 24));
     const periodDays = dayjs(this.end).diff(this.start);
     return `Invoice from ${formatDate(this.start)} to ${formatDate(this.end)}\n${this.items
