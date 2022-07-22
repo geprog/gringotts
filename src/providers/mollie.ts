@@ -9,6 +9,10 @@ export class Mollie implements PaymentProvider {
   webhookUrl: string;
 
   constructor({ apiKey, webhookUrl }: { apiKey: string; webhookUrl: string }) {
+    if (!apiKey) {
+      throw new Error('No api key');
+    }
+
     this.api = createMollieClient({ apiKey });
     this.webhookUrl = webhookUrl;
   }
