@@ -13,7 +13,7 @@ describe('Subscription', () => {
     subscription.changePlan({ pricePerUnit: 1, units: 50 });
 
     // when
-    const price = subscription.getPeriod(new Date('2020-01-15')).getInvoice().getPrice();
+    const price = subscription.getPeriod(new Date('2020-01-31')).getInvoice().getPrice();
 
     // then
     expect(price).toStrictEqual(50);
