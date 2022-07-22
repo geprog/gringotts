@@ -1,6 +1,7 @@
 // import { database } from '~/database';
 // import { paymentProvider } from '~/providers';
-import { server } from '~/server';
+import { config } from '~/config';
+import { init as serverInit } from '~/server';
 
 // async function loop() {
 //   const subscriptions = await database.getChargeableSubscriptions(new Date());
@@ -13,11 +14,12 @@ import { server } from '~/server';
 
 async function start() {
   // setInterval(() => void loop(), 1000); // TODO
+  const server = await serverInit();
 
   const port = 3000;
   try {
     // eslint-disable-next-line no-console
-    console.log(`Starting server http://localhost:${port} ...`);
+    console.log(`Starting server ${config.publicUrl} ...`);
     await server.listen({ port, host: '0.0.0.0' });
   } catch (err) {
     server.log.error(err);
