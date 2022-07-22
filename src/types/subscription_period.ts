@@ -30,18 +30,18 @@ export class SubscriptionPeriod {
 
     let start = this.start;
     for (const [i, change] of this.changes.entries()) {
-      if (!change.endDate && i !== this.changes.length - 1 && this.changes.length > 1) {
+      if (!change.end && i !== this.changes.length - 1 && this.changes.length > 1) {
         throw new Error('Only the last item is allowed to have no end date');
       }
 
       items.push({
         start,
-        end: change.endDate || this.end, // use this.end for the last entry
+        end: change.end || this.end, // use this.end for the last entry
         units: change.units,
         pricePerUnit: change.pricePerUnit,
       });
 
-      start = change.endDate as Date;
+      start = change.end as Date;
     }
 
     return new Invoice({ start: this.start, end: this.end, items });
