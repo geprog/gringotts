@@ -65,6 +65,9 @@ jobs:
           version: 6
           run_install: true
 
+      - name: Build
+        run: pnpm run --filter ./packages build
+
       - name: Typecheck
         run: pnpm run --filter ./packages typecheck
 
@@ -94,6 +97,9 @@ jobs:
         with:
           version: 6
           run_install: true
+
+      - name: Build
+        run: pnpm run --filter ./packages build
 
       - name: Lint
         run: pnpm run --filter ./packages lint
