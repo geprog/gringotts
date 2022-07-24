@@ -286,8 +286,6 @@ export async function init(): Promise<FastifyInstance> {
 
       subscription.lastPayment = payload.paidAt;
 
-      console.log(subscription);
-
       await database.em.persistAndFlush(subscription);
 
       // TODO: notify backend
