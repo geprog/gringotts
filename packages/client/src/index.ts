@@ -1,6 +1,6 @@
 import { Api, ApiConfig } from './api';
 
-export function paymentGatewayClient<SecurityDataType = unknown>(
+export function gringottsPaymentsClient<SecurityDataType = unknown>(
   baseUrl: string,
   options?: ApiConfig<SecurityDataType> & { token?: string },
 ): Api<SecurityDataType> {
