@@ -45,6 +45,27 @@ export async function init(): Promise<FastifyInstance> {
           customerId: { type: 'string' },
         },
       },
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            subscriptionId: { type: 'string' },
+            checkoutUrl: { type: 'string' },
+          },
+        },
+        400: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' },
+          },
+        },
+        404: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' },
+          },
+        },
+      },
     },
     handler: async (request, reply) => {
       const body = request.body as {
@@ -119,6 +140,26 @@ export async function init(): Promise<FastifyInstance> {
           units: { type: 'number' },
         },
       },
+      response: {
+        200: {
+          type: 'object',
+          properties: {
+            ok: { type: 'boolean' },
+          },
+        },
+        400: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' },
+          },
+        },
+        404: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' },
+          },
+        },
+      },
     },
     handler: async (request, reply) => {
       const body = request.body as { pricePerUnit: number; units: number };
@@ -142,7 +183,7 @@ export async function init(): Promise<FastifyInstance> {
         { populate: ['customer', 'changes'] },
       );
       if (!subscription) {
-        return reply.send({ error: 'Subscription not found' }).code(404);
+        return reply.code(404).send({ error: 'Subscription not found' });
       }
 
       subscription.changePlan({ pricePerUnit: body.pricePerUnit, units: body.units, changeDate: new Date() });
@@ -169,6 +210,30 @@ export async function init(): Promise<FastifyInstance> {
           date: { type: 'string', description: 'Date as ISO string inside the period to get an invoice for' },
         },
       },
+      response: {
+        200: {
+          oneOf: [
+            {
+              type: 'object',
+            },
+            {
+              type: 'string',
+            },
+          ],
+        },
+        400: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' },
+          },
+        },
+        404: {
+          type: 'object',
+          properties: {
+            error: { type: 'string' },
+          },
+        },
+      },
     },
     handler: async (request, reply) => {
       const { subscriptionId } = request.params as Partial<{ subscriptionId: string }>;
@@ -193,23 +258,26 @@ export async function init(): Promise<FastifyInstance> {
     },
   });
 
-  server.post('/payment/webhook', async (request, reply) => {
-    const payload = await paymentProvider.parsePaymentWebhook(request.body);
+  server.post('/payment/webhook', {
+    schema: { hidden: true },
+    handler: async (request, reply) => {
+      const payload = await paymentProvider.parsePaymentWebhook(request.body);
 
-    const subscription = await database.subscriptions.findOne({ _id: payload.subscriptionId });
-    if (!subscription) {
-      return reply.code(404).send({ error: 'Subscription not found' });
-    }
+      const subscription = await database.subscriptions.findOne({ _id: payload.subscriptionId });
+      if (!subscription) {
+        return reply.code(404).send({ error: 'Subscription not found' });
+      }
 
-    subscription.lastPayment = payload.paidAt;
+      subscription.lastPayment = payload.paidAt;
 
-    console.log(subscription);
+      console.log(subscription);
 
-    await database.em.persistAndFlush(subscription);
+      await database.em.persistAndFlush(subscription);
 
-    // TODO: notify backend
+      // TODO: notify backend
 
-    await reply.send({ ok: true });
+      await reply.send({ ok: true });
+    },
   });
 
   return server;

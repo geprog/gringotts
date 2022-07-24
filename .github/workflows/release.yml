@@ -112,9 +112,9 @@ jobs:
         working-directory: packages/client/
         run: pnpm run generate:api
 
-      # - name: Generate api docs
-      #   working-directory: packages/client/
-      #   run: pnpm run generate:docs
+      - name: Generate api docs
+        working-directory: packages/client/
+        run: pnpm run generate:docs
 
       - name: Build
         working-directory: packages/client/
@@ -128,9 +128,9 @@ jobs:
           pnpm publish --no-git-check
         if: "github.ref_type == 'tag'"
 
-      # - name: Deploy 🚀
-      #   uses: JamesIves/github-pages-deploy-action@v4.2.3
-      #   with:
-      #     branch: gh-pages
-      #     folder: packages/client/docs/
-      #   if: "github.ref_type == 'tag'"
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4.2.3
+        with:
+          branch: gh-pages
+          folder: packages/client/docs/
+        if: "github.ref_type == 'tag'"
