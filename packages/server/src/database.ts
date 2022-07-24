@@ -1,6 +1,7 @@
 import { MikroORM } from '@mikro-orm/core';
 import { EntityManager, EntityRepository, PostgreSqlDriver } from '@mikro-orm/postgresql';
 
+import { config } from '~/config';
 import {
   Customer,
   customerSchema,
@@ -9,23 +10,31 @@ import {
   subscriptionChangeSchema,
   subscriptionSchema,
 } from '~/entities';
+import { addExitHook } from '~/lib/exit_hooks';
 
 export class Database {
   orm!: MikroORM;
 
   async init(): Promise<void> {
+    if (!config.postgresUrl) {
+      throw new Error('POSTGRES_URL is not set');
+    }
+
     this.orm = await MikroORM.init<PostgreSqlDriver>({
       type: 'postgresql',
-      dbName: 'postgres',
-      clientUrl: 'postgresql://postgres:pA_sw0rd@localhost:5432/postgres',
+      clientUrl: config.postgresUrl,
       entities: [customerSchema, subscriptionSchema, subscriptionChangeSchema],
       discovery: { disableDynamicFileAccess: true },
     });
+  }
 
+  async connect(): Promise<void> {
     await this.orm.connect();
 
     const generator = this.orm.getSchemaGenerator();
     await generator.updateSchema();
+
+    addExitHook(() => this.orm.close());
   }
 
   get em(): EntityManager {

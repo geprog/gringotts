@@ -1,28 +1,21 @@
-// import exitHook from 'exit-hook';
-import { connect, disconnect } from 'ngrok';
+type CallbackFnc = () => void | Promise<void>;
 
-import { config } from '~/config';
+const callbacks: CallbackFnc[] = [];
+let isCalled = false;
 
-export async function loadNgrok(): Promise<void> {
-  if (process.env.NGROK_ENABLE !== 'true') {
-    return;
-  }
-
-  const ngrokUrl = await connect({
-    authtoken: process.env.NGROK_AUTH_TOKEN,
-    addr: config.port,
-  });
-
+function registerExitHook(): void {
   function exit(shouldManuallyExit: boolean, signal: number) {
     void (async () => {
-      let isCalled = false;
       if (isCalled) {
         return;
       }
 
       isCalled = true;
 
-      await disconnect();
+      for await (const callback of callbacks) {
+        // eslint-disable-next-line promise/prefer-await-to-callbacks
+        await callback();
+      }
 
       if (shouldManuallyExit === true) {
         process.exit(128 + signal);
@@ -33,6 +26,10 @@ export async function loadNgrok(): Promise<void> {
   process.once('exit', exit.bind(undefined, false, 0));
   process.once('SIGINT', exit.bind(undefined, true, 2));
   process.once('SIGTERM', exit.bind(undefined, true, 15));
+}
 
-  config.publicUrl = ngrokUrl;
+registerExitHook();
+
+export function addExitHook(exitHook: CallbackFnc): void {
+  callbacks.push(exitHook);
 }

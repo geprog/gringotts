@@ -1,8 +1,6 @@
-// import { database } from '~/database';
-// import { paymentProvider } from '~/providers';
 import { config } from '~/config';
 import { database } from '~/database';
-import { loadNgrok } from '~/development_proxy';
+import { loadNgrok } from '~/lib/development_proxy';
 import { init as serverInit } from '~/server';
 
 // async function loop() {
@@ -18,6 +16,7 @@ async function start() {
   await loadNgrok();
 
   await database.init();
+  await database.connect();
 
   // setInterval(() => void loop(), 1000); // TODO
   const server = await serverInit();
