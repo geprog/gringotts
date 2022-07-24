@@ -8,7 +8,3 @@ dayjs.extend(dayjsMinMax);
 dayjs.extend(dayjsIsBetween);
 
 export default dayjs;
-
-export function formatDate(date: Date): string {
-  return dayjs(date).format('DD.MM.YYYY');
-}
