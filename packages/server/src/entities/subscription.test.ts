@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 
+import { config } from '~/config';
 import { database } from '~/database';
 import dayjs from '~/lib/dayjs';
 import { getPeriodFromAnchorDate } from '~/utils';
@@ -8,6 +9,7 @@ import { Subscription } from './subscription';
 
 describe('Subscription', () => {
   beforeAll(async () => {
+    config.postgresUrl = 'postgres://postgres:postgres@localhost:5432/postgres'; // set to dummy value so we can init database
     await database.init();
   });
 

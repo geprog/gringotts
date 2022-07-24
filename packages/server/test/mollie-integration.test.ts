@@ -4,7 +4,7 @@ import { Customer } from '~/entities';
 import { init as initServer } from '~/server';
 
 describe('Server', () => {
-  it('/subscription/start', async () => {
+  it.todo('/subscription/start', async () => {
     const server = await initServer();
 
     const customerResponse = await server.inject({
