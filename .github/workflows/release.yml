@@ -89,6 +89,11 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Setup git user
+        run: |
+          git config --global user.name "$(git --no-pager log --format=format:'%an' -n 1)"
+          git config --global user.email "$(git --no-pager log --format=format:'%ae' -n 1)"
+
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
@@ -116,6 +121,11 @@ jobs:
         working-directory: packages/client/
         run: pnpm run generate:docs
 
+      - name: Set version
+        working-directory: packages/client/
+        run: pnpm version ${GITHUB_REF#refs/*/} --no-commit-hooks --no-git-tag-version
+        if: "github.ref_type == 'tag'"
+
       - name: Build
         working-directory: packages/client/
         run: pnpm build
@@ -123,9 +133,7 @@ jobs:
       - name: Release
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          pnpm version ${GITHUB_REF#refs/*/}
-          pnpm publish --no-git-check
+        run: pnpm publish --no-git-check
         if: "github.ref_type == 'tag'"
 
       - name: Deploy 🚀
