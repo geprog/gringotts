@@ -29,6 +29,7 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-
+
       - uses: pnpm/action-setup@v2.0.1
         with:
           version: 6
@@ -58,6 +59,7 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-
+
       - uses: pnpm/action-setup@v2.0.1
         with:
           version: 6
@@ -87,6 +89,7 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-
+
       - uses: pnpm/action-setup@v2.0.1
         with:
           version: 6
@@ -116,6 +119,7 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-
+
       - uses: pnpm/action-setup@v2.0.1
         with:
           version: 6

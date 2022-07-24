@@ -8,7 +8,7 @@ on:
       - '*'
 
 env:
-  DOCKERHUB_USERNAME: geprog
+  DOCKERHUB_ORG: geprog
   IMAGE_NAME: gringotts-payments
 
 jobs:
@@ -47,17 +47,17 @@ jobs:
         run: docker build --file packages/server/Containerfile --tag $IMAGE_NAME:latest --cache-from ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:latest .
 
       - name: Login to DockerHub registry
-        run: docker login -u ${{ env.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
+        run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
 
       - name: Log in to Github registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
 
       - name: Push image to DockerHub (latest & tag)
         run: |
-          docker tag $IMAGE_NAME:latest ${{ env.DOCKERHUB_USERNAME }}/$IMAGE_NAME:latest
-          docker push ${{ env.DOCKERHUB_USERNAME }}/$IMAGE_NAME:latest
-          docker tag $IMAGE_NAME:latest ${{ env.DOCKERHUB_USERNAME }}/$IMAGE_NAME:${GITHUB_REF#refs/*/}
-          docker push ${{ env.DOCKERHUB_USERNAME }}/$IMAGE_NAME:${GITHUB_REF#refs/*/}
+          docker tag $IMAGE_NAME:latest ${{ env.DOCKERHUB_ORG }}/$IMAGE_NAME:latest
+          docker push ${{ env.DOCKERHUB_ORG }}/$IMAGE_NAME:latest
+          docker tag $IMAGE_NAME:latest ${{ env.DOCKERHUB_ORG }}/$IMAGE_NAME:${GITHUB_REF#refs/*/}
+          docker push ${{ env.DOCKERHUB_ORG }}/$IMAGE_NAME:${GITHUB_REF#refs/*/}
         if: "github.ref_type == 'tag'"
 
       - name: Push image to Github registry (latest & tag)
@@ -68,13 +68,13 @@ jobs:
           docker push ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:${GITHUB_REF#refs/*/}
         if: "github.ref_type == 'tag'"
 
-      - name: Push image to Github registry (next)
+      - name: Push image to DockerHub (next)
         run: |
-          docker tag $IMAGE_NAME:latest ${{ env.DOCKERHUB_USERNAME }}/$IMAGE_NAME:next
-          docker push ${{ env.DOCKERHUB_USERNAME }}/$IMAGE_NAME:next
+          docker tag $IMAGE_NAME:latest ${{ env.DOCKERHUB_ORG }}/$IMAGE_NAME:next
+          docker push ${{ env.DOCKERHUB_ORG }}/$IMAGE_NAME:next
         if: "github.ref_type != 'tag'"
 
-      - name: Push image to DockerHub (next)
+      - name: Push image to Github registry (next)
         run: |
           docker tag $IMAGE_NAME:latest ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:next
           docker push ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:latest
@@ -112,9 +112,9 @@ jobs:
         working-directory: packages/client/
         run: pnpm run generate:api
 
-      - name: Generate api docs
-        working-directory: packages/client/
-        run: pnpm run generate:docs
+      # - name: Generate api docs
+      #   working-directory: packages/client/
+      #   run: pnpm run generate:docs
 
       - name: Build
         working-directory: packages/client/
@@ -128,9 +128,9 @@ jobs:
           pnpm publish --no-git-check
         if: "github.ref_type == 'tag'"
 
-      - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@v4.2.3
-        with:
-          branch: gh-pages
-          folder: packages/client/docs/
-        if: "github.ref_type == 'tag'"
+      # - name: Deploy 🚀
+      #   uses: JamesIves/github-pages-deploy-action@v4.2.3
+      #   with:
+      #     branch: gh-pages
+      #     folder: packages/client/docs/
+      #   if: "github.ref_type == 'tag'"
