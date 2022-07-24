@@ -26,7 +26,8 @@ async function start() {
     console.log(`Starting server ${config.publicUrl} ...`);
     await server.listen({ port: config.port, host: '0.0.0.0' });
   } catch (err) {
-    server.log.error(err);
+    // eslint-disable-next-line no-console
+    console.error(err);
     process.exit(1);
   }
 }
