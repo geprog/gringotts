@@ -1,20 +1,31 @@
 import { createMollieClient, Customer, MollieClient, PaymentStatus, SequenceType } from '@mollie/api-client';
 
+import { config } from '~/config';
+import { Subscription } from '~/entities';
 import { formatDate } from '~/lib/dayjs';
 import { PaymentProvider } from '~/providers/types';
-import { Subscription } from '~/types/subscription';
+
+type Metadata = {
+  subscriptionId: string;
+  period?: {
+    start: string;
+    end: string;
+  };
+  plan?: {
+    pricePerUnit: number;
+    units: number;
+  };
+};
 
 export class Mollie implements PaymentProvider {
   api: MollieClient;
-  webhookUrl: string;
 
-  constructor({ apiKey, webhookUrl }: { apiKey: string; webhookUrl: string }) {
+  constructor({ apiKey }: { apiKey: string }) {
     if (!apiKey) {
       throw new Error('No api key');
     }
 
     this.api = createMollieClient({ apiKey });
-    this.webhookUrl = webhookUrl;
   }
 
   async startSubscription({
@@ -27,36 +38,29 @@ export class Mollie implements PaymentProvider {
     redirectUrl: string;
     pricePerUnit: number;
     units: number;
-  }): Promise<{ subscription: Subscription; checkoutUrl: string }> {
-    let customer: Customer;
-    if (subscription?.customer?.id) {
-      customer = await this.api.customers.get(subscription?.customer?.id);
-    } else {
-      customer = await this.api.customers.create({
-        name: subscription?.customer?.name,
-        email: subscription?.customer?.email,
-      });
-    }
+    customer: Customer;
+  }): Promise<{ checkoutUrl: string }> {
+    const customer = await this.api.customers.get(subscription.customer.paymentProviderId);
 
-    const customerId = customer.id;
-
-    // const paymentDescription = `Upgrade ${space.name} to '${spacePlanType}'`;
-    const paymentDescription = `Get the best product on earth`;
+    // TODO
+    const paymentDescription = `Initial charge`;
 
     const payment = await this.api.payments.create({
       amount: {
         value: '0.00', // TODO think about correct starting price
         currency: 'EUR',
       },
-      customerId,
+      customerId: customer.id,
       description: paymentDescription,
       sequenceType: SequenceType.first,
       redirectUrl,
-      webhookUrl: this.webhookUrl,
-      metadata: {
-        objectId: subscription.objectId,
-        units,
-        pricePerUnit,
+      webhookUrl: `${config.publicUrl}${config.webhookUrl}`,
+      metadata: <Metadata>{
+        subscriptionId: subscription._id,
+        plan: {
+          units,
+          pricePerUnit,
+        },
       },
     });
 
@@ -65,21 +69,19 @@ export class Mollie implements PaymentProvider {
       throw new Error('No checkout url received');
     }
 
-    return {
-      checkoutUrl,
-      subscription,
-    };
+    return { checkoutUrl };
   }
 
   async chargeSubscription(subscription: Subscription, date: Date): Promise<void> {
-    if (!subscription?.customer?.id) {
+    if (!subscription.customer.paymentProviderId) {
       throw new Error('No customer id');
     }
-    const customer = await this.api.customers.get(subscription.customer.id);
+    const customer = await this.api.customers.get(subscription.customer.paymentProviderId);
 
     const period = subscription.getPeriod(date);
     const invoice = period.getInvoice();
 
+    // TODO
     const paymentDescription = `Charge ${formatDate(period.start)} - ${formatDate(period.end)}`;
 
     const payment = await this.api.payments.create({
@@ -90,11 +92,11 @@ export class Mollie implements PaymentProvider {
       customerId: customer.id,
       description: paymentDescription,
       sequenceType: SequenceType.recurring,
-      metadata: {
+      metadata: <Metadata>{
         subscriptionId: subscription._id,
         period: {
-          start: period.start,
-          end: period.end,
+          start: period.start.toJSON(),
+          end: period.end.toJSON(),
         },
       },
     });
@@ -104,7 +106,27 @@ export class Mollie implements PaymentProvider {
     }
   }
 
-  priceToMolliePrice(price: number): string {
+  async parsePaymentWebhook(payload: unknown): Promise<{ subscriptionId: string; paidAt: Date }> {
+    const { id: paymentId } = payload as { id: string };
+
+    const payment = await this.api.payments.get(paymentId);
+    if (payment.status !== PaymentStatus.paid) {
+      throw new Error('Payment not paid');
+    }
+
+    const metadata = payment.metadata as Metadata;
+
+    if (!payment.paidAt) {
+      throw new Error('No paidAt');
+    }
+
+    return {
+      paidAt: new Date(payment.paidAt),
+      subscriptionId: metadata.subscriptionId,
+    };
+  }
+
+  private priceToMolliePrice(price: number): string {
     return `${Math.round(price * 100) / 100}`;
   }
 }

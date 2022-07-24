@@ -20,10 +20,6 @@ export class Invoice {
     }
   }
 
-  // static from(jsonStr: string): Invoice {
-  //   return Object.assign(new Invoice({} as never), JSON.parse(jsonStr) as Invoice);
-  // }
-
   private getPriceForInvoiceItem(item: InvoiceItem): number {
     const basePrice = item.pricePerUnit * item.units;
     const start = dayjs(item.start);

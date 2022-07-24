@@ -1,5 +1,5 @@
-import { Invoice, InvoiceItem } from '~/types/invoice';
-import { SubscriptionChange } from '~/types/subscription_change';
+import { Invoice, InvoiceItem } from '~/controllers/invoice';
+import { SubscriptionChange } from '~/entities/subscription_change';
 
 export class SubscriptionPeriod {
   readonly start: Date;
@@ -11,19 +11,6 @@ export class SubscriptionPeriod {
     this.end = data.end;
     this.changes = data.changes;
   }
-
-  // static from(jsonStr: string): SubscriptionPeriod {
-  //   const json = JSON.parse(jsonStr, (key, value) => {
-  //     // TODO: is there a nicer way to handle dates?
-  //     if (['endDate', 'start', 'end'].includes(key) && typeof value === 'string') {
-  //       return new Date(value);
-  //     }
-
-  //     // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  //     return value;
-  //   }) as SubscriptionPeriod;
-  //   return Object.assign(new SubscriptionPeriod({} as never), json);
-  // }
 
   getInvoice(): Invoice {
     const items: InvoiceItem[] = [];

@@ -1,9 +1,11 @@
+import fastifyFormBody from '@fastify/formbody';
 import fastifySwagger from '@fastify/swagger';
 import fastify, { FastifyInstance } from 'fastify';
 
 import { database } from '~/database';
+import { Subscription } from '~/entities';
+import dayjs from '~/lib/dayjs';
 import { paymentProvider } from '~/providers';
-import { Subscription } from '~/types/subscription';
 
 export async function init(): Promise<FastifyInstance> {
   const server = fastify();
@@ -24,36 +26,28 @@ export async function init(): Promise<FastifyInstance> {
     exposeRoute: true,
   });
 
+  await server.register(fastifyFormBody);
+
   server.post('/subscription/start', {
     schema: {
       body: {
         type: 'object',
-        required: ['objectId', 'pricePerUnit', 'units', 'redirectUrl', 'customer'],
+        required: ['pricePerUnit', 'units', 'redirectUrl', 'customerId'],
         additionalProperties: false,
         properties: {
-          objectId: { type: 'string' },
           pricePerUnit: { type: 'number' },
           units: { type: 'number' },
           redirectUrl: { type: 'string' },
-          customer: {
-            type: 'object',
-            required: ['name', 'email'],
-            additionalProperties: false,
-            properties: {
-              name: { type: 'string' },
-              email: { type: 'string' },
-            },
-          },
+          customerId: { type: 'string' },
         },
       },
     },
     handler: async (request, reply) => {
       const body = request.body as {
-        objectId: string;
         pricePerUnit: number;
         units: number;
         redirectUrl: string;
-        customer: { name: string; email: string };
+        customerId: string;
       };
 
       if (body.units < 1) {
@@ -70,108 +64,148 @@ export async function init(): Promise<FastifyInstance> {
 
       const now = new Date();
 
+      const customer = await database.customers.findOne({ _id: body.customerId }, { populate: ['subscriptions'] });
+      if (!customer) {
+        return reply.code(404).send({
+          error: 'Customer not found',
+        });
+      }
+
       const subscription = new Subscription({
-        objectId: body.objectId,
         anchorDate: now,
-        customer: body.customer,
+        customer,
       });
 
-      const { checkoutUrl, subscription: _subscription } = await paymentProvider.startSubscription({
+      subscription.changePlan({ units: body.units, pricePerUnit: body.pricePerUnit });
+
+      const { checkoutUrl } = await paymentProvider.startSubscription({
         subscription,
         pricePerUnit: body.pricePerUnit,
         units: body.units,
         redirectUrl: body.redirectUrl,
       });
 
-      subscription.changePlan({ units: body.units, pricePerUnit: body.pricePerUnit });
-      await database.putSubscription(_subscription);
+      customer.subscriptions.add(subscription);
+
+      await database.em.persistAndFlush([customer, subscription]);
 
       await reply.send({
-        subscriptionId: _subscription._id,
+        subscriptionId: subscription._id,
         checkoutUrl,
       });
     },
   });
 
   server.post('/subscription/:subscriptionId/change', {
-    schema: {}, // TODO
+    schema: {
+      params: {
+        type: 'object',
+        required: ['subscriptionId'],
+        additionalProperties: false,
+        properties: {
+          subscriptionId: { type: 'string' },
+        },
+      },
+      body: {
+        type: 'object',
+        required: ['pricePerUnit', 'units'],
+        additionalProperties: false,
+        properties: {
+          pricePerUnit: { type: 'number' },
+          units: { type: 'number' },
+        },
+      },
+    },
     handler: async (request, reply) => {
-      const { plan: _plan, units } = request.body as Partial<{ plan: string; units: number }>;
-      if (!_plan || !units) {
+      const body = request.body as { pricePerUnit: number; units: number };
+
+      if (body.units < 1) {
         return reply.code(400).send({
-          error: 'Missing required parameters',
+          error: 'Units must be greater than 0',
         });
       }
 
-      const plan = await database.getPlan(_plan);
-      if (!plan) {
-        return reply.callNotFound();
-      }
-
-      if (units < 1) {
-        return reply.send({ error: 'Units must be greater than 0' }).code(400);
+      if (body.pricePerUnit < 0) {
+        return reply.code(400).send({
+          error: 'Price per unit must be greater than 0',
+        });
       }
 
       const { subscriptionId } = request.params as { subscriptionId: string };
-      const subscription = await database.getSubscription(subscriptionId);
+
+      const subscription = await database.subscriptions.findOne(
+        { _id: subscriptionId },
+        { populate: ['customer', 'changes'] },
+      );
       if (!subscription) {
-        return reply.callNotFound();
+        return reply.send({ error: 'Subscription not found' }).code(404);
       }
 
-      subscription.changePlan({ pricePerUnit: plan.pricePerUnit, units, changeDate: new Date() });
-      await database.putSubscription(subscription);
-
-      await reply.send({ ok: true });
-    },
-  });
-
-  server.post('/subscription/:subscriptionId/end', {
-    schema: {}, // TODO
-    handler: async (request, reply) => {
-      const { subscriptionId } = request.params as Partial<{ subscriptionId: string }>;
-      if (!subscriptionId) {
-        return reply.code(400).send({
-          error: 'Missing required parameters',
-        });
-      }
-
-      const subscription = await database.getSubscription(subscriptionId);
-      if (!subscription) {
-        return reply.callNotFound();
-      }
-
-      // TODO: end subscription
-      await database.putSubscription(subscription);
+      subscription.changePlan({ pricePerUnit: body.pricePerUnit, units: body.units, changeDate: new Date() });
+      await database.em.persistAndFlush(subscription);
 
       await reply.send({ ok: true });
     },
   });
 
   server.get('/subscription/:subscriptionId/invoice', {
-    schema: {}, // TODO
+    schema: {
+      params: {
+        type: 'object',
+        required: ['subscriptionId'],
+        additionalProperties: false,
+        properties: {
+          subscriptionId: { type: 'string' },
+        },
+      },
+      querystring: {
+        type: 'object',
+        properties: {
+          format: { type: 'string', enum: ['json', 'string'], default: 'json' },
+          date: { type: 'string', description: 'Date as ISO string inside the period to get an invoice for' },
+        },
+      },
+    },
     handler: async (request, reply) => {
       const { subscriptionId } = request.params as Partial<{ subscriptionId: string }>;
-      if (!subscriptionId) {
-        return reply.code(400).send({
-          error: 'Missing required parameters',
-        });
-      }
+      const { date, format } = request.query as Partial<{ date?: string; format: 'json' | 'string' }>;
 
-      const subscription = await database.getSubscription(subscriptionId);
+      const subscription = await database.subscriptions.findOne(
+        { _id: subscriptionId },
+        { populate: ['customer', 'changes'] },
+      );
       if (!subscription) {
-        return reply.callNotFound();
+        return reply.code(404).send({ error: 'Subscription not found' });
       }
 
-      const invoice = subscription.getPeriod(new Date()).getInvoice();
+      const period = subscription.getPeriod(date ? dayjs(date).toDate() : new Date());
+      const invoice = period.getInvoice();
 
-      await reply.send(invoice.toString());
+      if (format === 'string') {
+        await reply.send(invoice.toString());
+      } else {
+        await reply.send(invoice);
+      }
     },
   });
 
-  server.get('/payment/webhook', async (request, reply) => {
+  server.post('/payment/webhook', async (request, reply) => {
+    const payload = await paymentProvider.parsePaymentWebhook(request.body);
+
+    const subscription = await database.subscriptions.findOne({ _id: payload.subscriptionId });
+    if (!subscription) {
+      return reply.code(404).send({ error: 'Subscription not found' });
+    }
+
+    subscription.lastPayment = payload.paidAt;
+
+    console.log(subscription);
+
+    await database.em.persistAndFlush(subscription);
+
     // TODO: notify backend
-    console.log(request.body);
-    reply.callNotFound();
+
+    await reply.send({ ok: true });
   });
 
   return server;

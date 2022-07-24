@@ -4,7 +4,7 @@ import dayjs from '~/lib/dayjs';
 
 import { getActiveUntilDate, getPeriodFromAnchorDate } from './utils';
 
-describe('Subscription', () => {
+describe('utils', () => {
   const getActiveUntilDateTests = [
     // oldActiveUntil, anchorDate, activeUntil
     ['2022-01-15', '2022-01-15', '2022-02-15'],

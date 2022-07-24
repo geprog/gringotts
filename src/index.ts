@@ -1,6 +1,8 @@
 // import { database } from '~/database';
 // import { paymentProvider } from '~/providers';
 import { config } from '~/config';
+import { database } from '~/database';
+import { loadNgrok } from '~/development_proxy';
 import { init as serverInit } from '~/server';
 
 // async function loop() {
@@ -13,14 +15,17 @@ import { init as serverInit } from '~/server';
 // }
 
 async function start() {
+  await loadNgrok();
+
+  await database.init();
+
   // setInterval(() => void loop(), 1000); // TODO
   const server = await serverInit();
 
-  const port = 3000;
   try {
     // eslint-disable-next-line no-console
     console.log(`Starting server ${config.publicUrl} ...`);
-    await server.listen({ port, host: '0.0.0.0' });
+    await server.listen({ port: config.port, host: '0.0.0.0' });
   } catch (err) {
     server.log.error(err);
     process.exit(1);

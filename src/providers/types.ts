@@ -1,26 +1,14 @@
-import { Subscription } from '~/types/subscription';
-
-export type Customer = {
-  id?: string;
-  name: string;
-  email: string;
-};
+import { Subscription } from '~/entities';
 
 export interface PaymentProvider {
-  startSubscription({
-    subscription,
-    redirectUrl,
-    pricePerUnit,
-    units,
-  }: {
+  startSubscription(d: {
     subscription: Subscription;
     redirectUrl: string;
     pricePerUnit: number;
     units: number;
   }): Promise<{
     checkoutUrl: string;
-    subscription: Subscription;
   }>;
   // chargeSubscription({ subscription }: { subscription: Subscription }): Promise<void>;
-  // parsePaymentWebhook(): Promise<void>;
+  parsePaymentWebhook(payload: unknown): Promise<{ subscriptionId: string; paidAt: Date }>;
 }

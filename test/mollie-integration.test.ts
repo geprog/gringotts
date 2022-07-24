@@ -16,12 +16,12 @@ describe('Server', () => {
         redirectUrl: 'http://my-frontend:3000/test',
         customer: {
           name: 'John Doe',
-          // email: 'john@doe.com',
-          uff: 'as',
+          email: 'john@doe.com',
         },
       },
     });
 
-    expect(response.statusCode).toEqual(200);
+    // eslint-disable-next-line jest/no-standalone-expect
+    expect(response.statusCode).toBe(200);
   });
 });
