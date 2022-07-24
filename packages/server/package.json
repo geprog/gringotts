@@ -32,7 +32,7 @@
   "devDependencies": {
     "@geprog/eslint-config": "^1.1.0",
     "@types/uuid": "^8.3.4",
-    "c8": "7.11.3",
+    "c8": "^7.12.0",
     "esbuild": "^0.14.49",
     "eslint": "^8.20.0",
     "tsx": "^3.8.0",

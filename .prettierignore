@@ -2,3 +2,6 @@ dist/
 coverage/
 report.json
 pnpm-lock.yaml
+packages/client/src/api.ts
+packages/client/docs/
+packages/server/swagger.json

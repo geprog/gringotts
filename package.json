@@ -1,17 +1,15 @@
 {
-  "name": "@geprog/payment-gateway",
-  "version": "0.0.0-semantic-release",
+  "name": "@geprog/gringotts-payments",
+  "version": "0.0.0-ci-release",
   "description": "A payment gateway",
   "homepage": "https://geprog.com",
   "author": "GEPROG GmbH",
   "license": "MIT",
-  "repository": "github:geprog/payment-gateway",
+  "repository": "github:geprog/gringotts-payments",
   "scripts": {
-    "release": "semantic-release"
+    "lint:format": "prettier --check ."
   },
   "devDependencies": {
-    "@geprog/semantic-release-config": "^1.0.0",
-    "prettier": "^2.5.1",
-    "semantic-release": "^19.0.2"
+    "prettier": "^2.5.1"
   }
 }

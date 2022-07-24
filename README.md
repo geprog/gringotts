@@ -1,6 +1,6 @@
-# Gringots payments
+# Gringotts payments
 
-TBD: description
+Gringotts payments is a REST service which can be used as gateway between your payment provider and your SASS application. It allows you to easily handle your users subscriptions.
 
 ## Features
 
