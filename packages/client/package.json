@@ -1,0 +1,44 @@
+{
+  "name": "@geprog/payment-gateway-client",
+  "version": "0.0.0-semantic-release",
+  "description": "API client for the payment gateway",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "/dist"
+  ],
+  "scripts": {
+    "generate:api": "pnpm --filter ../server generate-swagger-spec && swagger-typescript-api -p ../server/swagger.json -o ./src -n api.ts",
+    "generate:docs": "typedoc ./src/index.ts",
+    "generate": "pnpm generate:api && pnpm generate:docs",
+    "build": "tsup src/index.ts --dts --format cjs,esm",
+    "all": "pnpm download && pnpm generate && pnpm build",
+    "clean": "rm -rf dist/ node_modules/",
+    "test": "dotenv vitest",
+    "test:ui": "pnpm test -- --ui",
+    "coverage": "pnpm test run -- --coverage",
+    "lint:format": "prettier --check .",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "17.0.13",
+    "@vitest/ui": "0.5.9",
+    "c8": "7.11.0",
+    "cross-fetch": "3.1.5",
+    "dotenv-cli": "5.0.0",
+    "prettier": "2.5.1",
+    "swagger-typescript-api": "9.3.1",
+    "tsup": "5.11.13",
+    "typedoc": "0.22.11",
+    "typescript": "4.5.5",
+    "vite": "2.8.6",
+    "vitest": "0.5.9"
+  }
+}

@@ -1,0 +1,6 @@
+docs/
+coverage/
+junit.xml
+*.tgz
+report.json
+src/api.ts
