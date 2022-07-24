@@ -1,10 +1,15 @@
-#
+# Gringots payments
+
+TBD: description
 
 ## Features
 
-- [ ] Invoices per email
+- [ ] start subscription
+- [ ] change subscription in middle of period
+- [ ] end subscription
 - [ ] auto charge at end of subscription period
-- [ ] payment providers: mollie
-- [ ] manage subscription plans (pricePerUnit, chargeEvery x)
-- [ ] change subscription plan in middle of subscription period ()
-- [ ]
+- [x] payment providers
+  - [x] mollie
+- [ ] invoices per email
+- [ ] notify customer about upcoming payment
+- [x] typescript api client => `@geprog/payment-gateway-client`

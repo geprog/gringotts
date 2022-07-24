@@ -4,10 +4,16 @@ on:
   push:
     branches:
       - main
+    tags:
+      - '*'
+
+env:
+  DOCKERHUB_USERNAME: geprog
+  IMAGE_NAME: gringotts-payments
 
 jobs:
-  release:
-    name: Release
+  server:
+    name: Release server
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -16,7 +22,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
           node-version: '14'
 
@@ -27,17 +33,104 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-
+
       - uses: pnpm/action-setup@v2.0.1
         with:
           version: 6
           run_install: true
 
       - name: Build
-        run: pnpm run build
+        working-directory: packages/server/
+        run: pnpm build
 
-      # TODO: publish docker image
-      # - name: Release
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-      #   run: pnpm run release
+      - name: Build the Docker image
+        run: docker build --file packages/server/Containerfile --tag $IMAGE_NAME:latest --cache-from ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:latest .
+
+      - name: Login to DockerHub registry
+        run: docker login -u ${{ env.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Log in to Github registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+
+      - name: Push image to DockerHub (latest & tag)
+        run: |
+          docker tag $IMAGE_NAME:latest ${{ env.DOCKERHUB_USERNAME }}/$IMAGE_NAME:latest
+          docker push ${{ env.DOCKERHUB_USERNAME }}/$IMAGE_NAME:latest
+          docker tag $IMAGE_NAME:latest ${{ env.DOCKERHUB_USERNAME }}/$IMAGE_NAME:${GITHUB_REF#refs/*/}
+          docker push ${{ env.DOCKERHUB_USERNAME }}/$IMAGE_NAME:${GITHUB_REF#refs/*/}
+        if: "github.ref_type == 'tag'"
+
+      - name: Push image to Github registry (latest & tag)
+        run: |
+          docker tag $IMAGE_NAME:latest ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:latest
+          docker push ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:latest
+          docker tag $IMAGE_NAME:latest ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:${GITHUB_REF#refs/*/}
+          docker push ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:${GITHUB_REF#refs/*/}
+        if: "github.ref_type == 'tag'"
+
+      - name: Push image to Github registry (next)
+        run: |
+          docker tag $IMAGE_NAME:latest ${{ env.DOCKERHUB_USERNAME }}/$IMAGE_NAME:next
+          docker push ${{ env.DOCKERHUB_USERNAME }}/$IMAGE_NAME:next
+        if: "github.ref_type != 'tag'"
+
+      - name: Push image to DockerHub (next)
+        run: |
+          docker tag $IMAGE_NAME:latest ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:next
+          docker push ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:latest
+        if: "github.ref_type != 'tag'"
+
+  client:
+    name: Release client
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Cache pnpm modules
+        uses: actions/cache@v2
+        with:
+          path: ~/.pnpm-store
+          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-
+
+      - uses: pnpm/action-setup@v2.0.1
+        with:
+          version: 6
+          run_install: true
+
+      - name: Generate api
+        working-directory: packages/client/
+        run: pnpm run generate:api
+
+      - name: Generate api docs
+        working-directory: packages/client/
+        run: pnpm run generate:docs
+
+      - name: Build
+        working-directory: packages/client/
+        run: pnpm build
+
+      - name: Release
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          pnpm version ${GITHUB_REF#refs/*/}
+          pnpm publish --no-git-check
+        if: "github.ref_type == 'tag'"
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4.2.3
+        with:
+          branch: gh-pages
+          folder: packages/client/docs/
+        if: "github.ref_type == 'tag'"

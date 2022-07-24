@@ -1,4 +1,4 @@
-import exitHook from 'exit-hook';
+// import exitHook from 'exit-hook';
 import { connect, disconnect } from 'ngrok';
 
 import { config } from '~/config';
@@ -13,11 +13,26 @@ export async function loadNgrok(): Promise<void> {
     addr: config.port,
   });
 
-  exitHook(() => {
-    // eslint-disable-next-line no-console
-    console.log('Disconnecting from ngrok ...');
-    void disconnect();
-  });
+  function exit(shouldManuallyExit: boolean, signal: number) {
+    void (async () => {
+      let isCalled = false;
+      if (isCalled) {
+        return;
+      }
+
+      isCalled = true;
+
+      await disconnect();
+
+      if (shouldManuallyExit === true) {
+        process.exit(128 + signal);
+      }
+    })();
+  }
+
+  process.once('exit', exit.bind(undefined, false, 0));
+  process.once('SIGINT', exit.bind(undefined, true, 2));
+  process.once('SIGTERM', exit.bind(undefined, true, 15));
 
   config.publicUrl = ngrokUrl;
 }

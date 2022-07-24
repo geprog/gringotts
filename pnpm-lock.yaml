@@ -53,8 +53,8 @@ importers:
       c8: 7.11.3
       dayjs: ^1.11.4
       dotenv: ^16.0.1
+      esbuild: ^0.14.49
       eslint: ^8.20.0
-      exit-hook: ^3.0.0
       fastify: ^4.3.0
       jsonwebtoken: ^8.5.1
       ngrok: ^4.3.1
@@ -73,7 +73,6 @@ importers:
       '@vitest/ui': 0.18.1
       dayjs: 1.11.4
       dotenv: 16.0.1
-      exit-hook: 3.0.0
       fastify: 4.3.0
       jsonwebtoken: 8.5.1
       ngrok: 4.3.1
@@ -84,6 +83,7 @@ importers:
       '@geprog/eslint-config': 1.1.0_7bbd3af8a6d44da8a01d627754892985
       '@types/uuid': 8.3.4
       c8: 7.11.3
+      esbuild: 0.14.49
       eslint: 8.20.0
       tsx: 3.8.0
       typescript: 4.7.4
@@ -2645,11 +2645,6 @@ packages:
       signal-exit: 3.0.7
       strip-final-newline: 2.0.0
     dev: true
-
-  /exit-hook/3.0.0:
-    resolution: {integrity: sha512-ElRvnoj3dvOc5WjnQx0CF66rS0xehV6eZdcmqZX17uOLPy3me43frl8UD73Frkx5Aq5kgziMDECjDJR2X1oBFQ==}
-    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
-    dev: false
 
   /extract-zip/2.0.1:
     resolution: {integrity: sha512-GDhU9ntwuKyGXdZBUgTIe+vXnWj0fppUEtMDL0+idd5Sta8TGpHssn/eusA9mrPr9qNDym6SxAYZjNvCn/9RBg==}
