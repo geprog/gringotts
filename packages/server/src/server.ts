@@ -215,6 +215,22 @@ export async function init(): Promise<FastifyInstance> {
           oneOf: [
             {
               type: 'object',
+              properties: {
+                items: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      start: { type: 'string' },
+                      end: { type: 'string' },
+                      units: { type: 'number' },
+                      pricePerUnit: { type: 'number' },
+                    },
+                  },
+                },
+                start: { type: 'string' },
+                end: { type: 'string' },
+              },
             },
             {
               type: 'string',
