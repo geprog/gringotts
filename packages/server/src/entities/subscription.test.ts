@@ -1,11 +1,16 @@
-import { describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it } from 'vitest';
 
+import { database } from '~/database';
 import dayjs from '~/lib/dayjs';
 import { getPeriodFromAnchorDate } from '~/utils';
 
 import { Subscription } from './subscription';
 
 describe('Subscription', () => {
+  beforeAll(async () => {
+    await database.init();
+  });
+
   it('should handle simple month to month periods', () => {
     // given
     const subscription = new Subscription({
@@ -63,7 +68,6 @@ describe('Subscription', () => {
     // when
     const subscriptionPeriod = subscription.getPeriod(dayjs('2020-01-31').toDate());
     const price = subscriptionPeriod.getInvoice().getPrice();
-    console.log(subscriptionPeriod.getInvoice().toString());
 
     // then
     expect(price).toStrictEqual(51.34);
