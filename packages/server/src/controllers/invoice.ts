@@ -34,10 +34,6 @@ export class Invoice {
   }
 
   getPrice(): number {
-    if (this.items.length === 0) {
-      throw new Error('No items in invoice');
-    }
-
     const price = this.items.reduce((cum, change) => cum + this.getPriceForInvoiceItem(change), 0);
     return Invoice.roundPrice(price);
   }
