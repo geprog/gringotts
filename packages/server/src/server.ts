@@ -2,16 +2,12 @@ import fastifyFormBody from '@fastify/formbody';
 import fastifySwagger from '@fastify/swagger';
 import fastify, { FastifyInstance } from 'fastify';
 
-import { config } from '~/config';
 import { database } from '~/database';
 import { Customer, Subscription } from '~/entities';
 import dayjs from '~/lib/dayjs';
-import { Mollie } from '~/providers/mollie';
-import { PaymentProvider } from '~/providers/types';
+import { getPaymentProvider } from '~/providers';
 
 export async function init(): Promise<FastifyInstance> {
-  const paymentProvider: PaymentProvider = new Mollie({ apiKey: config.mollieApiKey });
-
   const server = fastify();
 
   await server.register(fastifySwagger, {
@@ -151,6 +147,9 @@ export async function init(): Promise<FastifyInstance> {
         404: {
           $ref: 'responses/error',
         },
+        500: {
+          $ref: 'responses/error',
+        },
       },
     },
     handler: async (request, reply) => {
@@ -189,6 +188,13 @@ export async function init(): Promise<FastifyInstance> {
 
       subscription.changePlan({ units: body.units, pricePerUnit: body.pricePerUnit });
 
+      const paymentProvider = getPaymentProvider();
+      if (!paymentProvider) {
+        return reply.code(500).send({
+          error: 'Payment provider not configured',
+        });
+      }
+
       const { checkoutUrl } = await paymentProvider.startSubscription({
         subscription,
         pricePerUnit: body.pricePerUnit,
@@ -207,7 +213,7 @@ export async function init(): Promise<FastifyInstance> {
     },
   });
 
-  server.post('/subscription/:subscriptionId', {
+  server.patch('/subscription/:subscriptionId', {
     schema: {
       params: {
         type: 'object',
@@ -381,22 +387,34 @@ export async function init(): Promise<FastifyInstance> {
         400: {
           $ref: 'responses/error',
         },
+        500: {
+          $ref: 'responses/error',
+        },
       },
     },
     handler: async (request, reply) => {
       const body = request.body as { email: string; name: string };
 
-      const customer = await database.customers.findOne({ email: body.email });
+      let customer = await database.customers.findOne({ email: body.email });
       if (customer) {
         return reply.code(400).send({
           error: 'Customer already exists',
         });
       }
 
-      const newCustomer = new Customer({ email: body.email, name: body.name });
-      await database.em.persistAndFlush(newCustomer);
+      customer = new Customer({ email: body.email, name: body.name });
 
-      await reply.send(newCustomer._id);
+      const paymentProvider = getPaymentProvider();
+      if (!paymentProvider) {
+        return reply.code(500).send({
+          error: 'Payment provider not configured',
+        });
+      }
+      customer = await paymentProvider.createCustomer(customer);
+
+      await database.em.persistAndFlush(customer);
+
+      await reply.send(customer);
     },
   });
 
@@ -430,7 +448,7 @@ export async function init(): Promise<FastifyInstance> {
     },
   });
 
-  server.put('/customer/:customerId', {
+  server.patch('/customer/:customerId', {
     schema: {
       params: {
         type: 'object',
@@ -462,13 +480,22 @@ export async function init(): Promise<FastifyInstance> {
       const { customerId } = request.params as { customerId: string };
       const { email, name } = request.body as { email: string; name: string };
 
-      const customer = await database.customers.findOne({ _id: customerId });
+      let customer = await database.customers.findOne({ _id: customerId });
       if (!customer) {
         return reply.code(404).send({ error: 'Customer not found' });
       }
 
       customer.email = email;
       customer.name = name;
+
+      const paymentProvider = getPaymentProvider();
+      if (!paymentProvider) {
+        return reply.code(500).send({
+          error: 'Payment provider not configured',
+        });
+      }
+
+      customer = await paymentProvider.updateCustomer(customer);
 
       await database.em.persistAndFlush(customer);
     },
@@ -504,6 +531,15 @@ export async function init(): Promise<FastifyInstance> {
         return reply.code(404).send({ error: 'Customer not found' });
       }
 
+      const paymentProvider = getPaymentProvider();
+      if (!paymentProvider) {
+        return reply.code(500).send({
+          error: 'Payment provider not configured',
+        });
+      }
+
+      await paymentProvider.deleteCustomer(customer);
+
       await database.em.removeAndFlush(customer);
 
       await reply.send({ ok: true });
@@ -513,7 +549,17 @@ export async function init(): Promise<FastifyInstance> {
   server.post('/payment/webhook', {
     schema: { hidden: true },
     handler: async (request, reply) => {
+      const paymentProvider = getPaymentProvider();
+      if (!paymentProvider) {
+        return reply.code(500).send({
+          error: 'Payment provider not configured',
+        });
+      }
+
       const payload = await paymentProvider.parsePaymentWebhook(request.body);
+      if (!payload.paid) {
+        return reply.code(200).send({ ok: true, hint: 'Not paid' });
+      }
 
       const subscription = await database.subscriptions.findOne({ _id: payload.subscriptionId });
       if (!subscription) {
@@ -521,6 +567,7 @@ export async function init(): Promise<FastifyInstance> {
       }
 
       subscription.lastPayment = payload.paidAt;
+      subscription.waitingForPayment = false;
 
       await database.em.persistAndFlush(subscription);
 

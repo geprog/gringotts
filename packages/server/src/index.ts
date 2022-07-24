@@ -1,16 +1,8 @@
 import { config } from '~/config';
 import { database } from '~/database';
 import { loadNgrok } from '~/lib/development_proxy';
+import { loop } from '~/loop';
 import { init as serverInit } from '~/server';
-
-// async function loop() {
-//   const subscriptions = await database.getChargeableSubscriptions(new Date());
-//   for await (const subscription of subscriptions) {
-//     await paymentProvider.chargeSubscription(period);
-//     // TODO: send invoice
-//     await database.putSubscription(subscription);
-//   }
-// }
 
 async function start() {
   await loadNgrok();
@@ -18,7 +10,9 @@ async function start() {
   await database.init();
   await database.connect();
 
-  // setInterval(() => void loop(), 1000); // TODO
+  await loop();
+  setInterval(() => void loop(), 1000); // TODO: increase loop time
+
   const server = await serverInit();
 
   try {

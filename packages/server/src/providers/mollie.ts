@@ -1,8 +1,8 @@
-import { createMollieClient, Customer, MollieClient, PaymentStatus, SequenceType } from '@mollie/api-client';
+import { createMollieClient, MollieClient, PaymentStatus, SequenceType } from '@mollie/api-client';
 
 import { config } from '~/config';
-import { Subscription } from '~/entities';
-import { formatDate } from '~/lib/dayjs';
+import { Customer, Subscription } from '~/entities';
+import dayjs from '~/lib/dayjs';
 import { PaymentProvider } from '~/providers/types';
 
 type Metadata = {
@@ -48,7 +48,7 @@ export class Mollie implements PaymentProvider {
     const payment = await this.api.payments.create({
       amount: {
         value: '0.00', // TODO think about correct starting price
-        currency: 'EUR',
+        currency: 'EUR', // TODO get currency from config
       },
       customerId: customer.id,
       description: paymentDescription,
@@ -72,7 +72,7 @@ export class Mollie implements PaymentProvider {
     return { checkoutUrl };
   }
 
-  async chargeSubscription(subscription: Subscription, date: Date): Promise<void> {
+  async chargeSubscription({ subscription, date }: { subscription: Subscription; date: Date }): Promise<void> {
     if (!subscription.customer.paymentProviderId) {
       throw new Error('No customer id');
     }
@@ -82,16 +82,19 @@ export class Mollie implements PaymentProvider {
     const invoice = period.getInvoice();
 
     // TODO
-    const paymentDescription = `Charge ${formatDate(period.start)} - ${formatDate(period.end)}`;
+    const formatDate = (d: Date) => dayjs(d).format('DD.MM.YYYY');
+    const paymentDescription = `Subscription for period ${formatDate(period.start)} - ${formatDate(period.end)}`;
+    const price = invoice.getPrice();
 
-    const payment = await this.api.payments.create({
+    await this.api.payments.create({
       amount: {
-        value: this.priceToMolliePrice(invoice.getPrice()),
-        currency: 'EUR',
+        value: this.priceToMolliePrice(price),
+        currency: 'EUR', // TODO get currency from config
       },
       customerId: customer.id,
       description: paymentDescription,
       sequenceType: SequenceType.recurring,
+      webhookUrl: `${config.publicUrl}${config.webhookUrl}`,
       metadata: <Metadata>{
         subscriptionId: subscription._id,
         period: {
@@ -100,33 +103,52 @@ export class Mollie implements PaymentProvider {
         },
       },
     });
-
-    if (payment.status !== PaymentStatus.paid) {
-      throw new Error('Payment failed');
-    }
   }
 
-  async parsePaymentWebhook(payload: unknown): Promise<{ subscriptionId: string; paidAt: Date }> {
+  async parsePaymentWebhook(payload: unknown): Promise<{ subscriptionId: string; paidAt: Date; paid: boolean }> {
     const { id: paymentId } = payload as { id: string };
 
     const payment = await this.api.payments.get(paymentId);
-    if (payment.status !== PaymentStatus.paid) {
-      throw new Error('Payment not paid');
-    }
 
     const metadata = payment.metadata as Metadata;
-
     if (!payment.paidAt) {
       throw new Error('No paidAt');
     }
 
     return {
+      paid: payment.status === PaymentStatus.paid,
       paidAt: new Date(payment.paidAt),
       subscriptionId: metadata.subscriptionId,
     };
   }
 
+  async createCustomer(customer: Customer): Promise<Customer> {
+    const mollieCustomer = await this.api.customers.create({
+      name: customer.name,
+      email: customer.email,
+    });
+
+    customer.paymentProviderId = mollieCustomer.id;
+
+    return customer;
+  }
+
+  async updateCustomer(customer: Customer): Promise<Customer> {
+    const mollieCustomer = await this.api.customers.update(customer.paymentProviderId, {
+      name: customer.name,
+      email: customer.email,
+    });
+
+    customer.paymentProviderId = mollieCustomer.id;
+
+    return customer;
+  }
+
+  async deleteCustomer(customer: Customer): Promise<void> {
+    await this.api.customers.delete(customer.paymentProviderId);
+  }
+
   private priceToMolliePrice(price: number): string {
-    return `${Math.round(price * 100) / 100}`;
+    return `${(Math.round(price * 100) / 100).toFixed(2)}`;
   }
 }

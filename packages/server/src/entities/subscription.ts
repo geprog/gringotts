@@ -14,6 +14,8 @@ export class Subscription {
 
   lastPayment?: Date;
 
+  waitingForPayment!: boolean;
+
   customer!: Customer;
 
   changes = new Collection<SubscriptionChange>(this);
@@ -71,6 +73,7 @@ export const subscriptionSchema = new EntitySchema<Subscription>({
     _id: { type: 'uuid', onCreate: () => v4(), primary: true },
     anchorDate: { type: Date },
     lastPayment: { type: Date, nullable: true },
+    waitingForPayment: { type: Boolean, default: true },
     customer: {
       reference: ReferenceType.MANY_TO_ONE,
       entity: () => Customer,

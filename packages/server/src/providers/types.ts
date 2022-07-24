@@ -1,4 +1,4 @@
-import { Subscription } from '~/entities';
+import { Customer, Subscription } from '~/entities';
 
 export interface PaymentProvider {
   startSubscription(d: {
@@ -9,6 +9,9 @@ export interface PaymentProvider {
   }): Promise<{
     checkoutUrl: string;
   }>;
-  // chargeSubscription({ subscription }: { subscription: Subscription }): Promise<void>;
-  parsePaymentWebhook(payload: unknown): Promise<{ subscriptionId: string; paidAt: Date }>;
+  createCustomer(customer: Customer): Promise<Customer>;
+  deleteCustomer(customer: Customer): Promise<void>;
+  updateCustomer(customer: Customer): Promise<Customer>;
+  chargeSubscription(d: { subscription: Subscription; date: Date }): Promise<void>;
+  parsePaymentWebhook(payload: unknown): Promise<{ subscriptionId: string; paidAt: Date; paid: boolean }>;
 }
