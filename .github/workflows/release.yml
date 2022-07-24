@@ -113,9 +113,9 @@ jobs:
           version: 6
           run_install: true
 
-      - name: Generate api
+      - name: Build
         working-directory: packages/client/
-        run: pnpm run generate:api
+        run: pnpm build
 
       - name: Generate api docs
         working-directory: packages/client/
@@ -125,10 +125,6 @@ jobs:
         working-directory: packages/client/
         run: pnpm version ${GITHUB_REF#refs/*/} --no-commit-hooks --no-git-tag-version
         if: "github.ref_type == 'tag'"
-
-      - name: Build
-        working-directory: packages/client/
-        run: pnpm build
 
       - name: Release
         env:

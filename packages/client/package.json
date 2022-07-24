@@ -17,7 +17,7 @@
   "scripts": {
     "generate:api": "pnpm --filter ../server generate-swagger-spec && swagger-typescript-api -p ../server/swagger.json -o ./src -n api.ts",
     "generate:docs": "typedoc ./src/index.ts",
-    "build": "tsup src/index.ts --dts --format cjs,esm",
+    "build": "pnpm generate:api && tsup src/index.ts --dts --format cjs,esm",
     "clean": "rm -rf dist/ node_modules/",
     "typecheck": "tsc --noEmit",
     "lint": "eslint --max-warnings 0 ."
