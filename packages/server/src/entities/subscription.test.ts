@@ -74,4 +74,22 @@ describe('Subscription', () => {
     // then
     expect(price).toStrictEqual(51.34);
   });
+
+  it('should generate nice string invoices', () => {
+    // given
+    const anchorDate = dayjs('2020-01-01').toDate();
+    const subscription = new Subscription({
+      anchorDate,
+    });
+    subscription.changePlan({ pricePerUnit: 1, units: 50 });
+    subscription.changePlan({ pricePerUnit: 1.5, units: 50, changeDate: dayjs('2020-01-16').toDate() });
+    subscription.changePlan({ pricePerUnit: 2, units: 50, changeDate: dayjs('2020-01-19').toDate() });
+
+    // when
+    const subscriptionPeriod = subscription.getPeriod(dayjs('2020-01-31').toDate());
+    const invoice = subscriptionPeriod.getInvoice();
+
+    // then
+    expect(invoice.toString()).toMatchSnapshot();
+  });
 });
