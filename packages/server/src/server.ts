@@ -2,12 +2,16 @@ import fastifyFormBody from '@fastify/formbody';
 import fastifySwagger from '@fastify/swagger';
 import fastify, { FastifyInstance } from 'fastify';
 
+import { config } from '~/config';
 import { database } from '~/database';
 import { Subscription } from '~/entities';
 import dayjs from '~/lib/dayjs';
-import { paymentProvider } from '~/providers';
+import { Mollie } from '~/providers/mollie';
+import { PaymentProvider } from '~/providers/types';
 
 export async function init(): Promise<FastifyInstance> {
+  const paymentProvider: PaymentProvider = new Mollie({ apiKey: config.mollieApiKey });
+
   const server = fastify();
 
   await server.register(fastifySwagger, {
