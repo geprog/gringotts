@@ -127,9 +127,10 @@ jobs:
         if: "github.ref_type == 'tag'"
 
       - name: Release
+        working-directory: packages/client/
+        run: pnpm publish --no-git-check --access public
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: pnpm publish --no-git-check
         if: "github.ref_type == 'tag'"
 
       - name: Deploy 🚀
