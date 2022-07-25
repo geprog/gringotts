@@ -19,7 +19,11 @@ export async function init(): Promise<FastifyInstance> {
 
   server.addHook('onRequest', async (request, reply) => {
     // skip requests to our docs
-    if (request.routerPath === '/documentation/static/*' || request.routerPath === '/documentation/json') {
+    if (
+      request.routerPath === '/documentation/static/*' ||
+      request.routerPath === '/documentation/json' ||
+      request.routerPath === '/documentation/yaml'
+    ) {
       return;
     }
 
@@ -29,6 +33,8 @@ export async function init(): Promise<FastifyInstance> {
       await reply.send(err);
     }
   });
+
+  await server.register(fastifyFormBody);
 
   await server.register(fastifySwagger, {
     routePrefix: '/documentation',
@@ -51,27 +57,37 @@ export async function init(): Promise<FastifyInstance> {
       },
       security: [{ authorization: [] }],
     },
+    refResolver: {
+      buildLocalReference(json) {
+        if (!json.title && json.$id) {
+          json.title = json.$id;
+        }
+        return json.$id as string;
+      },
+    },
     exposeRoute: true,
   });
 
   server.addSchema({
-    $id: 'responses/success',
+    $id: 'SuccessResponse',
     type: 'object',
+    description: 'Success response',
     properties: {
       ok: { type: 'boolean' },
     },
   });
 
   server.addSchema({
-    $id: 'responses/error',
+    $id: 'ErrorResponse',
     type: 'object',
+    description: 'Error response',
     properties: {
       error: { type: 'string' },
     },
   });
 
   server.addSchema({
-    $id: 'entities/invoice',
+    $id: 'Invoice',
     type: 'object',
     properties: {
       items: {
@@ -92,7 +108,7 @@ export async function init(): Promise<FastifyInstance> {
   });
 
   server.addSchema({
-    $id: 'entities/customer',
+    $id: 'Customer',
     type: 'object',
     properties: {
       _id: { type: 'string' },
@@ -102,7 +118,7 @@ export async function init(): Promise<FastifyInstance> {
   });
 
   server.addSchema({
-    $id: 'entities/subscription_change',
+    $id: 'SubscriptionChange',
     type: 'object',
     properties: {
       _id: { type: 'string' },
@@ -114,41 +130,19 @@ export async function init(): Promise<FastifyInstance> {
   });
 
   server.addSchema({
-    $id: 'entities/subscription',
+    $id: 'Subscription',
     type: 'object',
     properties: {
       _id: { type: 'string' },
       anchorDate: { type: 'string' },
       lastPayment: { type: 'string' },
-      // TODO: re-use existing schema
-      // customer: { $ref: 'entities/customer' },
-      customer: {
-        type: 'object',
-        properties: {
-          _id: { type: 'string' },
-          email: { type: 'string' },
-          name: { type: 'string' },
-        },
-      },
+      customer: { $ref: 'Customer' },
       changes: {
         type: 'array',
-        // TODO: re-use existing schema
-        // items: { $ref: 'entities/subscription_change' },
-        items: {
-          type: 'object',
-          properties: {
-            _id: { type: 'string' },
-            start: { type: 'string' },
-            end: { type: 'string' },
-            pricePerUnit: { type: 'number' },
-            units: { type: 'number' },
-          },
-        },
+        items: { $ref: 'SubscriptionChange' },
       },
     },
   });
-
-  await server.register(fastifyFormBody);
 
   server.post('/subscription/start', {
     schema: {
@@ -164,7 +158,7 @@ export async function init(): Promise<FastifyInstance> {
         },
       },
       response: {
-        200: {
+        default: {
           type: 'object',
           properties: {
             subscriptionId: { type: 'string' },
@@ -172,13 +166,13 @@ export async function init(): Promise<FastifyInstance> {
           },
         },
         400: {
-          $ref: 'responses/error',
+          $ref: 'ErrorResponse',
         },
         404: {
-          $ref: 'responses/error',
+          $ref: 'ErrorResponse',
         },
         500: {
-          $ref: 'responses/error',
+          $ref: 'ErrorResponse',
         },
       },
     },
@@ -264,13 +258,13 @@ export async function init(): Promise<FastifyInstance> {
       },
       response: {
         200: {
-          $ref: 'responses/success',
+          $ref: 'SuccessResponse',
         },
         400: {
-          $ref: 'responses/error',
+          $ref: 'ErrorResponse',
         },
         404: {
-          $ref: 'responses/error',
+          $ref: 'ErrorResponse',
         },
       },
     },
@@ -318,10 +312,10 @@ export async function init(): Promise<FastifyInstance> {
       },
       response: {
         200: {
-          $ref: 'entities/subscription',
+          $ref: 'Subscription',
         },
         404: {
-          $ref: 'responses/error',
+          $ref: 'ErrorResponse',
         },
       },
     },
@@ -361,7 +355,7 @@ export async function init(): Promise<FastifyInstance> {
         200: {
           oneOf: [
             {
-              $ref: 'entities/invoice',
+              $ref: 'Invoice',
             },
             {
               type: 'string',
@@ -369,10 +363,10 @@ export async function init(): Promise<FastifyInstance> {
           ],
         },
         400: {
-          $ref: 'responses/error',
+          $ref: 'ErrorResponse',
         },
         404: {
-          $ref: 'responses/error',
+          $ref: 'ErrorResponse',
         },
       },
     },
@@ -412,13 +406,13 @@ export async function init(): Promise<FastifyInstance> {
       },
       response: {
         200: {
-          $ref: 'entities/customer',
+          $ref: 'Customer',
         },
         400: {
-          $ref: 'responses/error',
+          $ref: 'ErrorResponse',
         },
         500: {
-          $ref: 'responses/error',
+          $ref: 'ErrorResponse',
         },
       },
     },
@@ -461,11 +455,11 @@ export async function init(): Promise<FastifyInstance> {
         200: {
           type: 'array',
           items: {
-            $ref: 'entities/customer',
+            $ref: 'Customer',
           },
         },
         404: {
-          $ref: 'responses/error',
+          $ref: 'ErrorResponse',
         },
       },
     },
@@ -499,10 +493,10 @@ export async function init(): Promise<FastifyInstance> {
       },
       response: {
         200: {
-          $ref: 'entities/customer',
+          $ref: 'Customer',
         },
         404: {
-          $ref: 'responses/error',
+          $ref: 'ErrorResponse',
         },
       },
     },
@@ -543,13 +537,13 @@ export async function init(): Promise<FastifyInstance> {
       },
       response: {
         200: {
-          $ref: 'responses/success',
+          $ref: 'SuccessResponse',
         },
         400: {
-          $ref: 'responses/error',
+          $ref: 'ErrorResponse',
         },
         404: {
-          $ref: 'responses/error',
+          $ref: 'ErrorResponse',
         },
       },
     },
