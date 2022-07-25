@@ -19,11 +19,7 @@ export async function init(): Promise<FastifyInstance> {
 
   server.addHook('onRequest', async (request, reply) => {
     // skip requests to our docs
-    if (
-      request.routerPath === '/documentation/static/*' ||
-      request.routerPath === '/documentation/json' ||
-      request.routerPath === '/documentation/yaml'
-    ) {
+    if (request.routerPath.startsWith('/documentation')) {
       return;
     }
 
@@ -158,7 +154,7 @@ export async function init(): Promise<FastifyInstance> {
         },
       },
       response: {
-        default: {
+        200: {
           type: 'object',
           properties: {
             subscriptionId: { type: 'string' },
@@ -183,6 +179,8 @@ export async function init(): Promise<FastifyInstance> {
         redirectUrl: string;
         customerId: string;
       };
+
+      console.log('start subscription', body);
 
       if (body.units < 1) {
         return reply.code(400).send({
@@ -418,6 +416,8 @@ export async function init(): Promise<FastifyInstance> {
     },
     handler: async (request, reply) => {
       const body = request.body as { email: string; name: string };
+
+      console.log('Creating customer', body);
 
       let customer = await database.customers.findOne({ email: body.email });
       if (customer) {
