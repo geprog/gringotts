@@ -1,10 +1,12 @@
-import { config } from '~/config';
+import { checkConfig, config } from '~/config';
 import { database } from '~/database';
 import { loadNgrok } from '~/lib/development_proxy';
 import { loop } from '~/loop';
 import { init as serverInit } from '~/server';
 
 async function start() {
+  checkConfig();
+
   await loadNgrok();
 
   await database.init();

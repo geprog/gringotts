@@ -8,13 +8,10 @@ import { database } from '~/database';
 import { Customer, Subscription } from '~/entities';
 import dayjs from '~/lib/dayjs';
 import { getPaymentProvider } from '~/providers';
+import { triggerWebhook } from '~/webhook';
 
 export async function init(): Promise<FastifyInstance> {
   const server = fastify();
-
-  if (!config.jwtSecret) {
-    throw new Error('Please set JWT_SECRET');
-  }
 
   await server.register(fastifyJwt, {
     secret: config.jwtSecret,
@@ -604,7 +601,13 @@ export async function init(): Promise<FastifyInstance> {
 
       await database.em.persistAndFlush(subscription);
 
-      // TODO: notify backend
+      const token = server.jwt.sign({ subscriptionId: subscription._id }, { expiresIn: '12h' });
+      void triggerWebhook({
+        body: {
+          subscriptionId: subscription._id,
+        },
+        token,
+      });
 
       await reply.send({ ok: true });
     },

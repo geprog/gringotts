@@ -54,7 +54,7 @@ export class Mollie implements PaymentProvider {
       description: paymentDescription,
       sequenceType: SequenceType.first,
       redirectUrl,
-      webhookUrl: `${config.publicUrl}${config.webhookUrl}`,
+      webhookUrl: `${config.publicUrl}/payment/webhook`,
       metadata: <Metadata>{
         subscriptionId: subscription._id,
         plan: {
@@ -94,7 +94,7 @@ export class Mollie implements PaymentProvider {
       customerId: customer.id,
       description: paymentDescription,
       sequenceType: SequenceType.recurring,
-      webhookUrl: `${config.publicUrl}${config.webhookUrl}`,
+      webhookUrl: `${config.publicUrl}/payment/webhook`,
       metadata: <Metadata>{
         subscriptionId: subscription._id,
         period: {

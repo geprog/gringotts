@@ -12,7 +12,7 @@ Gringotts payments is a REST service which can be used as gateway between your p
 - [ ] end / pause subscription
 - [x] charge customers at end of subscription period
 - [x] manage customers
-- [ ] notify SAAS backend about subscription updates
+- [x] notify SAAS backend about subscription updates
 - [x] payment providers
   - [x] mollie
   - [ ] stripe
