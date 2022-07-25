@@ -123,6 +123,7 @@ export async function init(): Promise<FastifyInstance> {
       _id: { type: 'string' },
       anchorDate: { type: 'string' },
       lastPayment: { type: 'string' },
+      // TODO: re-use existing schema
       // customer: { $ref: 'entities/customer' },
       customer: {
         type: 'object',
@@ -134,6 +135,7 @@ export async function init(): Promise<FastifyInstance> {
       },
       changes: {
         type: 'array',
+        // TODO: re-use existing schema
         // items: { $ref: 'entities/subscription_change' },
         items: {
           type: 'object',

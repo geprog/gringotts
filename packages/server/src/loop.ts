@@ -38,10 +38,9 @@ export async function loop(): Promise<void> {
   for await (const subscription of subscriptions) {
     // console.log('Subscription', subscription);
 
-    // TODO: improve locking and use some max ttl
+    // TODO: improve locking and maybe use a max ttl
     subscription.waitingForPayment = true;
 
-    // TODO: send invoice
     await database.em.persistAndFlush(subscription);
 
     if (!subscription.lastPayment) {
@@ -54,6 +53,10 @@ export async function loop(): Promise<void> {
       continue;
     }
 
+    // TODO: check if last payment is older than a month
+    // TODO: check if last payment is the best option here
     await paymentProvider.chargeSubscription({ subscription, date: subscription.lastPayment });
+
+    // TODO: send invoice
   }
 }

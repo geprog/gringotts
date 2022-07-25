@@ -16,7 +16,7 @@ Gringotts payments is a REST service which can be used as gateway between your p
 - [x] payment providers
   - [x] mollie
   - [ ] stripe
-- [ ] authentication for SAAS backends
+- [x] authentication for SAAS backends
 - [ ] authentication for payment provider webhook calls
 - [ ] invoices for customers per email
   - [ ] themes for invoices
@@ -25,3 +25,5 @@ Gringotts payments is a REST service which can be used as gateway between your p
 - [x] typescript api client => `@geprog/payment-gateway-client`
 - [ ] support name for subscription changes & invoice positions
 - [ ] configurable payment interval (currently 1 month)
+- [ ] add logic to definitely prevent duplicate payments
+- [ ] save payments and their status to the database
