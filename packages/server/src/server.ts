@@ -1,7 +1,9 @@
 import fastifyFormBody from '@fastify/formbody';
+import fastifyJwt from '@fastify/jwt';
 import fastifySwagger from '@fastify/swagger';
 import fastify, { FastifyInstance } from 'fastify';
 
+import { config } from '~/config';
 import { database } from '~/database';
 import { Customer, Subscription } from '~/entities';
 import dayjs from '~/lib/dayjs';
@@ -10,18 +12,47 @@ import { getPaymentProvider } from '~/providers';
 export async function init(): Promise<FastifyInstance> {
   const server = fastify();
 
+  if (!config.jwtSecret) {
+    throw new Error('Please set JWT_SECRET');
+  }
+
+  await server.register(fastifyJwt, {
+    secret: config.jwtSecret,
+  });
+
+  server.addHook('onRequest', async (request, reply) => {
+    // skip requests to our docs
+    if (request.routerPath === '/documentation/static/*' || request.routerPath === '/documentation/json') {
+      return;
+    }
+
+    try {
+      await request.jwtVerify();
+    } catch (err) {
+      await reply.send(err);
+    }
+  });
+
   await server.register(fastifySwagger, {
     routePrefix: '/documentation',
     swagger: {
       info: {
-        title: 'Payment gateway',
-        description: 'Documentation for the payment gateway api',
+        title: 'Gringotts payments api',
+        description: 'Documentation for the Gringotts payments api',
         version: '0.1.0',
       },
       host: 'localhost:3000',
       schemes: ['http', 'https'],
       consumes: ['application/json'],
       produces: ['application/json'],
+      securityDefinitions: {
+        authorization: {
+          type: 'apiKey',
+          name: 'Authorization',
+          in: 'header',
+        },
+      },
+      security: [{ authorization: [] }],
     },
     exposeRoute: true,
   });
