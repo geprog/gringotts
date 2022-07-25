@@ -5,7 +5,7 @@ import { config } from '~/config';
 import { init } from '~/server';
 
 async function generateSwaggerSpec() {
-  config.mollieApiKey = '123'; // TODO: find proper solution
+  config.jwtSecret = '123'; // TODO: find proper solution
 
   const server = await init();
   const spec = (server as typeof server & { swagger: () => unknown }).swagger();
