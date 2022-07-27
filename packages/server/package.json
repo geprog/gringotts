@@ -1,7 +1,7 @@
 {
-  "name": "@geprog/gringotts-payments-server",
+  "name": "@geprog/gringotts-server",
   "version": "0.0.0-ci-release",
-  "description": "Server of the Gringotts payments system",
+  "description": "Server of the Gringotts system",
   "main": "./dist/index.js",
   "scripts": {
     "start": "tsx watch src/index.ts",

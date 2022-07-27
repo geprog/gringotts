@@ -1,7 +1,7 @@
 {
-  "name": "@geprog/gringotts-payments-client",
+  "name": "@geprog/gringotts-client",
   "version": "0.0.0-ci-release",
-  "description": "API client for the Gringotts payments server",
+  "description": "API client for the Gringotts server",
   "exports": {
     ".": {
       "import": "./dist/index.mjs",

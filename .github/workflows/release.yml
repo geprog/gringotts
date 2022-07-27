@@ -9,7 +9,7 @@ on:
 
 env:
   DOCKERHUB_ORG: geprog
-  IMAGE_NAME: gringotts-payments
+  IMAGE_NAME: gringotts
 
 jobs:
   server:

@@ -1,11 +1,11 @@
 {
-  "name": "@geprog/gringotts-payments",
+  "name": "@geprog/gringotts",
   "version": "0.0.0-ci-release",
   "description": "A payment gateway",
   "homepage": "https://geprog.com",
   "author": "GEPROG GmbH",
   "license": "MIT",
-  "repository": "github:geprog/gringotts-payments",
+  "repository": "github:geprog/gringotts",
   "scripts": {
     "lint:format": "prettier --check ."
   },
