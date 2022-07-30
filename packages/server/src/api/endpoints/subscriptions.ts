@@ -2,8 +2,11 @@ import { FastifyInstance } from 'fastify';
 
 import { database } from '~/database';
 import { Payment, Subscription } from '~/entities';
+import { Invoice } from '~/entities/invoice';
+import { InvoiceItem } from '~/entities/invoice_item';
 import dayjs from '~/lib/dayjs';
 import { getPaymentProvider } from '~/payment_providers';
+import { getPeriodFromAnchorDate } from '~/utils';
 
 export function subscriptionEndpoints(server: FastifyInstance): void {
   server.post('/subscription/start', {
@@ -59,8 +62,6 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
         });
       }
 
-      const now = new Date();
-
       const customer = await database.customers.findOne({ _id: body.customerId }, { populate: ['subscriptions'] });
       if (!customer) {
         return reply.code(404).send({
@@ -68,10 +69,14 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
         });
       }
 
+      const now = new Date();
+
       const subscription = new Subscription({
         anchorDate: now,
         customer,
       });
+
+      const period = getPeriodFromAnchorDate(now, subscription.anchorDate);
 
       subscription.changePlan({ units: body.units, pricePerUnit: body.pricePerUnit });
 
@@ -83,12 +88,23 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
       }
 
       const payment = new Payment({
-        periodStart: now, // TODO: what would be the best start date?
-        periodEnd: now, // TODO: what would be the best value for this?
         price: 1.0, // TODO: change first payment price based on currency
-        status: 'open',
-        subscription,
+        currency: 'EUR', // TODO: allow to change currency
+        status: 'pending',
       });
+
+      const invoice = new Invoice({
+        start: period.start,
+        end: period.end,
+      });
+
+      invoice.items.add(
+        new InvoiceItem({
+          description: 'Payment verification',
+          pricePerUnit: payment.price,
+          units: 1,
+        }),
+      );
 
       const { checkoutUrl } = await paymentProvider.startSubscription({
         subscription,
@@ -98,7 +114,7 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
 
       customer.subscriptions.add(subscription);
 
-      await database.em.persistAndFlush([customer, subscription]);
+      await database.em.persistAndFlush([customer, subscription, invoice, payment]);
 
       await reply.send({
         subscriptionId: subscription._id,

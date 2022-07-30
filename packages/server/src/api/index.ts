@@ -167,18 +167,28 @@ export async function init(): Promise<FastifyInstance> {
 
       const payload = await paymentProvider.parsePaymentWebhook(request.body);
 
-      const payment = await database.payments.findOne({ _id: payload.paymentId }, { populate: ['subscription'] });
+      const payment = await database.payments.findOne({ _id: payload.paymentId }, { populate: ['invoice'] });
       if (!payment) {
         return reply.code(404).send({ error: 'Payment not found' });
       }
 
-      const subscription = payment.subscription;
+      const invoice = payment.invoice;
+      if (!invoice) {
+        throw new Error('Payment has no invoice');
+      }
+
+      const subscription = invoice?.subscription;
+      if (!subscription) {
+        throw new Error('Invoice has no subscription');
+      }
 
       if (payload.paymentStatus === 'paid') {
         subscription.lastPayment = payload.paidAt;
+        payment.status = 'paid';
+        invoice.status = 'paid';
       }
 
-      await database.em.persistAndFlush([payment, subscription]);
+      await database.em.persistAndFlush([payment, invoice, subscription]);
 
       const token = server.jwt.sign({ subscriptionId: subscription._id }, { expiresIn: '12h' });
       void triggerWebhook({

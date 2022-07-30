@@ -1,20 +1,22 @@
 import { EntitySchema, ReferenceType } from '@mikro-orm/core';
 import { v4 } from 'uuid';
 
-import { Subscription } from '~/entities/subscription';
+import { Invoice } from '~/entities/invoice';
 
-export type PaymentStatus = 'open' | 'pending' | 'paid' | 'failed';
+export type PaymentStatus = 'pending' | 'paid' | 'failed';
+
+export type PaymentCurrency = 'EUR';
 
 export class Payment {
   _id: string = v4();
 
-  status: PaymentStatus = 'open';
+  status: PaymentStatus = 'pending';
 
-  currency: 'EUR' = 'EUR'; // TODO: support custom currencies
+  currency!: PaymentCurrency;
 
   price!: number;
 
-  subscription!: Subscription;
+  invoice?: Invoice;
 
   constructor(data?: Partial<Payment>) {
     Object.assign(this, data);
@@ -28,9 +30,9 @@ export const paymentSchema = new EntitySchema<Payment>({
     status: { type: String },
     currency: { type: String },
     price: { type: 'float' },
-    subscription: {
+    invoice: {
       reference: ReferenceType.MANY_TO_ONE,
-      entity: () => Subscription,
+      entity: () => Invoice,
     },
   },
 });
