@@ -1,9 +1,9 @@
 import { Collection, EntitySchema, ReferenceType } from '@mikro-orm/core';
 import { v4 } from 'uuid';
 
-import { SubscriptionPeriod } from '~/controllers/subscription_period';
 import { Customer } from '~/entities/customer';
 import { SubscriptionChange } from '~/entities/subscription_change';
+import { SubscriptionPeriod } from '~/entities/subscription_period';
 import dayjs from '~/lib/dayjs';
 import { getPeriodFromAnchorDate } from '~/utils';
 
@@ -13,8 +13,6 @@ export class Subscription {
   anchorDate!: Date; // first date a user ever started a subscription for the object
 
   lastPayment?: Date;
-
-  waitingForPayment!: boolean;
 
   customer!: Customer;
 
@@ -73,7 +71,6 @@ export const subscriptionSchema = new EntitySchema<Subscription>({
     _id: { type: 'uuid', onCreate: () => v4(), primary: true },
     anchorDate: { type: Date },
     lastPayment: { type: Date, nullable: true },
-    waitingForPayment: { type: Boolean, default: true },
     customer: {
       reference: ReferenceType.MANY_TO_ONE,
       entity: () => Customer,

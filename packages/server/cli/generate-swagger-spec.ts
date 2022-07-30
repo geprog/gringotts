@@ -1,8 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 
+import { init } from '~/api';
 import { config } from '~/config';
-import { init } from '~/server';
 
 async function generateSwaggerSpec() {
   config.jwtSecret = '123'; // TODO: find proper solution

@@ -1,8 +1,8 @@
+import { init as serverInit } from '~/api';
 import { checkConfig, config } from '~/config';
 import { database } from '~/database';
 import { loadNgrok } from '~/lib/development_proxy';
-import { loop } from '~/loop';
-import { init as serverInit } from '~/server';
+import { startLoops } from '~/loop';
 
 async function start() {
   checkConfig();
@@ -12,8 +12,7 @@ async function start() {
   await database.init();
   await database.connect();
 
-  await loop();
-  setInterval(() => void loop(), 1000); // TODO: increase loop time
+  startLoops();
 
   const server = await serverInit();
 

@@ -11,6 +11,9 @@ export class Invoice {
   start: Date;
   end: Date;
   items: InvoiceItem[] = [];
+  paid = false;
+  status: 'pending' | 'paid' | 'failed' = 'pending';
+  downloadUrl?: string;
 
   constructor(invoice: { start: Date; end: Date; items?: InvoiceItem[] }) {
     this.start = invoice?.start;

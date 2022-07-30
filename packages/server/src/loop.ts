@@ -1,62 +1,115 @@
 import { database } from '~/database';
-import { Subscription } from '~/entities';
+import { Payment, Subscription } from '~/entities';
 import dayjs from '~/lib/dayjs';
-import { getPaymentProvider } from '~/providers';
+import { getPaymentProvider } from '~/payment_providers';
+import { getNextPeriodFromDate } from '~/utils';
 
-export async function getDueSubscriptions(date: Date): Promise<Subscription[]> {
-  const d = dayjs(date).subtract(1, 'month').toDate();
+const pageSize = 10;
 
-  // check if last payment is older than a month
-  const subscriptions = await database.subscriptions.find(
+async function createPayment(subscription: Subscription) {
+  const lastPayments = await database.payments.find(
     {
-      $and: [{ lastPayment: { $lt: d } }, { waitingForPayment: false }],
+      subscription: subscription._id,
     },
-    { populate: ['customer', 'changes'] },
+    { limit: 1, orderBy: { periodEnd: 'ASC' } },
   );
 
-  // TODO: check if we maybe skipped one payment
+  if (lastPayments.length !== 1) {
+    // TODO: think about if we will really do it this way
+    throw new Error('Each subscription must have at least one payment');
+  }
 
-  return subscriptions;
+  const lastPayment = lastPayments[0];
+
+  const nextPeriod = getNextPeriodFromDate(lastPayment.periodEnd, subscription.anchorDate);
+
+  const now = new Date();
+  if (dayjs(nextPeriod.start).isAfter(now)) {
+    return;
+  }
+
+  const lastPeriodDate = lastPayment.periodEnd; // TODO: check if this makes sense
+  const price = subscription.getPeriod(lastPeriodDate).getInvoice().getPrice();
+
+  const payment = new Payment({
+    periodStart: nextPeriod.start,
+    periodEnd: nextPeriod.end,
+    price,
+    status: 'open',
+    subscription,
+  });
+
+  await database.em.persistAndFlush(payment);
 }
 
-export async function loop(): Promise<void> {
+export async function createPayments(): Promise<void> {
+  const date = new Date();
+
+  // TODO
+  const d = dayjs(date).subtract(1, 'month').toDate();
+
+  let page = 0;
+
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    // check if last payment is older than a month
+    const subscriptions = await database.subscriptions.find(
+      {
+        $and: [{ lastPayment: { $lt: d } }], // TODO: improve filter
+      },
+      { populate: ['customer', 'changes'], limit: pageSize, offset: page * pageSize },
+    );
+
+    for await (const subscription of subscriptions) {
+      await createPayment(subscription);
+    }
+
+    if (subscriptions.length < pageSize) {
+      return;
+    }
+
+    page += 1;
+  }
+}
+
+export async function chargeOpenPayments(): Promise<void> {
   const paymentProvider = getPaymentProvider();
   if (!paymentProvider) {
     throw new Error('No payment provider configured');
   }
 
-  const date = new Date();
+  let page = 0;
 
-  const subscriptions = await getDueSubscriptions(date);
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const payments = await database.payments.find(
+      {
+        status: 'open',
+      },
+      { populate: ['subscription'], limit: pageSize, offset: page * pageSize },
+    );
 
-  if (subscriptions.length === 0) {
-    return;
-  }
+    for await (const payment of payments) {
+      payment.status = 'pending';
+      await database.em.persistAndFlush(payment);
 
-  // console.log('Following subscriptions need to pay again ...', subscriptions);
-
-  for await (const subscription of subscriptions) {
-    // console.log('Subscription', subscription);
-
-    // TODO: improve locking and maybe use a max ttl
-    subscription.waitingForPayment = true;
-
-    await database.em.persistAndFlush(subscription);
-
-    if (!subscription.lastPayment) {
-      throw new Error('Subscription has no last payment');
+      await paymentProvider.chargePayment({ payment });
     }
 
-    const price = subscription.getPeriod(subscription.lastPayment).getInvoice().getPrice();
-    if (price === 0) {
-      // TODO: set last payment to today?
-      continue;
+    if (payments.length < pageSize) {
+      return;
     }
 
-    // TODO: check if last payment is older than a month
-    // TODO: check if last payment is the best option here
-    await paymentProvider.chargeSubscription({ subscription, date: subscription.lastPayment });
-
-    // TODO: send invoice
+    page += 1;
   }
+}
+
+export function startLoops(): void {
+  // create payments for pasted periods
+  void createPayments();
+  setInterval(() => void createPayments(), 1000); // TODO: increase loop time
+
+  // charge open payments
+  void chargeOpenPayments();
+  setInterval(() => void chargeOpenPayments(), 1000); // TODO: increase loop time
 }

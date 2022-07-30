@@ -1,20 +1,12 @@
 import { createMollieClient, MollieClient, PaymentStatus, SequenceType } from '@mollie/api-client';
 
 import { config } from '~/config';
-import { Customer, Subscription } from '~/entities';
+import { Customer, Payment, Subscription } from '~/entities';
 import dayjs from '~/lib/dayjs';
-import { PaymentProvider } from '~/providers/types';
+import { PaymentProvider } from '~/payment_providers/types';
 
 type Metadata = {
-  subscriptionId: string;
-  period?: {
-    start: string;
-    end: string;
-  };
-  plan?: {
-    pricePerUnit: number;
-    units: number;
-  };
+  paymentId: string;
 };
 
 export class Mollie implements PaymentProvider {
@@ -31,24 +23,21 @@ export class Mollie implements PaymentProvider {
   async startSubscription({
     subscription,
     redirectUrl,
-    pricePerUnit,
-    units,
+    payment,
   }: {
     subscription: Subscription;
     redirectUrl: string;
-    pricePerUnit: number;
-    units: number;
-    customer: Customer;
+    payment: Payment;
   }): Promise<{ checkoutUrl: string }> {
     const customer = await this.api.customers.get(subscription.customer.paymentProviderId);
 
     // TODO
     const paymentDescription = `Initial charge`;
 
-    const payment = await this.api.payments.create({
+    const _payment = await this.api.payments.create({
       amount: {
         value: '0.00', // TODO think about correct starting price
-        currency: 'EUR', // TODO get currency from config
+        currency: payment.currency,
       },
       customerId: customer.id,
       description: paymentDescription,
@@ -56,15 +45,12 @@ export class Mollie implements PaymentProvider {
       redirectUrl,
       webhookUrl: `${config.publicUrl}/payment/webhook`,
       metadata: <Metadata>{
-        subscriptionId: subscription._id,
-        plan: {
-          units,
-          pricePerUnit,
-        },
+        paymentId: '', // TODO
+        // subscriptionId: subscription._id,
       },
     });
 
-    const checkoutUrl = payment._links.checkout?.href;
+    const checkoutUrl = _payment._links.checkout?.href;
     if (!checkoutUrl) {
       throw new Error('No checkout url received');
     }
@@ -72,40 +58,36 @@ export class Mollie implements PaymentProvider {
     return { checkoutUrl };
   }
 
-  async chargeSubscription({ subscription, date }: { subscription: Subscription; date: Date }): Promise<void> {
-    if (!subscription.customer.paymentProviderId) {
+  async chargePayment({ payment }: { subscription: Subscription; payment: Payment }): Promise<void> {
+    if (!payment.subscription.customer.paymentProviderId) {
       throw new Error('No customer id');
     }
-    const customer = await this.api.customers.get(subscription.customer.paymentProviderId);
-
-    const period = subscription.getPeriod(date);
-    const invoice = period.getInvoice();
+    const customer = await this.api.customers.get(payment.subscription.customer.paymentProviderId);
 
     // TODO
     const formatDate = (d: Date) => dayjs(d).format('DD.MM.YYYY');
-    const paymentDescription = `Subscription for period ${formatDate(period.start)} - ${formatDate(period.end)}`;
-    const price = invoice.getPrice();
+    const paymentDescription = `Subscription for period ${formatDate(payment.periodStart)} - ${formatDate(
+      payment.periodEnd,
+    )}`;
 
     await this.api.payments.create({
       amount: {
-        value: this.priceToMolliePrice(price),
-        currency: 'EUR', // TODO get currency from config
+        value: this.priceToMolliePrice(payment.price),
+        currency: payment.currency,
       },
       customerId: customer.id,
       description: paymentDescription,
       sequenceType: SequenceType.recurring,
       webhookUrl: `${config.publicUrl}/payment/webhook`,
       metadata: <Metadata>{
-        subscriptionId: subscription._id,
-        period: {
-          start: period.start.toJSON(),
-          end: period.end.toJSON(),
-        },
+        paymentId: payment._id,
       },
     });
   }
 
-  async parsePaymentWebhook(payload: unknown): Promise<{ subscriptionId: string; paidAt: Date; paid: boolean }> {
+  async parsePaymentWebhook(
+    payload: unknown,
+  ): Promise<{ paymentId: string; paidAt: Date; paymentStatus: 'pending' | 'paid' | 'failed' }> {
     const { id: paymentId } = payload as { id: string };
 
     const payment = await this.api.payments.get(paymentId);
@@ -115,10 +97,27 @@ export class Mollie implements PaymentProvider {
       throw new Error('No paidAt');
     }
 
+    const convertPaymentStatus = (paymentStatus: PaymentStatus) => {
+      // TODO: check meaning of authorized
+      if (paymentStatus === PaymentStatus.paid || paymentStatus === PaymentStatus.authorized) {
+        return 'paid';
+      }
+
+      if (
+        paymentStatus === PaymentStatus.failed ||
+        paymentStatus === PaymentStatus.expired ||
+        paymentStatus === PaymentStatus.canceled
+      ) {
+        return 'failed';
+      }
+
+      return 'pending';
+    };
+
     return {
-      paid: payment.status === PaymentStatus.paid,
+      paymentStatus: convertPaymentStatus(payment.status),
       paidAt: new Date(payment.paidAt),
-      subscriptionId: metadata.subscriptionId,
+      paymentId: metadata.paymentId,
     };
   }
 

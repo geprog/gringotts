@@ -1,6 +1,6 @@
 import { config } from '~/config';
-import { Mollie } from '~/providers/mollie';
-import { PaymentProvider } from '~/providers/types';
+import { Mollie } from '~/payment_providers/mollie';
+import { PaymentProvider } from '~/payment_providers/types';
 
 export function getPaymentProvider(): PaymentProvider | undefined {
   if (config.mollieApiKey) {

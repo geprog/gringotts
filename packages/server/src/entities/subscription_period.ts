@@ -1,4 +1,4 @@
-import { Invoice, InvoiceItem } from '~/controllers/invoice';
+import { Invoice, InvoiceItem } from '~/entities/invoice';
 import { SubscriptionChange } from '~/entities/subscription_change';
 
 export class SubscriptionPeriod {

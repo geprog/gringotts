@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
+import { init as initServer } from '~/api';
 import { Customer } from '~/entities';
-import { init as initServer } from '~/server';
 
 describe('Server', () => {
   it.todo('/subscription/start', async () => {
