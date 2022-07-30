@@ -4,6 +4,7 @@ import { InvoiceItem, invoiceItemSchema } from './invoice_item';
 import { Payment, paymentSchema } from './payment';
 import { Subscription, subscriptionSchema } from './subscription';
 import { SubscriptionChange, subscriptionChangeSchema } from './subscription_change';
+import { SubscriptionPeriod } from './subscription_period';
 
 export {
   Customer,
@@ -17,5 +18,6 @@ export {
   Subscription,
   SubscriptionChange,
   subscriptionChangeSchema,
+  SubscriptionPeriod,
   subscriptionSchema,
 };

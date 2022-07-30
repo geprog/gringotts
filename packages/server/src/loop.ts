@@ -1,9 +1,7 @@
 import { database } from '~/database';
-import { Invoice, InvoiceItem, Payment, Subscription } from '~/entities';
+import { Invoice, InvoiceItem, Payment, Subscription, SubscriptionPeriod } from '~/entities';
 import { getPaymentProvider } from '~/payment_providers';
 import { getNextPeriodFromDate } from '~/utils';
-
-import { SubscriptionPeriod } from './entities/subscription_period';
 
 const pageSize = 10;
 
@@ -31,9 +29,9 @@ export async function chargeInvoices(): Promise<void> {
 
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    // check if last payment is older than a month
+    // get draft invoice from past periods
     const invoices = await database.invoices.find(
-      { end: { $lt: now }, status: 'open' },
+      { end: { $lt: now }, status: 'draft' },
       { limit: pageSize, offset: page * pageSize },
     );
 
