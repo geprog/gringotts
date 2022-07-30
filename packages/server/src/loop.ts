@@ -1,22 +1,21 @@
 import { database } from '~/database';
 import { Invoice, InvoiceItem, Payment, Subscription } from '~/entities';
-import dayjs from '~/lib/dayjs';
 import { getPaymentProvider } from '~/payment_providers';
 import { getNextPeriodFromDate } from '~/utils';
 
+import { SubscriptionPeriod } from './entities/subscription_period';
+
 const pageSize = 10;
 
-function getPriceForInvoiceItem(item: InvoiceItem): number {
-  const basePrice = item.pricePerUnit * item.units;
-  const start = dayjs(item.start);
-  const end = dayjs(item.end);
-  const itemDiff = dayjs(start).diff(end);
-  const invoiceDiff = dayjs(this.start).diff(this.end);
-  return (basePrice / invoiceDiff) * itemDiff;
-}
-
-export async function addSubscriptionChangesToInvoice(subscription: Subscription, invoice: Invoice): Promise<Invoice> {
+export function addSubscriptionChangesToInvoice(subscription: Subscription, invoice: Invoice): Invoice {
   // TODO: add missing subscription changes to invoice
+  const period = new SubscriptionPeriod(subscription, invoice.start, invoice.end);
+
+  const newInvoiceItems = period.getInvoiceItems();
+
+  // TODO: check if invoice items are already in the invoice
+
+  invoice.items.add(...newInvoiceItems);
 
   return invoice;
 }
@@ -48,7 +47,9 @@ export async function chargeInvoices(): Promise<void> {
       if (!subscription) {
         throw new Error('Invoice has no subscription');
       }
-      invoice = await addSubscriptionChangesToInvoice(subscription, invoice);
+
+      await database.em.populate(subscription, ['changes']);
+      invoice = addSubscriptionChangesToInvoice(subscription, invoice);
 
       const price = invoice.getPrice();
 

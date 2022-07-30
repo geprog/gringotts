@@ -3,9 +3,6 @@ import { v4 } from 'uuid';
 
 import { Customer } from '~/entities/customer';
 import { SubscriptionChange } from '~/entities/subscription_change';
-import { SubscriptionPeriod } from '~/entities/subscription_period';
-import dayjs from '~/lib/dayjs';
-import { getPeriodFromAnchorDate } from '~/utils';
 
 export class Subscription {
   _id: string = v4();
@@ -49,19 +46,6 @@ export class Subscription {
         subscription: this,
       }),
     );
-  }
-
-  getPeriod(date: Date): SubscriptionPeriod {
-    const { start, end } = getPeriodFromAnchorDate(date, this.anchorDate);
-    const changes = this.changes
-      .getItems()
-      .filter((change) => {
-        const changeEnd = change.end || getPeriodFromAnchorDate(change.start, this.anchorDate).end;
-        return dayjs(changeEnd).isBetween(start, end, 'day', '[]');
-      })
-      .sort((a, b) => a.start.getTime() - b.start.getTime());
-
-    return new SubscriptionPeriod({ start, end, changes });
   }
 }
 

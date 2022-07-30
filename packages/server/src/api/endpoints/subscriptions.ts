@@ -4,7 +4,6 @@ import { database } from '~/database';
 import { Payment, Subscription } from '~/entities';
 import { Invoice } from '~/entities/invoice';
 import { InvoiceItem } from '~/entities/invoice_item';
-import dayjs from '~/lib/dayjs';
 import { getPaymentProvider } from '~/payment_providers';
 import { getPeriodFromAnchorDate } from '~/utils';
 
@@ -219,66 +218,6 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
       }
 
       await reply.send(subscription);
-    },
-  });
-
-  server.get('/subscription/:subscriptionId/invoice', {
-    schema: {
-      tags: ['subscription'],
-      params: {
-        type: 'object',
-        required: ['subscriptionId'],
-        additionalProperties: false,
-        properties: {
-          subscriptionId: { type: 'string' },
-        },
-      },
-      querystring: {
-        type: 'object',
-        properties: {
-          format: { type: 'string', enum: ['json', 'string'], default: 'json' },
-          date: { type: 'string', description: 'Date as ISO string inside the period to get an invoice for' },
-        },
-      },
-      response: {
-        200: {
-          oneOf: [
-            {
-              $ref: 'Invoice',
-            },
-            {
-              type: 'string',
-            },
-          ],
-        },
-        400: {
-          $ref: 'ErrorResponse',
-        },
-        404: {
-          $ref: 'ErrorResponse',
-        },
-      },
-    },
-    handler: async (request, reply) => {
-      const { subscriptionId } = request.params as Partial<{ subscriptionId: string }>;
-      const { date, format } = request.query as Partial<{ date?: string; format: 'json' | 'string' }>;
-
-      const subscription = await database.subscriptions.findOne(
-        { _id: subscriptionId },
-        { populate: ['customer', 'changes'] },
-      );
-      if (!subscription) {
-        return reply.code(404).send({ error: 'Subscription not found' });
-      }
-
-      const period = subscription.getPeriod(date ? dayjs(date).toDate() : new Date());
-      const invoice = period.getInvoice();
-
-      if (format === 'string') {
-        await reply.send(invoice.toString());
-      } else {
-        await reply.send(invoice);
-      }
     },
   });
 }
