@@ -8,7 +8,6 @@ import { SubscriptionPeriod } from './entities/subscription_period';
 const pageSize = 10;
 
 export function addSubscriptionChangesToInvoice(subscription: Subscription, invoice: Invoice): Invoice {
-  // TODO: add missing subscription changes to invoice
   const period = new SubscriptionPeriod(subscription, invoice.start, invoice.end);
 
   const newInvoiceItems = period.getInvoiceItems();
