@@ -18,7 +18,7 @@ export class Payment {
 
   price!: number;
 
-  description?: string;
+  description!: string;
 
   constructor(data?: Partial<Payment>) {
     Object.assign(this, data);

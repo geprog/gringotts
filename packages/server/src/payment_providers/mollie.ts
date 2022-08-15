@@ -35,12 +35,12 @@ export class Mollie implements PaymentProvider {
         currency: payment.currency,
       },
       customerId: customer.id,
-      description: payment.description || 'TODO', // TODO
+      description: payment.description,
       sequenceType: SequenceType.first,
       redirectUrl,
       webhookUrl: `${config.publicUrl}/payment/webhook`,
       metadata: <Metadata>{
-        paymentId: '', // TODO
+        paymentId: payment._id,
         // subscriptionId: subscription._id,
       },
     });
@@ -65,7 +65,7 @@ export class Mollie implements PaymentProvider {
         currency: payment.currency,
       },
       customerId: customer.id,
-      description: payment.description || 'TODO', // TODO
+      description: payment.description,
       sequenceType: SequenceType.recurring,
       webhookUrl: `${config.publicUrl}/payment/webhook`,
       metadata: <Metadata>{
@@ -83,7 +83,7 @@ export class Mollie implements PaymentProvider {
 
     const metadata = payment.metadata as Metadata;
     if (!payment.paidAt) {
-      throw new Error('No paidAt');
+      throw new Error('No paidAt'); // TODO: improve error handling
     }
 
     const convertPaymentStatus = (paymentStatus: PaymentStatus) => {

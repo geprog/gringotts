@@ -8,7 +8,7 @@ import { getPaymentProvider } from '~/payment_providers';
 import { getPeriodFromAnchorDate } from '~/utils';
 
 export function subscriptionEndpoints(server: FastifyInstance): void {
-  server.post('/subscription/start', {
+  server.post('/subscription', {
     schema: {
       tags: ['subscription'],
       body: {
@@ -101,7 +101,7 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
 
       invoice.items.add(
         new InvoiceItem({
-          description: 'Payment verification',
+          description: 'Subscription start (Payment verification)',
           pricePerUnit: payment.price,
           units: 1,
         }),

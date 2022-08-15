@@ -172,7 +172,7 @@ export async function init(): Promise<FastifyInstance> {
         return reply.code(404).send({ error: 'Payment not found' });
       }
 
-      // TODO: handle inital payments which do not have an invoice ...
+      // TODO: handle initial payments which do not have an invoice ...
 
       const invoice = await database.invoices.findOne({ payment }, { populate: ['subscription'] });
       if (!invoice) {
