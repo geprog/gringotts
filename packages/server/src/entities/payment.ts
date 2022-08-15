@@ -2,6 +2,7 @@ import { EntitySchema, ReferenceType } from '@mikro-orm/core';
 import { v4 } from 'uuid';
 
 import { Customer } from '~/entities/customer';
+import { Subscription } from '~/entities/subscription';
 
 export type PaymentStatus = 'pending' | 'paid' | 'failed';
 
@@ -20,6 +21,10 @@ export class Payment {
 
   description!: string;
 
+  isRecurring = false;
+
+  subscription!: Subscription;
+
   constructor(data?: Partial<Payment>) {
     Object.assign(this, data);
   }
@@ -33,9 +38,14 @@ export const paymentSchema = new EntitySchema<Payment>({
     currency: { type: String },
     price: { type: 'float' },
     description: { type: String },
+    isRecurring: { type: Boolean },
     customer: {
       reference: ReferenceType.MANY_TO_ONE,
       entity: () => Customer,
+    },
+    subscription: {
+      reference: ReferenceType.MANY_TO_ONE,
+      entity: () => Subscription,
     },
   },
 });

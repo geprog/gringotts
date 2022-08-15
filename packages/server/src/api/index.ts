@@ -5,6 +5,7 @@ import fastify, { FastifyInstance } from 'fastify';
 
 import { config } from '~/config';
 import { database } from '~/database';
+import { Invoice } from '~/entities';
 import { getPaymentProvider } from '~/payment_providers';
 import { triggerWebhook } from '~/webhook';
 
@@ -167,21 +168,32 @@ export async function init(): Promise<FastifyInstance> {
 
       const payload = await paymentProvider.parsePaymentWebhook(request.body);
 
-      const payment = await database.payments.findOne({ _id: payload.paymentId });
+      const payment = await database.payments.findOne({ _id: payload.paymentId }, { populate: ['subscription'] });
       if (!payment) {
         return reply.code(404).send({ error: 'Payment not found' });
       }
 
-      // TODO: handle initial payments which do not have an invoice ...
+      const subscription = payment.subscription;
 
-      const invoice = await database.invoices.findOne({ payment }, { populate: ['subscription'] });
-      if (!invoice) {
-        throw new Error('Payment has no invoice');
+      let invoice: Invoice;
+      if (payment.isRecurring) {
+        const _invoice = await database.invoices.findOne({ payment }, { populate: ['subscription'] });
+        if (!_invoice) {
+          throw new Error('Payment has no invoice');
+        }
+        invoice = _invoice;
+      } else {
+        await database.em.populate(subscription, ['invoices']);
+
+        if (subscription.invoices.length < 1) {
+          throw new Error('Subscription has no invoices');
+        }
+
+        invoice = subscription.invoices[0];
       }
 
-      const subscription = invoice?.subscription;
-      if (!subscription) {
-        throw new Error('Invoice has no subscription');
+      if (!invoice) {
+        throw new Error('Invoice not found');
       }
 
       if (payload.paymentStatus === 'paid') {

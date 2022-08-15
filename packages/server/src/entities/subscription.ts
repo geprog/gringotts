@@ -2,6 +2,7 @@ import { Collection, EntitySchema, ReferenceType } from '@mikro-orm/core';
 import { v4 } from 'uuid';
 
 import { Customer } from '~/entities/customer';
+import { Invoice } from '~/entities/invoice';
 import { SubscriptionChange } from '~/entities/subscription_change';
 import { SubscriptionPeriod } from '~/entities/subscription_period';
 
@@ -19,6 +20,8 @@ export class Subscription {
   createdAt: Date = new Date();
 
   updatedAt: Date = new Date();
+
+  invoices = new Collection<Invoice>(this);
 
   constructor(data?: Partial<Subscription>) {
     Object.assign(this, data);
@@ -71,5 +74,9 @@ export const subscriptionSchema = new EntitySchema<Subscription>({
     },
     createdAt: { type: Date, onCreate: () => new Date() },
     updatedAt: { type: Date, onUpdate: () => new Date() },
+    invoices: {
+      reference: ReferenceType.ONE_TO_MANY,
+      entity: () => Invoice,
+    },
   },
 });

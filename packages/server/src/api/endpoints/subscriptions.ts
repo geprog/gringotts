@@ -91,12 +91,14 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
         currency: 'EUR', // TODO: allow to change currency
         status: 'pending',
         customer,
-        description: 'Subscription start', // TODO: think about text
+        description: 'Subscription start', // TODO: allow to set description
+        subscription,
       });
 
       const invoice = new Invoice({
         start: period.start,
         end: period.end,
+        status: 'draft',
       });
 
       invoice.items.add(

@@ -62,6 +62,7 @@ export async function chargeInvoices(): Promise<void> {
           customer: subscription.customer,
           status: 'pending',
           description: paymentDescription,
+          subscription,
         });
         await paymentProvider.chargePayment(payment);
         await database.em.persistAndFlush(payment);

@@ -74,6 +74,23 @@ export class Mollie implements PaymentProvider {
     });
   }
 
+  private convertPaymentStatus(paymentStatus: PaymentStatus) {
+    // TODO: check meaning of authorized
+    if (paymentStatus === PaymentStatus.paid || paymentStatus === PaymentStatus.authorized) {
+      return 'paid';
+    }
+
+    if (
+      paymentStatus === PaymentStatus.failed ||
+      paymentStatus === PaymentStatus.expired ||
+      paymentStatus === PaymentStatus.canceled
+    ) {
+      return 'failed';
+    }
+
+    return 'pending';
+  }
+
   async parsePaymentWebhook(
     payload: unknown,
   ): Promise<{ paymentId: string; paidAt: Date; paymentStatus: 'pending' | 'paid' | 'failed' }> {
@@ -86,25 +103,8 @@ export class Mollie implements PaymentProvider {
       throw new Error('No paidAt'); // TODO: improve error handling
     }
 
-    const convertPaymentStatus = (paymentStatus: PaymentStatus) => {
-      // TODO: check meaning of authorized
-      if (paymentStatus === PaymentStatus.paid || paymentStatus === PaymentStatus.authorized) {
-        return 'paid';
-      }
-
-      if (
-        paymentStatus === PaymentStatus.failed ||
-        paymentStatus === PaymentStatus.expired ||
-        paymentStatus === PaymentStatus.canceled
-      ) {
-        return 'failed';
-      }
-
-      return 'pending';
-    };
-
     return {
-      paymentStatus: convertPaymentStatus(payment.status),
+      paymentStatus: this.convertPaymentStatus(payment.status),
       paidAt: new Date(payment.paidAt),
       paymentId: metadata.paymentId,
     };
