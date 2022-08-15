@@ -15,7 +15,18 @@ import { subscriptionEndpoints } from './endpoints/subscriptions';
 
 export async function init(): Promise<FastifyInstance> {
   const server = fastify({
-    logger: true,
+    logger: {
+      transport:
+        process.env.NODE_ENV !== 'development'
+          ? {
+              target: 'pino-pretty',
+              options: {
+                translateTime: 'HH:MM:ss Z',
+                ignore: 'pid,hostname',
+              },
+            }
+          : undefined,
+    },
   });
 
   await server.register(fastifyJwt, {
@@ -183,13 +194,7 @@ export async function init(): Promise<FastifyInstance> {
         }
         invoice = _invoice;
       } else {
-        await database.em.populate(subscription, ['invoices']);
-
-        if (subscription.invoices.length < 1) {
-          throw new Error('Subscription has no invoices');
-        }
-
-        invoice = subscription.invoices[0];
+        invoice = await database.invoices.findOneOrFail({ subscription });
       }
 
       if (!invoice) {

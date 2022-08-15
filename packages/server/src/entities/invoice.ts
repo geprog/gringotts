@@ -14,7 +14,7 @@ export class Invoice {
   end!: Date; // TODO: should this really be part of an invoice?
   items = new Collection<InvoiceItem>(this);
   status: InvoiceStatus = 'draft';
-  subscription?: Subscription;
+  subscription!: Subscription;
   payment?: Payment;
 
   constructor(data?: Partial<Invoice>) {
@@ -52,6 +52,7 @@ export const invoiceSchema = new EntitySchema<Invoice>({
     items: {
       reference: ReferenceType.ONE_TO_MANY,
       entity: () => InvoiceItem,
+      mappedBy: (item) => item.invoice,
     },
     subscription: {
       reference: ReferenceType.MANY_TO_ONE,
@@ -60,6 +61,7 @@ export const invoiceSchema = new EntitySchema<Invoice>({
     payment: {
       reference: ReferenceType.ONE_TO_ONE,
       entity: () => Payment,
+      nullable: true,
     },
   },
 });

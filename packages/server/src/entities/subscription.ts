@@ -70,13 +70,14 @@ export const subscriptionSchema = new EntitySchema<Subscription>({
     changes: {
       reference: ReferenceType.ONE_TO_MANY,
       entity: () => SubscriptionChange,
-      mappedBy: (subscriptionChange) => subscriptionChange.subscription,
+      mappedBy: (change) => change.subscription,
     },
     createdAt: { type: Date, onCreate: () => new Date() },
     updatedAt: { type: Date, onUpdate: () => new Date() },
     invoices: {
       reference: ReferenceType.ONE_TO_MANY,
       entity: () => Invoice,
+      mappedBy: (invoice) => invoice.subscription,
     },
   },
 });

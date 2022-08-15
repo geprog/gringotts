@@ -99,6 +99,7 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
         start: period.start,
         end: period.end,
         status: 'draft',
+        subscription,
       });
 
       invoice.items.add(
@@ -106,6 +107,7 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
           description: 'Subscription start (Payment verification)',
           pricePerUnit: payment.price,
           units: 1,
+          invoice,
         }),
       );
 
