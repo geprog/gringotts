@@ -2,6 +2,7 @@ import { Collection, EntitySchema, ReferenceType } from '@mikro-orm/core';
 import { v4 } from 'uuid';
 
 import { InvoiceItem } from '~/entities/invoice_item';
+import { Payment } from '~/entities/payment';
 import { Subscription } from '~/entities/subscription';
 
 export type InvoiceStatus = 'draft' | 'pending' | 'paid' | 'failed';
@@ -13,6 +14,7 @@ export class Invoice {
   items = new Collection<InvoiceItem>(this);
   status: InvoiceStatus = 'draft';
   subscription?: Subscription;
+  payment?: Payment;
 
   constructor(data?: Partial<Invoice>) {
     Object.assign(this, data);
@@ -60,6 +62,10 @@ export const invoiceSchema = new EntitySchema<Invoice>({
     subscription: {
       reference: ReferenceType.MANY_TO_ONE,
       entity: () => Subscription,
+    },
+    payment: {
+      reference: ReferenceType.ONE_TO_ONE,
+      entity: () => Payment,
     },
   },
 });

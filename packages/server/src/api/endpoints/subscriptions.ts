@@ -90,6 +90,8 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
         price: 1.0, // TODO: change first payment price based on currency
         currency: 'EUR', // TODO: allow to change currency
         status: 'pending',
+        customer,
+        description: 'Subscription start', // TODO: think about text
       });
 
       const invoice = new Invoice({

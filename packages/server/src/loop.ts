@@ -1,5 +1,6 @@
 import { database } from '~/database';
 import { Invoice, InvoiceItem, Payment, Subscription, SubscriptionPeriod } from '~/entities';
+import dayjs from '~/lib/dayjs';
 import { getPaymentProvider } from '~/payment_providers';
 import { getNextPeriodFromDate } from '~/utils';
 
@@ -52,13 +53,17 @@ export async function chargeInvoices(): Promise<void> {
 
       // skip negative prices (credits) and zero prices
       if (price > 0) {
+        const formatDate = (d: Date) => dayjs(d).format('DD.MM.YYYY');
+        const paymentDescription = `Subscription for period ${formatDate(invoice.start)} - ${formatDate(invoice.end)}`; // TODO: think about text
+
         const payment = new Payment({
           price,
           currency: 'EUR',
-          invoice,
+          customer: subscription.customer,
           status: 'pending',
+          description: paymentDescription,
         });
-        await paymentProvider.chargePayment({ payment });
+        await paymentProvider.chargePayment(payment);
         await database.em.persistAndFlush(payment);
       }
 
@@ -74,7 +79,7 @@ export async function chargeInvoices(): Promise<void> {
       if (price < 0) {
         newInvoice.items.add(
           new InvoiceItem({
-            description: 'Credit from last payment',
+            description: 'Credit from last payment', // TODO: think about text
             pricePerUnit: price,
             units: 1,
             invoice: newInvoice,

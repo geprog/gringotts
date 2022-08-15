@@ -167,12 +167,14 @@ export async function init(): Promise<FastifyInstance> {
 
       const payload = await paymentProvider.parsePaymentWebhook(request.body);
 
-      const payment = await database.payments.findOne({ _id: payload.paymentId }, { populate: ['invoice'] });
+      const payment = await database.payments.findOne({ _id: payload.paymentId });
       if (!payment) {
         return reply.code(404).send({ error: 'Payment not found' });
       }
 
-      const invoice = payment.invoice;
+      // TODO: handle inital payments which do not have an invoice ...
+
+      const invoice = await database.invoices.findOne({ payment }, { populate: ['subscription'] });
       if (!invoice) {
         throw new Error('Payment has no invoice');
       }

@@ -2,7 +2,6 @@ import { createMollieClient, MollieClient, PaymentStatus, SequenceType } from '@
 
 import { config } from '~/config';
 import { Customer, Payment, Subscription } from '~/entities';
-import dayjs from '~/lib/dayjs';
 import { PaymentProvider } from '~/payment_providers/types';
 
 type Metadata = {
@@ -21,7 +20,6 @@ export class Mollie implements PaymentProvider {
   }
 
   async startSubscription({
-    subscription,
     redirectUrl,
     payment,
   }: {
@@ -29,18 +27,15 @@ export class Mollie implements PaymentProvider {
     redirectUrl: string;
     payment: Payment;
   }): Promise<{ checkoutUrl: string }> {
-    const customer = await this.api.customers.get(subscription.customer.paymentProviderId);
-
-    // TODO
-    const paymentDescription = `Initial charge`;
+    const customer = await this.api.customers.get(payment.customer.paymentProviderId);
 
     const _payment = await this.api.payments.create({
       amount: {
-        value: '0.00', // TODO think about correct starting price
+        value: this.priceToMolliePrice(payment.price),
         currency: payment.currency,
       },
       customerId: customer.id,
-      description: paymentDescription,
+      description: payment.description || 'TODO', // TODO
       sequenceType: SequenceType.first,
       redirectUrl,
       webhookUrl: `${config.publicUrl}/payment/webhook`,
@@ -58,17 +53,11 @@ export class Mollie implements PaymentProvider {
     return { checkoutUrl };
   }
 
-  async chargePayment({ payment }: { subscription: Subscription; payment: Payment }): Promise<void> {
-    if (!payment.subscription.customer.paymentProviderId) {
+  async chargePayment(payment: Payment): Promise<void> {
+    if (!payment.customer.paymentProviderId) {
       throw new Error('No customer id');
     }
-    const customer = await this.api.customers.get(payment.subscription.customer.paymentProviderId);
-
-    // TODO
-    const formatDate = (d: Date) => dayjs(d).format('DD.MM.YYYY');
-    const paymentDescription = `Subscription for period ${formatDate(payment.periodStart)} - ${formatDate(
-      payment.periodEnd,
-    )}`;
+    const customer = await this.api.customers.get(payment.customer.paymentProviderId);
 
     await this.api.payments.create({
       amount: {
@@ -76,7 +65,7 @@ export class Mollie implements PaymentProvider {
         currency: payment.currency,
       },
       customerId: customer.id,
-      description: paymentDescription,
+      description: payment.description || 'TODO', // TODO
       sequenceType: SequenceType.recurring,
       webhookUrl: `${config.publicUrl}/payment/webhook`,
       metadata: <Metadata>{

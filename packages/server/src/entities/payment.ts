@@ -1,7 +1,7 @@
 import { EntitySchema, ReferenceType } from '@mikro-orm/core';
 import { v4 } from 'uuid';
 
-import { Invoice } from '~/entities/invoice';
+import { Customer } from '~/entities/customer';
 
 export type PaymentStatus = 'pending' | 'paid' | 'failed';
 
@@ -14,9 +14,11 @@ export class Payment {
 
   currency!: PaymentCurrency;
 
+  customer!: Customer;
+
   price!: number;
 
-  invoice?: Invoice;
+  description?: string;
 
   constructor(data?: Partial<Payment>) {
     Object.assign(this, data);
@@ -30,9 +32,10 @@ export const paymentSchema = new EntitySchema<Payment>({
     status: { type: String },
     currency: { type: String },
     price: { type: 'float' },
-    invoice: {
+    description: { type: String },
+    customer: {
       reference: ReferenceType.MANY_TO_ONE,
-      entity: () => Invoice,
+      entity: () => Customer,
     },
   },
 });

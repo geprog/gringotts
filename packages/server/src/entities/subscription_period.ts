@@ -29,7 +29,7 @@ export class SubscriptionPeriod {
       .sort((a, b) => a.start.getTime() - b.start.getTime());
   }
 
-  getPriceForInvoiceItem(item: InvoiceSubscriptionItem): number {
+  private getPriceForInvoiceItem(item: InvoiceSubscriptionItem): number {
     const basePrice = item.pricePerUnit * item.units;
     const start = dayjs(item.start);
     const end = dayjs(item.end);

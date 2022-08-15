@@ -7,7 +7,7 @@ export interface PaymentProvider {
   createCustomer(customer: Customer): Promise<Customer>;
   deleteCustomer(customer: Customer): Promise<void>;
   updateCustomer(customer: Customer): Promise<Customer>;
-  chargePayment(d: { payment: Payment }): Promise<void>;
+  chargePayment(payment: Payment): Promise<void>;
   parsePaymentWebhook(
     payload: unknown,
   ): Promise<{ paymentId: string; paidAt: Date; paymentStatus: 'pending' | 'paid' | 'failed' }>;

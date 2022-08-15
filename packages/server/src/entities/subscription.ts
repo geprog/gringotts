@@ -3,6 +3,7 @@ import { v4 } from 'uuid';
 
 import { Customer } from '~/entities/customer';
 import { SubscriptionChange } from '~/entities/subscription_change';
+import { SubscriptionPeriod } from '~/entities/subscription_period';
 
 export class Subscription {
   _id: string = v4();
@@ -46,6 +47,10 @@ export class Subscription {
         subscription: this,
       }),
     );
+  }
+
+  getPeriod(start: Date, end: Date): SubscriptionPeriod {
+    return new SubscriptionPeriod(this, start, end);
   }
 }
 
