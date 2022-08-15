@@ -1,62 +1,106 @@
 import { database } from '~/database';
-import { Subscription } from '~/entities';
+import { Invoice, InvoiceItem, Payment, Subscription, SubscriptionPeriod } from '~/entities';
 import dayjs from '~/lib/dayjs';
-import { getPaymentProvider } from '~/providers';
+import { getPaymentProvider } from '~/payment_providers';
+import { getNextPeriodFromDate } from '~/utils';
 
-export async function getDueSubscriptions(date: Date): Promise<Subscription[]> {
-  const d = dayjs(date).subtract(1, 'month').toDate();
+const pageSize = 10;
 
-  // check if last payment is older than a month
-  const subscriptions = await database.subscriptions.find(
-    {
-      $and: [{ lastPayment: { $lt: d } }, { waitingForPayment: false }],
-    },
-    { populate: ['customer', 'changes'] },
-  );
+export function addSubscriptionChangesToInvoice(subscription: Subscription, invoice: Invoice): Invoice {
+  const period = new SubscriptionPeriod(subscription, invoice.start, invoice.end);
 
-  // TODO: check if we maybe skipped one payment
+  const newInvoiceItems = period.getInvoiceItems();
 
-  return subscriptions;
+  // TODO: check if invoice items are already in the invoice
+
+  invoice.items.add(...newInvoiceItems);
+
+  return invoice;
 }
 
-export async function loop(): Promise<void> {
+export async function chargeInvoices(): Promise<void> {
+  const now = new Date();
+
   const paymentProvider = getPaymentProvider();
   if (!paymentProvider) {
-    throw new Error('No payment provider configured');
+    throw new Error('Payment provider not configured');
   }
 
-  const date = new Date();
+  let page = 0;
 
-  const subscriptions = await getDueSubscriptions(date);
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    // get draft invoice from past periods
+    const invoices = await database.invoices.find(
+      { end: { $lt: now }, status: 'draft' },
+      { limit: pageSize, offset: page * pageSize },
+    );
 
-  if (subscriptions.length === 0) {
-    return;
-  }
+    for await (let invoice of invoices) {
+      // Lock invoice processing
+      invoice.status = 'pending';
+      await database.em.persistAndFlush(invoice);
 
-  // console.log('Following subscriptions need to pay again ...', subscriptions);
+      const subscription = invoice.subscription;
+      if (!subscription) {
+        throw new Error('Invoice has no subscription');
+      }
 
-  for await (const subscription of subscriptions) {
-    // console.log('Subscription', subscription);
+      await database.em.populate(subscription, ['changes']);
+      invoice = addSubscriptionChangesToInvoice(subscription, invoice);
 
-    // TODO: improve locking and maybe use a max ttl
-    subscription.waitingForPayment = true;
+      const price = invoice.getPrice();
 
-    await database.em.persistAndFlush(subscription);
+      // skip negative prices (credits) and zero prices
+      if (price > 0) {
+        const formatDate = (d: Date) => dayjs(d).format('DD.MM.YYYY');
+        const paymentDescription = `Subscription for period ${formatDate(invoice.start)} - ${formatDate(invoice.end)}`; // TODO: think about text
 
-    if (!subscription.lastPayment) {
-      throw new Error('Subscription has no last payment');
+        const payment = new Payment({
+          price,
+          currency: 'EUR',
+          customer: subscription.customer,
+          status: 'pending',
+          description: paymentDescription,
+          subscription,
+        });
+        await paymentProvider.chargePayment(payment);
+        await database.em.persistAndFlush(payment);
+      }
+
+      const nextPeriod = getNextPeriodFromDate(invoice.end, invoice.start);
+
+      const newInvoice = new Invoice({
+        status: 'draft',
+        start: nextPeriod.start,
+        end: nextPeriod.end,
+      });
+
+      // if price is negative add credit to next invoice
+      if (price < 0) {
+        newInvoice.items.add(
+          new InvoiceItem({
+            description: 'Credit from last payment', // TODO: think about text
+            pricePerUnit: price,
+            units: 1,
+            invoice: newInvoice,
+          }),
+        );
+      }
+
+      await database.em.persistAndFlush(newInvoice);
     }
 
-    const price = subscription.getPeriod(subscription.lastPayment).getInvoice().getPrice();
-    if (price === 0) {
-      // TODO: set last payment to today?
-      continue;
+    if (invoices.length < pageSize) {
+      return;
     }
 
-    // TODO: check if last payment is older than a month
-    // TODO: check if last payment is the best option here
-    await paymentProvider.chargeSubscription({ subscription, date: subscription.lastPayment });
-
-    // TODO: send invoice
+    page += 1;
   }
+}
+
+export function startLoops(): void {
+  // charge invoices for past periods
+  void chargeInvoices();
+  setInterval(() => void chargeInvoices(), 1000); // TODO: increase loop time
 }

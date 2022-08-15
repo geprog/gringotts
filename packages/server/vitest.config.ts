@@ -8,9 +8,9 @@ export default defineConfig({
       '$/': `${path.resolve(__dirname, 'test')}/`,
     },
   },
-  test: {
-    coverage: {
-      '100': true,
-    },
-  },
+  // test: {
+  //   coverage: {
+  //     '100': true,
+  //   },
+  // },
 });

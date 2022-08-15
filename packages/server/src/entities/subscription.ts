@@ -1,11 +1,10 @@
 import { Collection, EntitySchema, ReferenceType } from '@mikro-orm/core';
 import { v4 } from 'uuid';
 
-import { SubscriptionPeriod } from '~/controllers/subscription_period';
 import { Customer } from '~/entities/customer';
+import { Invoice } from '~/entities/invoice';
 import { SubscriptionChange } from '~/entities/subscription_change';
-import dayjs from '~/lib/dayjs';
-import { getPeriodFromAnchorDate } from '~/utils';
+import { SubscriptionPeriod } from '~/entities/subscription_period';
 
 export class Subscription {
   _id: string = v4();
@@ -14,8 +13,6 @@ export class Subscription {
 
   lastPayment?: Date;
 
-  waitingForPayment!: boolean;
-
   customer!: Customer;
 
   changes = new Collection<SubscriptionChange>(this);
@@ -23,6 +20,8 @@ export class Subscription {
   createdAt: Date = new Date();
 
   updatedAt: Date = new Date();
+
+  invoices = new Collection<Invoice>(this);
 
   constructor(data?: Partial<Subscription>) {
     Object.assign(this, data);
@@ -53,17 +52,8 @@ export class Subscription {
     );
   }
 
-  getPeriod(date: Date): SubscriptionPeriod {
-    const { start, end } = getPeriodFromAnchorDate(date, this.anchorDate);
-    const changes = this.changes
-      .getItems()
-      .filter((change) => {
-        const changeEnd = change.end || getPeriodFromAnchorDate(change.start, this.anchorDate).end;
-        return dayjs(changeEnd).isBetween(start, end, 'day', '[]');
-      })
-      .sort((a, b) => a.start.getTime() - b.start.getTime());
-
-    return new SubscriptionPeriod({ start, end, changes });
+  getPeriod(start: Date, end: Date): SubscriptionPeriod {
+    return new SubscriptionPeriod(this, start, end);
   }
 }
 
@@ -73,7 +63,6 @@ export const subscriptionSchema = new EntitySchema<Subscription>({
     _id: { type: 'uuid', onCreate: () => v4(), primary: true },
     anchorDate: { type: Date },
     lastPayment: { type: Date, nullable: true },
-    waitingForPayment: { type: Boolean, default: true },
     customer: {
       reference: ReferenceType.MANY_TO_ONE,
       entity: () => Customer,
@@ -85,5 +74,9 @@ export const subscriptionSchema = new EntitySchema<Subscription>({
     },
     createdAt: { type: Date, onCreate: () => new Date() },
     updatedAt: { type: Date, onUpdate: () => new Date() },
+    invoices: {
+      reference: ReferenceType.ONE_TO_MANY,
+      entity: () => Invoice,
+    },
   },
 });

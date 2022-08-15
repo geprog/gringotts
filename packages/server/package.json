@@ -9,7 +9,7 @@
     "clean": "rm -rf dist/ node_modules/",
     "lint": "eslint --max-warnings 0 .",
     "test": "vitest run --coverage",
-    "test:watch": "vitest",
+    "test:watch": "vitest --ui --open false",
     "typecheck": "tsc --noEmit",
     "generate-swagger-spec": "tsx cli/generate-swagger-spec.ts"
   },
@@ -39,6 +39,7 @@
     "eslint": "^8.20.0",
     "tsx": "^3.8.0",
     "typescript": "^4.7.4",
+    "vite": "^3.0.7",
     "vitest": "^0.18.1"
   }
 }

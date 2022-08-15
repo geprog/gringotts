@@ -36,7 +36,7 @@ jobs:
 
       - uses: pnpm/action-setup@v2.0.1
         with:
-          version: 6
+          version: 7
           run_install: true
 
       - name: Build
@@ -110,7 +110,7 @@ jobs:
 
       - uses: pnpm/action-setup@v2.0.1
         with:
-          version: 6
+          version: 7
           run_install: true
 
       - name: Build

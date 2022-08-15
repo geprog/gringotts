@@ -5,6 +5,12 @@ import { config } from '~/config';
 import {
   Customer,
   customerSchema,
+  Invoice,
+  InvoiceItem,
+  invoiceItemSchema,
+  invoiceSchema,
+  Payment,
+  paymentSchema,
   Subscription,
   SubscriptionChange,
   subscriptionChangeSchema,
@@ -23,7 +29,14 @@ export class Database {
     this.orm = await MikroORM.init<PostgreSqlDriver>({
       type: 'postgresql',
       clientUrl: config.postgresUrl,
-      entities: [customerSchema, subscriptionSchema, subscriptionChangeSchema],
+      entities: [
+        customerSchema,
+        subscriptionSchema,
+        subscriptionChangeSchema,
+        paymentSchema,
+        invoiceSchema,
+        invoiceItemSchema,
+      ],
       discovery: { disableDynamicFileAccess: true },
     });
   }
@@ -51,6 +64,18 @@ export class Database {
 
   get subscriptionChanges(): EntityRepository<SubscriptionChange> {
     return this.em.getRepository(SubscriptionChange);
+  }
+
+  get payments(): EntityRepository<Payment> {
+    return this.em.getRepository(Payment);
+  }
+
+  get invoices(): EntityRepository<Invoice> {
+    return this.em.getRepository(Invoice);
+  }
+
+  get invoiceItems(): EntityRepository<InvoiceItem> {
+    return this.em.getRepository(InvoiceItem);
   }
 }
 

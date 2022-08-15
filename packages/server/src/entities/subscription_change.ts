@@ -27,7 +27,7 @@ export const subscriptionChangeSchema = new EntitySchema<SubscriptionChange>({
     _id: { type: 'uuid', onCreate: () => v4(), primary: true },
     start: { type: Date },
     end: { type: Date, nullable: true },
-    pricePerUnit: { type: Number },
+    pricePerUnit: { type: 'float' },
     units: { type: Number },
     subscription: {
       reference: ReferenceType.MANY_TO_ONE,
