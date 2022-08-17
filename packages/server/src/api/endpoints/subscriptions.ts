@@ -5,7 +5,7 @@ import { Payment, Subscription } from '~/entities';
 import { Invoice } from '~/entities/invoice';
 import { InvoiceItem } from '~/entities/invoice_item';
 import { getPaymentProvider } from '~/payment_providers';
-import { getPeriodFromAnchorDate } from '~/utils';
+import { getActiveUntilDate, getPeriodFromAnchorDate } from '~/utils';
 
 export function subscriptionEndpoints(server: FastifyInstance): void {
   server.post('/subscription', {
@@ -217,13 +217,16 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
 
       const subscription = await database.subscriptions.findOne(
         { _id: subscriptionId },
-        { populate: ['customer', 'changes'] },
+        { populate: ['customer', 'changes', 'invoices'] },
       );
       if (!subscription) {
         return reply.code(404).send({ error: 'Subscription not found' });
       }
 
-      await reply.send(subscription);
+      const activeUntil = subscription.lastPayment
+        ? getActiveUntilDate(subscription.lastPayment, subscription.anchorDate)
+        : undefined;
+      await reply.send({ ...subscription, activeUntil });
     },
   });
 }
