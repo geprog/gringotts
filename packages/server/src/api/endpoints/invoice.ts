@@ -1,22 +1,22 @@
 import { FastifyInstance } from 'fastify';
 
+import { database } from '~/database';
+
 export function invoiceEndpoints(server: FastifyInstance): void {
-  server.get('/invoice', {
+  server.get('/invoice/:invoiceId', {
     schema: {
       tags: ['invoice'],
-      querystring: {
+      params: {
         type: 'object',
+        required: ['invoiceId'],
         additionalProperties: false,
         properties: {
-          // TODO
+          invoiceId: { type: 'string' },
         },
       },
       response: {
         200: {
-          type: 'array',
-          items: {
-            $ref: 'Invoice',
-          },
+          $ref: 'Invoice',
         },
         404: {
           $ref: 'ErrorResponse',
@@ -24,7 +24,14 @@ export function invoiceEndpoints(server: FastifyInstance): void {
       },
     },
     handler: async (request, reply) => {
-      await reply.send({ error: 'Not implemented' });
+      const { invoiceId } = request.params as { invoiceId: string };
+
+      const invoice = await database.invoices.findOne({ _id: invoiceId }, { populate: ['items'] });
+      if (!invoice) {
+        return reply.code(404).send({ error: 'Invoice not found' });
+      }
+
+      await reply.send(invoice);
     },
   });
 }
