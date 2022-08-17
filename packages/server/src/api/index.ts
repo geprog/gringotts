@@ -4,13 +4,10 @@ import fastifySwagger from '@fastify/swagger';
 import fastify, { FastifyInstance } from 'fastify';
 
 import { config } from '~/config';
-import { database } from '~/database';
-import { Invoice } from '~/entities';
-import { getPaymentProvider } from '~/payment_providers';
-import { triggerWebhook } from '~/webhook';
 
 import { customerEndpoints } from './endpoints/customer';
 import { invoiceEndpoints } from './endpoints/invoice';
+import { paymentEndpoints } from './endpoints/payment';
 import { subscriptionEndpoints } from './endpoints/subscriptions';
 
 export async function init(): Promise<FastifyInstance> {
@@ -113,18 +110,19 @@ export async function init(): Promise<FastifyInstance> {
     $id: 'Invoice',
     type: 'object',
     properties: {
+      _id: { type: 'string' },
       items: {
         type: 'array',
         items: {
           type: 'object',
           properties: {
-            start: { type: 'string' },
-            end: { type: 'string' },
             units: { type: 'number' },
             pricePerUnit: { type: 'number' },
+            description: { type: 'string' },
           },
         },
       },
+      status: { type: 'string' },
       start: { type: 'string' },
       end: { type: 'string' },
     },
@@ -159,71 +157,23 @@ export async function init(): Promise<FastifyInstance> {
       _id: { type: 'string' },
       anchorDate: { type: 'string' },
       lastPayment: { type: 'string' },
+      activeUntil: { type: 'string' },
       customer: { $ref: 'Customer' },
       changes: {
         type: 'array',
         items: { $ref: 'SubscriptionChange' },
       },
-    },
-  });
-
-  server.post('/payment/webhook', {
-    schema: { hide: true },
-    handler: async (request, reply) => {
-      const paymentProvider = getPaymentProvider();
-      if (!paymentProvider) {
-        return reply.code(500).send({
-          error: 'Payment provider not configured',
-        });
-      }
-
-      const payload = await paymentProvider.parsePaymentWebhook(request.body);
-
-      const payment = await database.payments.findOne({ _id: payload.paymentId }, { populate: ['subscription'] });
-      if (!payment) {
-        return reply.code(404).send({ error: 'Payment not found' });
-      }
-
-      const subscription = payment.subscription;
-
-      let invoice: Invoice;
-      if (payment.isRecurring) {
-        const _invoice = await database.invoices.findOne({ payment }, { populate: ['subscription'] });
-        if (!_invoice) {
-          throw new Error('Payment has no invoice');
-        }
-        invoice = _invoice;
-      } else {
-        invoice = await database.invoices.findOneOrFail({ subscription });
-      }
-
-      if (!invoice) {
-        throw new Error('Invoice not found');
-      }
-
-      if (payload.paymentStatus === 'paid') {
-        subscription.lastPayment = payload.paidAt;
-        payment.status = 'paid';
-        invoice.status = 'paid';
-      }
-
-      await database.em.persistAndFlush([payment, invoice, subscription]);
-
-      const token = server.jwt.sign({ subscriptionId: subscription._id }, { expiresIn: '12h' });
-      void triggerWebhook({
-        body: {
-          subscriptionId: subscription._id,
-        },
-        token,
-      });
-
-      await reply.send({ ok: true });
+      invoices: {
+        type: 'array',
+        items: { $ref: 'Invoice' },
+      },
     },
   });
 
   subscriptionEndpoints(server);
   customerEndpoints(server);
   invoiceEndpoints(server);
+  paymentEndpoints(server);
 
   return server;
 }
