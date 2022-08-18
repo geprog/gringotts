@@ -62,7 +62,7 @@ describe('Customer endpoints', () => {
     expect(customer).toContain(customerData);
   });
 
-  it('should return a customer by its id', async () => {
+  it('should find a customer by its email', async () => {
     const server = fastify();
     customerEndpoints(server);
     addSchemas(server);
@@ -78,7 +78,7 @@ describe('Customer endpoints', () => {
       zipCode: 'ENG-1234',
     };
 
-    vi.spyOn(database, 'database', 'get').mockReturnValueOnce({
+    vi.spyOn(database, 'database', 'get').mockReturnValue({
       customers: {
         find() {
           return Promise.resolve([customerData]);
@@ -101,5 +101,92 @@ describe('Customer endpoints', () => {
     expect(customers).toBeDefined();
     expect(customers).toHaveLength(1);
     expect(customers[0]).toContain(customerData);
+  });
+
+  it('should update a customer', async () => {
+    const server = fastify();
+    customerEndpoints(server);
+    addSchemas(server);
+
+    const customerData = <Customer>{
+      _id: '123',
+      name: 'John Doe',
+      email: 'john@doe.com',
+      addressLine1: 'BigBen Street 954',
+      addressLine2: '123',
+      city: 'London',
+      country: 'GB',
+      zipCode: 'ENG-1234',
+    };
+
+    const updateMock = vi.fn().mockResolvedValue(true);
+
+    vi.spyOn(database, 'database', 'get').mockReturnValue({
+      customers: {
+        findOne() {
+          return Promise.resolve(customerData);
+        },
+      },
+      em: {
+        persistAndFlush: updateMock,
+      },
+    } as unknown as database.Database);
+
+    const customerResponse = await server.inject({
+      method: 'PATCH',
+      url: `/customer/${customerData._id}`,
+      payload: customerData,
+    });
+
+    expect(customerResponse.statusCode).toBe(200);
+
+    const customer: Customer = customerResponse.json();
+    expect(customer).toBeDefined();
+    expect(customer).toContain(customerData);
+    expect(updateMock).toBeCalledTimes(1);
+    expect(updateMock).toHaveBeenCalledWith(customerData);
+  });
+
+  it('should delete a customer', async () => {
+    const server = fastify();
+    customerEndpoints(server);
+    addSchemas(server);
+
+    const customerData = <Customer>{
+      _id: '123',
+      name: 'John Doe',
+      email: 'john@doe.com',
+      addressLine1: 'BigBen Street 954',
+      addressLine2: '123',
+      city: 'London',
+      country: 'GB',
+      zipCode: 'ENG-1234',
+    };
+
+    const deleteMock = vi.fn();
+
+    vi.spyOn(database, 'database', 'get').mockReturnValue({
+      customers: {
+        findOne() {
+          return Promise.resolve(customerData);
+        },
+      },
+      em: {
+        removeAndFlush: deleteMock,
+      },
+    } as unknown as database.Database);
+
+    const customerResponse = await server.inject({
+      method: 'DELETE',
+      url: `/customer/${customerData._id}`,
+    });
+
+    expect(customerResponse.statusCode).toBe(200);
+
+    const customer: Customer = customerResponse.json();
+    expect(customer).toBeDefined();
+    expect(customer).toStrictEqual({ ok: true });
+    expect(deleteMock).toBeCalledTimes(1);
+    expect(deleteMock).toHaveBeenCalledWith(customerData);
   });
 });
