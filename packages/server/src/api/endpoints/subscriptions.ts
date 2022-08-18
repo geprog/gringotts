@@ -5,7 +5,7 @@ import { Payment, Subscription } from '~/entities';
 import { Invoice } from '~/entities/invoice';
 import { InvoiceItem } from '~/entities/invoice_item';
 import { getPaymentProvider } from '~/payment_providers';
-import { getPeriodFromAnchorDate } from '~/utils';
+import { getActiveUntilDate, getPeriodFromAnchorDate } from '~/utils';
 
 export function subscriptionEndpoints(server: FastifyInstance): void {
   server.post('/subscription', {
@@ -87,7 +87,7 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
       }
 
       const payment = new Payment({
-        price: 1.0, // TODO: change first payment price based on currency
+        amount: 1.0, // TODO: change first payment price based on currency
         currency: 'EUR', // TODO: allow to change currency
         status: 'pending',
         customer,
@@ -95,17 +95,25 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
         subscription,
       });
 
+      customer.invoiceCounter += 1;
+
       const invoice = new Invoice({
         start: period.start,
         end: period.end,
+        sequentialId: customer.invoiceCounter,
         status: 'draft',
+        subscription,
+        currency: payment.currency,
+        vatRate: 19.0, // TODO: german vat rate => allow to configure
+        payment,
       });
 
       invoice.items.add(
         new InvoiceItem({
-          description: 'Subscription start (Payment verification)',
-          pricePerUnit: payment.price,
+          description: 'Subscription start (Payment verification)', // TODO: allow to configure text
+          pricePerUnit: payment.amount,
           units: 1,
+          invoice,
         }),
       );
 
@@ -215,13 +223,17 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
 
       const subscription = await database.subscriptions.findOne(
         { _id: subscriptionId },
-        { populate: ['customer', 'changes'] },
+        { populate: ['customer', 'changes', 'invoices'] },
       );
       if (!subscription) {
         return reply.code(404).send({ error: 'Subscription not found' });
       }
 
-      await reply.send(subscription);
+      const activeUntil = subscription.lastPayment
+        ? getActiveUntilDate(subscription.lastPayment, subscription.anchorDate)
+        : undefined;
+
+      await reply.send({ ...subscription, activeUntil });
     },
   });
 }

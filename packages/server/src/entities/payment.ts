@@ -6,23 +6,16 @@ import { Subscription } from '~/entities/subscription';
 
 export type PaymentStatus = 'pending' | 'paid' | 'failed';
 
-export type PaymentCurrency = 'EUR';
+export type Currency = 'EUR';
 
 export class Payment {
   _id: string = v4();
-
   status: PaymentStatus = 'pending';
-
-  currency!: PaymentCurrency;
-
+  currency!: Currency;
   customer!: Customer;
-
-  price!: number;
-
+  amount!: number;
   description!: string;
-
   isRecurring = false;
-
   subscription!: Subscription;
 
   constructor(data?: Partial<Payment>) {
@@ -36,7 +29,7 @@ export const paymentSchema = new EntitySchema<Payment>({
     _id: { type: 'uuid', onCreate: () => v4(), primary: true },
     status: { type: String },
     currency: { type: String },
-    price: { type: 'float' },
+    amount: { type: 'float' },
     description: { type: String },
     isRecurring: { type: Boolean },
     customer: {
