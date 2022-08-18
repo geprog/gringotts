@@ -159,6 +159,8 @@ export function customerEndpoints(server: FastifyInstance): void {
       customer = await paymentProvider.updateCustomer(customer);
 
       await database.em.persistAndFlush(customer);
+
+      await reply.send(customer);
     },
   });
 
