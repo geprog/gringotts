@@ -49,46 +49,56 @@ export async function chargeInvoices(): Promise<void> {
       await database.em.populate(subscription, ['changes']);
       invoice = addSubscriptionChangesToInvoice(subscription, invoice);
 
-      const price = invoice.getPrice();
+      const amount = Invoice.roundPrice(invoice.totalAmount);
 
       // skip negative prices (credits) and zero prices
-      if (price > 0) {
+      if (amount > 0) {
         const formatDate = (d: Date) => dayjs(d).format('DD.MM.YYYY');
         const paymentDescription = `Subscription for period ${formatDate(invoice.start)} - ${formatDate(invoice.end)}`; // TODO: think about text
 
         const payment = new Payment({
-          price,
+          amount,
           currency: 'EUR',
           customer: subscription.customer,
           status: 'pending',
           description: paymentDescription,
           subscription,
         });
+
+        invoice.payment = payment;
+
         await paymentProvider.chargePayment(payment);
-        await database.em.persistAndFlush(payment);
+        await database.em.persistAndFlush([payment, invoice]);
       }
 
       const nextPeriod = getNextPeriodFromDate(invoice.end, invoice.start);
 
+      const customer = subscription.customer;
+      customer.invoiceCounter += 1;
+
       const newInvoice = new Invoice({
-        status: 'draft',
         start: nextPeriod.start,
         end: nextPeriod.end,
+        sequentialId: customer.invoiceCounter,
+        status: 'draft',
+        subscription,
+        currency: 'EUR', // TODO: allow to configure currency
+        vatRate: 19.0, // TODO: german vat rate => allow to configure
       });
 
       // if price is negative add credit to next invoice
-      if (price < 0) {
+      if (amount < 0) {
         newInvoice.items.add(
           new InvoiceItem({
             description: 'Credit from last payment', // TODO: think about text
-            pricePerUnit: price,
+            pricePerUnit: amount,
             units: 1,
             invoice: newInvoice,
           }),
         );
       }
 
-      await database.em.persistAndFlush(newInvoice);
+      await database.em.persistAndFlush([newInvoice, customer]);
     }
 
     if (invoices.length < pageSize) {
