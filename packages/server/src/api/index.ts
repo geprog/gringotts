@@ -11,7 +11,8 @@ import { triggerWebhook } from '~/webhook';
 
 import { customerEndpoints } from './endpoints/customer';
 import { invoiceEndpoints } from './endpoints/invoice';
-import { subscriptionEndpoints } from './endpoints/subscriptions';
+import { subscriptionEndpoints } from './endpoints/subscription';
+import { addSchemas } from './schema';
 
 export async function init(): Promise<FastifyInstance> {
   const server = fastify({
@@ -80,81 +81,7 @@ export async function init(): Promise<FastifyInstance> {
     exposeRoute: true,
   });
 
-  server.addSchema({
-    $id: 'SuccessResponse',
-    type: 'object',
-    description: 'Success response',
-    properties: {
-      ok: { type: 'boolean' },
-    },
-  });
-
-  server.addSchema({
-    $id: 'ErrorResponse',
-    type: 'object',
-    description: 'Error response',
-    properties: {
-      error: { type: 'string' },
-    },
-  });
-
-  server.addSchema({
-    $id: 'Invoice',
-    type: 'object',
-    properties: {
-      items: {
-        type: 'array',
-        items: {
-          type: 'object',
-          properties: {
-            start: { type: 'string' },
-            end: { type: 'string' },
-            units: { type: 'number' },
-            pricePerUnit: { type: 'number' },
-          },
-        },
-      },
-      start: { type: 'string' },
-      end: { type: 'string' },
-    },
-  });
-
-  server.addSchema({
-    $id: 'Customer',
-    type: 'object',
-    properties: {
-      _id: { type: 'string' },
-      email: { type: 'string' },
-      name: { type: 'string' },
-    },
-  });
-
-  server.addSchema({
-    $id: 'SubscriptionChange',
-    type: 'object',
-    properties: {
-      _id: { type: 'string' },
-      start: { type: 'string' },
-      end: { type: 'string' },
-      pricePerUnit: { type: 'number' },
-      units: { type: 'number' },
-    },
-  });
-
-  server.addSchema({
-    $id: 'Subscription',
-    type: 'object',
-    properties: {
-      _id: { type: 'string' },
-      anchorDate: { type: 'string' },
-      lastPayment: { type: 'string' },
-      customer: { $ref: 'Customer' },
-      changes: {
-        type: 'array',
-        items: { $ref: 'SubscriptionChange' },
-      },
-    },
-  });
+  addSchemas(server);
 
   server.post('/payment/webhook', {
     schema: { hide: true },
