@@ -31,7 +31,7 @@ export class Mollie implements PaymentProvider {
 
     const _payment = await this.api.payments.create({
       amount: {
-        value: this.priceToMolliePrice(payment.price),
+        value: this.priceToMolliePrice(payment.amount),
         currency: payment.currency,
       },
       customerId: customer.id,
@@ -60,7 +60,7 @@ export class Mollie implements PaymentProvider {
 
     await this.api.payments.create({
       amount: {
-        value: this.priceToMolliePrice(payment.price),
+        value: this.priceToMolliePrice(payment.amount),
         currency: payment.currency,
       },
       customerId: customer.id,

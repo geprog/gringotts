@@ -8,19 +8,12 @@ import { SubscriptionPeriod } from '~/entities/subscription_period';
 
 export class Subscription {
   _id: string = v4();
-
   anchorDate!: Date; // first date a user ever started a subscription for the object
-
   lastPayment?: Date;
-
   customer!: Customer;
-
   changes = new Collection<SubscriptionChange>(this);
-
   createdAt: Date = new Date();
-
   updatedAt: Date = new Date();
-
   invoices = new Collection<Invoice>(this);
 
   constructor(data?: Partial<Subscription>) {

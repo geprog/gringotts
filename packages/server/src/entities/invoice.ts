@@ -2,7 +2,7 @@ import { Collection, EntitySchema, ReferenceType } from '@mikro-orm/core';
 import { v4 } from 'uuid';
 
 import { InvoiceItem } from '~/entities/invoice_item';
-import { Payment } from '~/entities/payment';
+import { Currency, Payment } from '~/entities/payment';
 import { Subscription } from '~/entities/subscription';
 import dayjs from '~/lib/dayjs';
 
@@ -12,22 +12,47 @@ export class Invoice {
   _id: string = v4();
   start!: Date; // TODO: should this really be part of an invoice?
   end!: Date; // TODO: should this really be part of an invoice?
+  sequentialId!: number;
   items = new Collection<InvoiceItem>(this);
   status: InvoiceStatus = 'draft';
   subscription!: Subscription;
+  currency!: Currency;
+  vatRate!: number;
   payment?: Payment;
 
   constructor(data?: Partial<Invoice>) {
     Object.assign(this, data);
   }
 
+  get amount(): number {
+    return this.items.getItems().reduce((acc, item) => acc + item.pricePerUnit * item.units, 0);
+  }
+
+  get vatAmount(): number {
+    return this.amount * (this.vatRate / 100);
+  }
+
+  get totalAmount(): number {
+    return this.amount + this.vatAmount;
+  }
+
+  get number(): string {
+    const invoicePrefix = this.subscription?.customer?.invoicePrefix || 'INV-____-___';
+    const sequentialId = String(this.sequentialId || 0).padStart(3, '0');
+    return [invoicePrefix, sequentialId].join('-');
+  }
+
   static roundPrice(price: number): number {
     return Math.round((price + Number.EPSILON) * 100) / 100;
   }
 
-  getPrice(): number {
-    const price = this.items.getItems().reduce((cum, change) => cum + change.pricePerUnit * change.units, 0);
-    return Invoice.roundPrice(price);
+  static amountToPrice(amount: number, currency: Currency): string {
+    switch (currency) {
+      case 'EUR':
+        return `${Invoice.roundPrice(amount)}€`;
+      default:
+        throw new Error('Currency not supported');
+    }
   }
 
   toString(): string {
@@ -38,7 +63,10 @@ export class Invoice {
         const basePrice = Invoice.roundPrice(item.pricePerUnit * item.units);
         return `\n\t\t${item.pricePerUnit}$ * ${item.units}units = ${basePrice}$`;
       })
-      .join('\n')}\nTotal: ${Invoice.roundPrice(this.getPrice())}$`;
+      .join('\n')}\nVat (${this.vatRate}%): ${Invoice.amountToPrice(
+      this.vatAmount,
+      this.currency,
+    )} \nTotal: ${Invoice.amountToPrice(this.totalAmount, this.currency)}$`;
   }
 }
 
@@ -46,6 +74,7 @@ export const invoiceSchema = new EntitySchema<Invoice>({
   class: Invoice,
   properties: {
     _id: { type: 'uuid', onCreate: () => v4(), primary: true },
+    number: { type: 'string' },
     start: { type: 'date' },
     end: { type: 'date' },
     status: { type: String },
@@ -63,5 +92,11 @@ export const invoiceSchema = new EntitySchema<Invoice>({
       entity: () => Payment,
       nullable: true,
     },
+    vatRate: { type: Number },
+    currency: { type: String },
+    amount: { type: Number },
+    vatAmount: { type: Number },
+    totalAmount: { type: Number },
+    sequentialId: { type: Number },
   },
 });

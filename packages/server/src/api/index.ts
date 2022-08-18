@@ -107,24 +107,49 @@ export async function init(): Promise<FastifyInstance> {
   });
 
   server.addSchema({
+    $id: 'Payment',
+    type: 'object',
+    properties: {
+      _id: { type: 'string' },
+      status: { type: 'string' },
+      currency: { type: 'string' },
+      amount: { type: 'number' },
+      description: { type: 'number' },
+      isRecurring: { type: 'boolean' },
+    },
+  });
+
+  server.addSchema({
+    $id: 'InvoiceItem',
+    type: 'object',
+    properties: {
+      description: { type: 'string' },
+      units: { type: 'number' },
+      pricePerUnit: { type: 'number' },
+    },
+  });
+
+  server.addSchema({
     $id: 'Invoice',
     type: 'object',
     properties: {
       _id: { type: 'string' },
+      start: { type: 'string' },
+      end: { type: 'string' },
+      sequentialId: { type: 'number' },
       items: {
         type: 'array',
         items: {
-          type: 'object',
-          properties: {
-            units: { type: 'number' },
-            pricePerUnit: { type: 'number' },
-            description: { type: 'string' },
-          },
+          $ref: 'InvoiceItem',
         },
       },
       status: { type: 'string' },
-      start: { type: 'string' },
-      end: { type: 'string' },
+      currency: { type: 'string' },
+      vatRate: { type: 'number' },
+      amount: { type: 'number' },
+      vatAmount: { type: 'number' },
+      totalAmount: { type: 'number' },
+      number: { type: 'number' },
     },
   });
 
@@ -135,6 +160,13 @@ export async function init(): Promise<FastifyInstance> {
       _id: { type: 'string' },
       email: { type: 'string' },
       name: { type: 'string' },
+      addressLine1: { type: 'string' },
+      addressLine2: { type: 'string' },
+      zipCode: { type: 'string' },
+      city: { type: 'string' },
+      country: { type: 'string' },
+      invoicePrefix: { type: 'string' },
+      invoiceCounter: { type: 'string' },
     },
   });
 
@@ -167,6 +199,66 @@ export async function init(): Promise<FastifyInstance> {
         type: 'array',
         items: { $ref: 'Invoice' },
       },
+    },
+  });
+
+  server.post('/payment/webhook', {
+    schema: { hide: true },
+    handler: async (request, reply) => {
+      const paymentProvider = getPaymentProvider();
+      if (!paymentProvider) {
+        return reply.code(500).send({
+          error: 'Payment provider not configured',
+        });
+      }
+
+      const payload = await paymentProvider.parsePaymentWebhook(request.body);
+
+      const payment = await database.payments.findOne({ _id: payload.paymentId }, { populate: ['subscription'] });
+      if (!payment) {
+        return reply.code(404).send({ error: 'Payment not found' });
+      }
+
+      const subscription = payment.subscription;
+
+      let invoice: Invoice;
+      if (payment.isRecurring) {
+        const _invoice = await database.invoices.findOne({ payment }, { populate: ['subscription'] });
+        if (!_invoice) {
+          throw new Error('Payment has no invoice');
+        }
+        invoice = _invoice;
+      } else {
+        await database.em.populate(subscription, ['invoices']);
+
+        if (subscription.invoices.length < 1) {
+          throw new Error('Subscription has no invoices');
+        }
+
+        invoice = subscription.invoices[0];
+      }
+
+      if (!invoice) {
+        throw new Error('Invoice not found');
+      }
+
+      if (payload.paymentStatus === 'paid') {
+        subscription.lastPayment = payload.paidAt;
+        payment.status = 'paid';
+        invoice.status = 'paid';
+      }
+
+      await database.em.persistAndFlush([payment, invoice, subscription]);
+
+      const token = server.jwt.sign({ subscriptionId: subscription._id }, { expiresIn: '12h' });
+      void triggerWebhook({
+        body: {
+          subscriptionId: subscription._id,
+        },
+        token,
+      });
+
+      await reply.send({ ok: true });
     },
   });
 
