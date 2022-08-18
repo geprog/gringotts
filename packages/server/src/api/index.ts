@@ -15,7 +15,18 @@ import { subscriptionEndpoints } from './endpoints/subscriptions';
 
 export async function init(): Promise<FastifyInstance> {
   const server = fastify({
-    logger: true,
+    logger: {
+      transport:
+        process.env.NODE_ENV !== 'development'
+          ? {
+              target: 'pino-pretty',
+              options: {
+                translateTime: 'HH:MM:ss Z',
+                ignore: 'pid,hostname',
+              },
+            }
+          : undefined,
+    },
   });
 
   await server.register(fastifyJwt, {
