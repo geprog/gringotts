@@ -1,11 +1,17 @@
 import fastifyFormBody from '@fastify/formbody';
+import fastifyHelmet from '@fastify/helmet';
 import fastifyJwt from '@fastify/jwt';
+import fastifyStatic from '@fastify/static';
 import fastifySwagger from '@fastify/swagger';
+import fastifyView from '@fastify/view';
 import fastify, { FastifyInstance } from 'fastify';
+import Handlebars from 'handlebars';
+import path from 'path';
 
 import { config } from '~/config';
 import { database } from '~/database';
 import { Invoice } from '~/entities';
+import { formatDate } from '~/lib/dayjs';
 import { getPaymentProvider } from '~/payment_providers';
 import { triggerWebhook } from '~/webhook';
 
@@ -39,6 +45,14 @@ export async function init(): Promise<FastifyInstance> {
       return;
     }
 
+    if (request.routerPath === '/invoice/:invoiceId/html') {
+      return;
+    }
+
+    if (request.routerPath?.startsWith('/static')) {
+      return;
+    }
+
     try {
       await request.jwtVerify();
     } catch (err) {
@@ -47,6 +61,21 @@ export async function init(): Promise<FastifyInstance> {
   });
 
   await server.register(fastifyFormBody);
+
+  await server.register(fastifyHelmet);
+
+  await server.register(fastifyView, {
+    engine: {
+      handlebars: Handlebars,
+    },
+  });
+
+  await server.register(fastifyStatic, {
+    root: path.join(__dirname, '..', '..', 'public'),
+    prefix: '/static',
+  });
+
+  Handlebars.registerHelper('formatDate', (date: Date, format: string) => formatDate(date, format));
 
   await server.register(fastifySwagger, {
     routePrefix: '/documentation',
@@ -99,19 +128,25 @@ export async function init(): Promise<FastifyInstance> {
   });
 
   server.addSchema({
+    $id: 'InvoiceItem',
+    type: 'object',
+    properties: {
+      start: { type: 'string' },
+      end: { type: 'string' },
+      units: { type: 'number' },
+      pricePerUnit: { type: 'number' },
+      description: { type: 'string' },
+    },
+  });
+
+  server.addSchema({
     $id: 'Invoice',
     type: 'object',
     properties: {
       items: {
         type: 'array',
         items: {
-          type: 'object',
-          properties: {
-            start: { type: 'string' },
-            end: { type: 'string' },
-            units: { type: 'number' },
-            pricePerUnit: { type: 'number' },
-          },
+          $ref: 'InvoiceItem',
         },
       },
       start: { type: 'string' },
