@@ -8,19 +8,12 @@ import { SubscriptionPeriod } from '~/entities/subscription_period';
 
 export class Subscription {
   _id: string = v4();
-
   anchorDate!: Date; // first date a user ever started a subscription for the object
-
   lastPayment?: Date;
-
   customer!: Customer;
-
   changes = new Collection<SubscriptionChange>(this);
-
   createdAt: Date = new Date();
-
   updatedAt: Date = new Date();
-
   invoices = new Collection<Invoice>(this);
 
   constructor(data?: Partial<Subscription>) {
@@ -70,13 +63,14 @@ export const subscriptionSchema = new EntitySchema<Subscription>({
     changes: {
       reference: ReferenceType.ONE_TO_MANY,
       entity: () => SubscriptionChange,
-      mappedBy: (subscriptionChange) => subscriptionChange.subscription,
+      mappedBy: (change) => change.subscription,
     },
     createdAt: { type: Date, onCreate: () => new Date() },
     updatedAt: { type: Date, onUpdate: () => new Date() },
     invoices: {
       reference: ReferenceType.ONE_TO_MANY,
       entity: () => Invoice,
+      mappedBy: (invoice) => invoice.subscription,
     },
   },
 });
