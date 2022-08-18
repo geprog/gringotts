@@ -5,15 +5,10 @@ import { Subscription } from '~/entities/subscription';
 
 export class SubscriptionChange {
   _id: string = v4();
-
   start!: Date;
-
   end?: Date;
-
   pricePerUnit!: number;
-
   units!: number;
-
   subscription!: Subscription;
 
   constructor(data?: Partial<SubscriptionChange>) {

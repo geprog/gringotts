@@ -23,7 +23,7 @@ export const invoiceItemSchema = new EntitySchema<InvoiceItem>({
     units: { type: Number },
     description: { type: String },
     invoice: {
-      reference: ReferenceType.ONE_TO_MANY,
+      reference: ReferenceType.MANY_TO_ONE,
       entity: () => Invoice,
     },
   },
