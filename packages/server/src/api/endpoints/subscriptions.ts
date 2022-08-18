@@ -232,6 +232,7 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
       const activeUntil = subscription.lastPayment
         ? getActiveUntilDate(subscription.lastPayment, subscription.anchorDate)
         : undefined;
+
       await reply.send({ ...subscription, activeUntil });
     },
   });
