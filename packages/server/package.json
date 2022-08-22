@@ -36,6 +36,7 @@
   "devDependencies": {
     "@geprog/eslint-config": "^1.1.0",
     "@types/uuid": "^8.3.4",
+    "@vitest/coverage-c8": "^0.22.1",
     "c8": "^7.12.0",
     "esbuild": "^0.14.49",
     "eslint": "^8.20.0",

@@ -41,6 +41,7 @@ importers:
       '@mikro-orm/postgresql': ^5.2.3
       '@mollie/api-client': ^3.6.0
       '@types/uuid': ^8.3.4
+      '@vitest/coverage-c8': ^0.22.1
       '@vitest/ui': ^0.18.1
       c8: ^7.12.0
       dayjs: ^1.11.4
@@ -82,6 +83,7 @@ importers:
     devDependencies:
       '@geprog/eslint-config': 1.1.0_po6tv6fg2rg2ria5mj3vjcjjqu
       '@types/uuid': 8.3.4
+      '@vitest/coverage-c8': 0.22.1_@vitest+ui@0.18.1
       c8: 7.12.0
       esbuild: 0.14.49
       eslint: 8.20.0
@@ -767,6 +769,24 @@ packages:
     dependencies:
       '@typescript-eslint/types': 5.30.7
       eslint-visitor-keys: 3.3.0
+    dev: true
+
+  /@vitest/coverage-c8/0.22.1_@vitest+ui@0.18.1:
+    resolution: {integrity: sha512-KOOYpO7EGpaF+nD8GD+Y05D0JtZp12NUu6DdLXvBPqSOPo2HkZ7KNBtfR0rb6gOy3NLtGiWTYTzCwhajgb2HlA==}
+    dependencies:
+      c8: 7.12.0
+      vitest: 0.22.1_@vitest+ui@0.18.1
+    transitivePeerDependencies:
+      - '@edge-runtime/vm'
+      - '@vitest/browser'
+      - '@vitest/ui'
+      - happy-dom
+      - jsdom
+      - less
+      - sass
+      - stylus
+      - supports-color
+      - terser
     dev: true
 
   /@vitest/ui/0.18.1:

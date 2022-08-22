@@ -1,5 +1,5 @@
 import fastify from 'fastify';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { addSchemas } from '~/api/schema';
 import * as config from '~/config';
@@ -9,20 +9,7 @@ import { Customer } from '~/entities';
 import { customerEndpoints } from './customer';
 
 describe('Customer endpoints', () => {
-  beforeEach(() => {
-    vi.spyOn(database, 'database', 'get').mockReturnValue({
-      customers: {
-        findOne() {
-          return Promise.resolve(null);
-        },
-      },
-      em: {
-        persistAndFlush() {
-          return Promise.resolve();
-        },
-      },
-    } as unknown as database.Database);
-
+  beforeAll(() => {
     vi.spyOn(config, 'config', 'get').mockReturnValue({
       paymentProvider: 'mocked',
       port: 1234,
@@ -39,6 +26,19 @@ describe('Customer endpoints', () => {
     customerEndpoints(server);
     addSchemas(server);
 
+    vi.spyOn(database, 'database', 'get').mockReturnValue({
+      customers: {
+        findOne() {
+          return Promise.resolve(null);
+        },
+      },
+      em: {
+        persistAndFlush() {
+          return Promise.resolve();
+        },
+      },
+    } as unknown as database.Database);
+
     const customerData = <Customer>{
       name: 'John Doe',
       email: 'john@doe.com',
@@ -49,15 +49,15 @@ describe('Customer endpoints', () => {
       zipCode: 'ENG-1234',
     };
 
-    const customerResponse = await server.inject({
+    const response = await server.inject({
       method: 'POST',
       url: '/customer',
       payload: customerData,
     });
 
-    expect(customerResponse.statusCode).toBe(200);
+    expect(response.statusCode).toBe(200);
 
-    const customer: Customer = customerResponse.json();
+    const customer: Customer = response.json();
     expect(customer).toBeDefined();
     expect(customer).toContain(customerData);
   });
@@ -132,15 +132,15 @@ describe('Customer endpoints', () => {
       },
     } as unknown as database.Database);
 
-    const customerResponse = await server.inject({
+    const response = await server.inject({
       method: 'PATCH',
       url: `/customer/${customerData._id}`,
       payload: customerData,
     });
 
-    expect(customerResponse.statusCode).toBe(200);
+    expect(response.statusCode).toBe(200);
 
-    const customer: Customer = customerResponse.json();
+    const customer: Customer = response.json();
     expect(customer).toBeDefined();
     expect(customer).toContain(customerData);
     expect(updateMock).toBeCalledTimes(1);
@@ -176,14 +176,14 @@ describe('Customer endpoints', () => {
       },
     } as unknown as database.Database);
 
-    const customerResponse = await server.inject({
+    const response = await server.inject({
       method: 'DELETE',
       url: `/customer/${customerData._id}`,
     });
 
-    expect(customerResponse.statusCode).toBe(200);
+    expect(response.statusCode).toBe(200);
 
-    const customer: Customer = customerResponse.json();
+    const customer: Customer = response.json();
     expect(customer).toBeDefined();
     expect(customer).toStrictEqual({ ok: true });
     expect(deleteMock).toBeCalledTimes(1);
