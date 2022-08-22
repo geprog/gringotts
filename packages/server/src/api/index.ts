@@ -9,6 +9,9 @@ import Handlebars from 'handlebars';
 import path from 'path';
 
 import { config } from '~/config';
+import { Invoice } from '~/entities';
+import { Currency } from '~/entities/payment';
+import { formatDate } from '~/lib/dayjs';
 
 import { customerEndpoints } from './endpoints/customer';
 import { invoiceEndpoints } from './endpoints/invoice';
@@ -84,6 +87,9 @@ export async function init(): Promise<FastifyInstance> {
   });
 
   Handlebars.registerHelper('formatDate', (date: Date, format: string) => formatDate(date, format));
+  Handlebars.registerHelper('amountToPrice', (amount: number, currency: Currency) =>
+    Invoice.amountToPrice(amount, currency),
+  );
 
   await server.register(fastifySwagger, {
     routePrefix: '/documentation',

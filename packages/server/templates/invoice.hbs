@@ -120,7 +120,7 @@
               </td>
 
               <td>
-                Invoice # 123<br />
+                {{invoice.number}}<br />
                 Period start: {{{formatDate invoice.start "DD.MM.YYYY"}}}<br />
                 Period end: {{{formatDate invoice.end "DD.MM.YYYY"}}}<br />
               </td>
@@ -134,13 +134,17 @@
           <table>
             <tr>
               <td>
-                Sparksuite, Inc.<br />
-                12345 Sunny Road<br />
-                Sunnyville, CA 12345
+                {{customer.name}}<br />
+                {{customer.addressLine1}}<br />
+                {{#if customer.addressLine2}}
+                {{customer.addressLine2}}<br />
+                {{/if}}
+                {{customer.city}}, {{customer.zipCode}}<br />
+                {{customer.country}}
               </td>
 
               <td>
-                Acme Corp.<br />
+                TODO<br />
                 John Doe<br />
                 john@example.com
               </td>
@@ -149,7 +153,7 @@
         </td>
       </tr>
 
-      <tr class='heading'>
+      {{!-- <tr class='heading'>
         <td>Payment Method</td>
         <td></td>
         <td>Check #</td>
@@ -159,7 +163,7 @@
         <td>Check</td>
         <td></td>
         <td>1000</td>
-      </tr>
+      </tr> --}}
 
       <tr class='heading'>
         <td>Item</td>
@@ -168,18 +172,36 @@
       </tr>
 
       {{#each invoice.items}}
-      <tr class='item{{#if @first}} last{{/if}}'>
-        <td>{{this.description}}</td>
+      <tr class='item{{#if @last}} last{{/if}}'>
+        <td style="white-space: pre-wrap;">{{this.description}}</td>
         <td>{{this.units}}</td>
-        <td>{{this.pricePerUnit}}€</td>
+        <td>{{{amountToPrice this.pricePerUnit invoice.currency}}}</td>
       </tr>
       {{/each}}
 
       <tr class='total'>
         <td></td>
-        <td></td>
 
-        <td>Total: {{invoice.getPrice}}€</td>
+        <td colspan="2">
+          <table>
+            <tr>
+              <td>Amount</td>
+              <td>{{{amountToPrice invoice.amount invoice.currency}}}</td>
+            </tr>
+            <tr>
+              <td>Vat-rate</td>
+              <td>{{invoice.vatRate}}%</td>
+            </tr>
+            <tr>
+              <td>Vat</td>
+              <td>{{{amountToPrice invoice.vatAmount invoice.currency}}}</td>
+            </tr>
+            <tr>
+              <td>Total</td>
+              <td>{{{amountToPrice invoice.totalAmount invoice.currency}}}</td>
+            </tr>
+          </table>
+        </td>
       </tr>
     </table>
   </div>

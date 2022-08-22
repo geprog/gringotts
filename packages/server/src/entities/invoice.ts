@@ -25,19 +25,19 @@ export class Invoice {
   }
 
   get amount(): number {
-    return this.items.getItems().reduce((acc, item) => acc + item.pricePerUnit * item.units, 0);
+    return Invoice.roundPrice(this.items.getItems().reduce((acc, item) => acc + item.pricePerUnit * item.units, 0));
   }
 
   get vatAmount(): number {
-    return this.amount * (this.vatRate / 100);
+    return Invoice.roundPrice(this.amount * (this.vatRate / 100));
   }
 
   get totalAmount(): number {
-    return this.amount + this.vatAmount;
+    return Invoice.roundPrice(this.amount + this.vatAmount);
   }
 
   get number(): string {
-    const invoicePrefix = this.subscription?.customer?.invoicePrefix || 'INV-____-___';
+    const invoicePrefix = this.subscription?.customer?.invoicePrefix || 'INV-___-____';
     const sequentialId = String(this.sequentialId || 0).padStart(3, '0');
     return [invoicePrefix, sequentialId].join('-');
   }
@@ -92,11 +92,11 @@ export const invoiceSchema = new EntitySchema<Invoice>({
       entity: () => Payment,
       nullable: true,
     },
-    vatRate: { type: Number },
+    vatRate: { type: 'float' },
     currency: { type: String },
-    amount: { type: Number },
-    vatAmount: { type: Number },
-    totalAmount: { type: Number },
+    amount: { type: 'float' },
+    vatAmount: { type: 'float' },
+    totalAmount: { type: 'float' },
     sequentialId: { type: Number },
   },
 });

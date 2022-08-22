@@ -63,17 +63,21 @@ export class SubscriptionPeriod {
       const basePrice = item.pricePerUnit * item.units;
       const period = dayjs(item.end).diff(item.start);
       const percentDays = Invoice.roundPrice(period / periodDays);
-      let description = `\t${i + 1}: ${formatDate(item.start)} - ${formatDate(item.end)}:`;
-      description += `\n\t\t${diffMsToDates(period)} days of ${diffMsToDates(periodDays)} = ${percentDays}%`;
-      description += `\n\t\t${item.pricePerUnit}$ * ${item.units}units = ${basePrice}$`;
-      description += `\n\t\t${percentDays}% * ${basePrice}$ = ${Invoice.roundPrice(
+      const currency = 'EUR'; // TODO: use appropriate currency
+      let description = `${formatDate(item.start)} - ${formatDate(item.end)}:`;
+      description += `\n\t${diffMsToDates(period)} days of ${diffMsToDates(periodDays)} = ${percentDays}%`;
+      description += `\n\t${Invoice.amountToPrice(item.pricePerUnit, currency)} * ${
+        item.units
+      } units = ${Invoice.amountToPrice(basePrice, currency)}`;
+      description += `\n\t${percentDays}% * ${Invoice.amountToPrice(basePrice, currency)} = ${Invoice.amountToPrice(
         this.getPriceForInvoiceItem(item),
-      )}$`;
+        currency,
+      )}`;
 
       items.push(
         new InvoiceItem({
           units: 1,
-          pricePerUnit: priceForPeriod,
+          pricePerUnit: Invoice.roundPrice(priceForPeriod),
           description,
         }),
       );

@@ -50,12 +50,12 @@ export function invoiceEndpoints(server: FastifyInstance): void {
       return reply.code(404).send({ error: 'Invoice not found' });
     }
 
-    const subscription = invoice.subscription;
+    const subscription = await database.subscriptions.findOne(invoice.subscription);
     if (!subscription) {
       return reply.code(404).send({ error: 'Subscription not found' });
     }
 
-    const customer = subscription.customer;
+    const customer = await database.customers.findOne(subscription.customer);
     if (!customer) {
       return reply.code(404).send({ error: 'Customer not found' });
     }
