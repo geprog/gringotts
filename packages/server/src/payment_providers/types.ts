@@ -10,5 +10,5 @@ export interface PaymentProvider {
   chargePayment(payment: Payment): Promise<void>;
   parsePaymentWebhook(
     payload: unknown,
-  ): Promise<{ paymentId: string; paidAt: Date; paymentStatus: 'pending' | 'paid' | 'failed' }>;
+  ): Promise<{ paymentId: string; paidAt: Date | undefined; paymentStatus: 'pending' | 'paid' | 'failed' }>;
 }

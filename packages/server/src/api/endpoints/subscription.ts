@@ -123,7 +123,8 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
         redirectUrl: body.redirectUrl,
       });
 
-      customer.subscriptions.add(subscription);
+      // TODO: do we need this?
+      // customer.subscriptions.add(subscription);
 
       await database.em.persistAndFlush([customer, subscription, invoice, payment]);
 
