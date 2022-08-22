@@ -26,19 +26,22 @@ export class Database {
       throw new Error('POSTGRES_URL is not set');
     }
 
-    this.orm = await MikroORM.init<PostgreSqlDriver>({
-      type: 'postgresql',
-      clientUrl: config.postgresUrl,
-      entities: [
-        customerSchema,
-        subscriptionSchema,
-        subscriptionChangeSchema,
-        paymentSchema,
-        invoiceSchema,
-        invoiceItemSchema,
-      ],
-      discovery: { disableDynamicFileAccess: true },
-    });
+    this.orm = await MikroORM.init<PostgreSqlDriver>(
+      {
+        type: 'postgresql',
+        clientUrl: config.postgresUrl,
+        entities: [
+          customerSchema,
+          subscriptionSchema,
+          subscriptionChangeSchema,
+          paymentSchema,
+          invoiceSchema,
+          invoiceItemSchema,
+        ],
+        discovery: { disableDynamicFileAccess: true },
+      },
+      false,
+    );
   }
 
   async connect(): Promise<void> {
