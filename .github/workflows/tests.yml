@@ -36,7 +36,7 @@ jobs:
           run_install: true
 
       - name: Unit test
-        run: pnpm run --filter ./packages test
+        run: pnpm run -r test
 
   typecheck:
     name: Typecheck
@@ -66,10 +66,10 @@ jobs:
           run_install: true
 
       - name: Build
-        run: pnpm run --filter ./packages build
+        run: pnpm run -r build
 
       - name: Typecheck
-        run: pnpm run --filter ./packages typecheck
+        run: pnpm run -r typecheck
 
   lint:
     name: Lint
@@ -98,11 +98,12 @@ jobs:
           version: 7
           run_install: true
 
+      # needed to prepare the auto-generated files for the client package
       - name: Build
-        run: pnpm run --filter ./packages build
+        run: pnpm run -r build
 
       - name: Lint
-        run: pnpm run --filter ./packages lint
+        run: pnpm run -r lint
 
   check-format:
     name: Check format

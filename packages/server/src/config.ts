@@ -14,6 +14,7 @@ export const config = {
   postgresUrl: process.env.POSTGRES_URL as string,
   jwtSecret: process.env.JWT_SECRET as string,
   webhookUrl: process.env.WEBHOOK_URL as string,
+  paymentProvider: process.env.PAYMENT_PROVIDER,
 };
 
 export function checkConfig(): void {
