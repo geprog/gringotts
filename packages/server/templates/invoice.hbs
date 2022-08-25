@@ -6,106 +6,7 @@
   <meta charset='utf-8' />
   <title>Invoice</title>
 
-  <style lang='css'>
-    .invoice-box {
-      max-width: 800px;
-      margin: auto;
-      padding: 30px;
-      border: 1px solid #eee;
-      box-shadow: 0 0 10px rgba(0,
-          0, 0, 0.15);
-      font-size: 16px;
-      line-height: 24px;
-      font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial,
-        sans-serif;
-      color: #555;
-    }
-
-    .invoice-box table {
-      width: 100%;
-      line-height: inherit;
-      text-align: left;
-    }
-
-    .invoice-box table td {
-      padding: 5px;
-      vertical-align: top;
-    }
-
-    .invoice-box table tr td:nth-child(2),
-    .invoice-box table tr td:nth-child(3) {
-      text-align:
-        right;
-    }
-
-    .invoice-box table tr.top table td {
-      padding-bottom: 20px;
-    }
-
-    .invoice-box table tr.top table td.title {
-      font-size: 45px;
-      line-height: 45px;
-      color: #333;
-    }
-
-    .invoice-box table tr.information table td {
-      padding-bottom:
-        40px;
-    }
-
-    .invoice-box table tr.heading td {
-      background: #eee;
-      border-bottom: 1px solid #ddd;
-      font-weight: bold;
-    }
-
-    .invoice-box table tr.details td {
-      padding-bottom: 20px;
-    }
-
-    .invoice-box table tr.item td {
-      border-bottom: 1px solid #eee;
-    }
-
-    .invoice-box table tr.item.last td {
-      border-bottom: none;
-    }
-
-    .invoice-box table tr.total td:nth-child(2),
-    .invoice-box table tr.total td:nth-child(3) {
-      border-top: 2px solid #eee;
-      font-weight: bold;
-    }
-
-    @media only screen and (max-width: 600px) {
-      .invoice-box table tr.top table td {
-        width: 100%;
-        display: block;
-        text-align: center;
-      }
-
-      .invoice-box table tr.information table td {
-        width: 100%;
-        display: block;
-        text-align: center;
-      }
-    }
-
-    /** RTL **/
-    .invoice-box.rtl {
-      direction: rtl;
-      font-family: Tahoma, 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
-    }
-
-    .invoice-box.rtl table {
-      text-align: right;
-    }
-
-    .invoice-box.rtl table tr td:nth-child(2),
-    .invoice-box.rtl table tr td:nth-child(3) {
-      text-align: left;
-    }
-  </style>
+  <link rel="stylesheet" href="/static/styles/invoice.css" />
 </head>
 
 <body>
@@ -120,9 +21,22 @@
               </td>
 
               <td>
-                {{invoice.number}}<br />
-                Period start: {{{formatDate invoice.start "DD.MM.YYYY"}}}<br />
-                Period end: {{{formatDate invoice.end "DD.MM.YYYY"}}}<br />
+                <div style="text-align: left; width: fit-content; margin-left: auto">
+                  <table>
+                    <tr>
+                      <td>Number:</td>
+                      <td>{{invoice.number}}</td>
+                    </tr>
+                    <tr>
+                      <td>Period end:</td>
+                      <td>{{{formatDate invoice.start "DD.MM.YYYY"}}}</td>
+                    </tr>
+                    <tr>
+                      <td>Period start:</td>
+                      <td>{{{formatDate invoice.end "DD.MM.YYYY"}}}</td>
+                    </tr>
+                  </table>
+                </div>
               </td>
             </tr>
           </table>
@@ -139,14 +53,17 @@
                 {{#if customer.addressLine2}}
                 {{customer.addressLine2}}<br />
                 {{/if}}
-                {{customer.city}}, {{customer.zipCode}}<br />
+                {{customer.zipCode}} {{customer.city}}<br />
                 {{customer.country}}
               </td>
 
               <td>
-                TODO<br />
-                John Doe<br />
-                john@example.com
+                <div style="text-align: left; width: fit-content; margin-left: auto">
+                  GEPROG GmbH<br />
+                  Schauenburgerstr. 116<br />
+                  24118 Kiel<br />
+                  info@geprog.com
+                </div>
               </td>
             </tr>
           </table>
@@ -172,14 +89,14 @@
       </tr>
 
       {{#each invoice.items}}
-      <tr class='item{{#if @last}} last{{/if}}'>
+      <tr {{#if @last}}class="item last"{{else}}class="item"{{/if}}>
         <td style="white-space: pre-wrap;">{{this.description}}</td>
         <td>{{this.units}}</td>
         <td>{{{amountToPrice this.pricePerUnit invoice.currency}}}</td>
       </tr>
       {{/each}}
 
-      <tr class='total'>
+      <tr>
         <td></td>
 
         <td colspan="2">
@@ -189,14 +106,10 @@
               <td>{{{amountToPrice invoice.amount invoice.currency}}}</td>
             </tr>
             <tr>
-              <td>Vat-rate</td>
-              <td>{{invoice.vatRate}}%</td>
-            </tr>
-            <tr>
-              <td>Vat</td>
+              <td>Vat ({{invoice.vatRate}}%)</td>
               <td>{{{amountToPrice invoice.vatAmount invoice.currency}}}</td>
             </tr>
-            <tr>
+            <tr class="total">
               <td>Total</td>
               <td>{{{amountToPrice invoice.totalAmount invoice.currency}}}</td>
             </tr>
