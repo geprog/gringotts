@@ -50,6 +50,10 @@ export function invoiceEndpoints(server: FastifyInstance): void {
       return reply.code(404).send({ error: 'Invoice not found' });
     }
 
+    if (invoice.status !== 'paid') {
+      return reply.code(400).send({ error: 'Invoice not paid yet' });
+    }
+
     const subscription = await database.subscriptions.findOne(invoice.subscription);
     if (!subscription) {
       return reply.code(404).send({ error: 'Subscription not found' });
