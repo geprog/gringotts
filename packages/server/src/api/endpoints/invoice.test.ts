@@ -24,6 +24,7 @@ function getTestData() {
     name: 'John Doe',
     zipCode: 'ENG-1234',
     paymentProviderId: '123',
+    invoicePrefix: 'INV-F1B-0B6H',
   });
 
   const subscription = new Subscription({
@@ -113,7 +114,7 @@ describe('Invoice endpoints', () => {
     });
 
     // then
-    // expect(response.statusCode).toBe(200);
+    expect(response.statusCode).toBe(200);
 
     const responseData: Invoice = response.json();
     expect(responseData._id).toBe(testData.invoice._id);
