@@ -5,4 +5,4 @@ pnpm-lock.yaml
 packages/client/src/api.ts
 packages/client/docs/
 packages/server/swagger.json
-packages/server/template/invoice.hbs
+packages/server/templates/invoice.hbs
