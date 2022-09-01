@@ -41,7 +41,6 @@ export class Mollie implements PaymentProvider {
       webhookUrl: `${config.publicUrl}/payment/webhook`,
       metadata: <Metadata>{
         paymentId: payment._id,
-        // subscriptionId: subscription._id,
       },
     });
 
@@ -93,19 +92,16 @@ export class Mollie implements PaymentProvider {
 
   async parsePaymentWebhook(
     payload: unknown,
-  ): Promise<{ paymentId: string; paidAt: Date; paymentStatus: 'pending' | 'paid' | 'failed' }> {
+  ): Promise<{ paymentId: string; paidAt: Date | undefined; paymentStatus: 'pending' | 'paid' | 'failed' }> {
     const { id: paymentId } = payload as { id: string };
 
     const payment = await this.api.payments.get(paymentId);
 
     const metadata = payment.metadata as Metadata;
-    if (!payment.paidAt) {
-      throw new Error('No paidAt'); // TODO: improve error handling
-    }
 
     return {
       paymentStatus: this.convertPaymentStatus(payment.status),
-      paidAt: new Date(payment.paidAt),
+      paidAt: payment.paidAt ? new Date(payment.paidAt) : undefined,
       paymentId: metadata.paymentId,
     };
   }
