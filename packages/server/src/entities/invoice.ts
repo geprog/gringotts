@@ -68,6 +68,16 @@ export class Invoice {
       this.currency,
     )} \nTotal: ${Invoice.amountToPrice(this.totalAmount, this.currency)}$`;
   }
+
+  toJSON(): Invoice {
+    return {
+      ...this,
+      vatAmount: this.vatAmount,
+      amount: this.amount,
+      totalAmount: this.totalAmount,
+      number: this.number,
+    };
+  }
 }
 
 export const invoiceSchema = new EntitySchema<Invoice>({

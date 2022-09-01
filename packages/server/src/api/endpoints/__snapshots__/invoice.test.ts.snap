@@ -1,0 +1,131 @@
+// Vitest Snapshot v1
+
+exports[`Invoice endpoints > should get an html invoice 1`] = `
+"<html>
+
+<!-- Based on: https://github.com/sparksuite/simple-html-invoice-template -->
+
+<head>
+  <meta charset='utf-8' />
+  <title>Invoice</title>
+
+  <link rel=\\"stylesheet\\" href=\\"/static/styles/invoice.css\\" />
+</head>
+
+<body>
+  <div class='invoice-box'>
+    <table cellpadding='0' cellspacing='0'>
+      <tr class='top'>
+        <td colspan='3'>
+          <table>
+            <tr>
+              <td class='title'>
+                <img src='/static/images/invoice-logo.svg' style='width: 100%; max-width: 150px' />
+              </td>
+
+              <td>
+                <div style=\\"text-align: left; width: fit-content; margin-left: auto\\">
+                  <table>
+                    <tr>
+                      <td>Number:</td>
+                      <td>INV-F1B-0B6H-002</td>
+                    </tr>
+                    <tr>
+                      <td>Period end:</td>
+                      <td>01.01.2020</td>
+                    </tr>
+                    <tr>
+                      <td>Period start:</td>
+                      <td>01.02.2020</td>
+                    </tr>
+                  </table>
+                </div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <tr class='information'>
+        <td colspan='3'>
+          <table>
+            <tr>
+              <td>
+                John Doe<br />
+                BigBen Street 954<br />
+                123<br />
+                ENG-1234 London<br />
+                GB
+              </td>
+
+              <td>
+                <div style=\\"text-align: left; width: fit-content; margin-left: auto\\">
+                  GEPROG GmbH<br />
+                  Schauenburgerstr. 116<br />
+                  24118 Kiel<br />
+                  info@geprog.com
+                </div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+
+      <tr class='heading'>
+        <td>Item</td>
+        <td>Units</td>
+        <td>Price</td>
+      </tr>
+
+      <tr class=\\"item\\">
+        <td style=\\"white-space: pre-wrap;\\">01.01.2020 00:00 - 15.01.2020 00:00:
+	14 days of 31 &#x3D; 0.45%
+	12.34€ * 12 units &#x3D; 148.08€
+	0.45% * 148.08€ &#x3D; 66.87€</td>
+        <td>1</td>
+        <td>66.87€</td>
+      </tr>
+      <tr class=\\"item\\">
+        <td style=\\"white-space: pre-wrap;\\">15.01.2020 00:00 - 20.01.2020 00:00:
+	5 days of 31 &#x3D; 0.16%
+	12.34€ * 15 units &#x3D; 185.1€
+	0.16% * 185.1€ &#x3D; 29.85€</td>
+        <td>1</td>
+        <td>29.85€</td>
+      </tr>
+      <tr class=\\"item last\\">
+        <td style=\\"white-space: pre-wrap;\\">20.01.2020 00:00 - 01.02.2020 00:00:
+	12 days of 31 &#x3D; 0.39%
+	5.43€ * 15 units &#x3D; 81.45€
+	0.39% * 81.45€ &#x3D; 31.53€</td>
+        <td>1</td>
+        <td>31.53€</td>
+      </tr>
+
+      <tr>
+        <td></td>
+
+        <td colspan=\\"2\\">
+          <table>
+            <tr>
+              <td>Amount</td>
+              <td>128.25€</td>
+            </tr>
+            <tr>
+              <td>Vat (19%)</td>
+              <td>24.37€</td>
+            </tr>
+            <tr class=\\"total\\">
+              <td>Total</td>
+              <td>152.62€</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </div>
+</body>
+
+</html>"
+`;
