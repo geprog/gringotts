@@ -1,9 +1,17 @@
 import fastifyFormBody from '@fastify/formbody';
+import fastifyHelmet from '@fastify/helmet';
 import fastifyJwt from '@fastify/jwt';
+import fastifyStatic from '@fastify/static';
 import fastifySwagger from '@fastify/swagger';
+import fastifyView from '@fastify/view';
 import fastify, { FastifyInstance } from 'fastify';
+import Handlebars from 'handlebars';
+import path from 'path';
 
 import { config } from '~/config';
+import { Invoice } from '~/entities';
+import { Currency } from '~/entities/payment';
+import { formatDate } from '~/lib/dayjs';
 
 import { customerEndpoints } from './endpoints/customer';
 import { invoiceEndpoints } from './endpoints/invoice';
@@ -48,6 +56,14 @@ export async function init(): Promise<FastifyInstance> {
       return;
     }
 
+    if (request.routerPath === '/invoice/:invoiceId/html') {
+      return;
+    }
+
+    if (request.routerPath?.startsWith('/static')) {
+      return;
+    }
+
     try {
       await request.jwtVerify();
     } catch (err) {
@@ -56,6 +72,24 @@ export async function init(): Promise<FastifyInstance> {
   });
 
   await server.register(fastifyFormBody);
+
+  await server.register(fastifyHelmet);
+
+  await server.register(fastifyView, {
+    engine: {
+      handlebars: Handlebars,
+    },
+  });
+
+  await server.register(fastifyStatic, {
+    root: path.join(__dirname, '..', '..', 'public'),
+    prefix: '/static',
+  });
+
+  Handlebars.registerHelper('formatDate', (date: Date, format: string) => formatDate(date, format));
+  Handlebars.registerHelper('amountToPrice', (amount: number, currency: Currency) =>
+    Invoice.amountToPrice(amount, currency),
+  );
 
   await server.register(fastifySwagger, {
     routePrefix: '/documentation',

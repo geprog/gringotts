@@ -1,0 +1,123 @@
+<html>
+
+<!-- Based on: https://github.com/sparksuite/simple-html-invoice-template -->
+
+<head>
+  <meta charset='utf-8' />
+  <title>Invoice</title>
+
+  <link rel="stylesheet" href="/static/styles/invoice.css" />
+</head>
+
+<body>
+  <div class='invoice-box'>
+    <table cellpadding='0' cellspacing='0'>
+      <tr class='top'>
+        <td colspan='3'>
+          <table>
+            <tr>
+              <td class='title'>
+                <img src='/static/images/invoice-logo.svg' style='width: 100%; max-width: 150px' />
+              </td>
+
+              <td>
+                <div style="text-align: left; width: fit-content; margin-left: auto">
+                  <table>
+                    <tr>
+                      <td>Number:</td>
+                      <td>{{invoice.number}}</td>
+                    </tr>
+                    <tr>
+                      <td>Period end:</td>
+                      <td>{{{formatDate invoice.start "DD.MM.YYYY"}}}</td>
+                    </tr>
+                    <tr>
+                      <td>Period start:</td>
+                      <td>{{{formatDate invoice.end "DD.MM.YYYY"}}}</td>
+                    </tr>
+                  </table>
+                </div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      <tr class='information'>
+        <td colspan='3'>
+          <table>
+            <tr>
+              <td>
+                {{customer.name}}<br />
+                {{customer.addressLine1}}<br />
+                {{#if customer.addressLine2}}
+                {{customer.addressLine2}}<br />
+                {{/if}}
+                {{customer.zipCode}} {{customer.city}}<br />
+                {{customer.country}}
+              </td>
+
+              <td>
+                <div style="text-align: left; width: fit-content; margin-left: auto">
+                  GEPROG GmbH<br />
+                  Schauenburgerstr. 116<br />
+                  24118 Kiel<br />
+                  info@geprog.com
+                </div>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+
+      {{!-- <tr class='heading'>
+        <td>Payment Method</td>
+        <td></td>
+        <td>Check #</td>
+      </tr>
+
+      <tr class='details'>
+        <td>Check</td>
+        <td></td>
+        <td>1000</td>
+      </tr> --}}
+
+      <tr class='heading'>
+        <td>Item</td>
+        <td>Units</td>
+        <td>Price</td>
+      </tr>
+
+      {{#each invoice.items}}
+      <tr {{#if @last}}class="item last"{{else}}class="item"{{/if}}>
+        <td style="white-space: pre-wrap;">{{this.description}}</td>
+        <td>{{this.units}}</td>
+        <td>{{{amountToPrice this.pricePerUnit invoice.currency}}}</td>
+      </tr>
+      {{/each}}
+
+      <tr>
+        <td></td>
+
+        <td colspan="2">
+          <table>
+            <tr>
+              <td>Amount</td>
+              <td>{{{amountToPrice invoice.amount invoice.currency}}}</td>
+            </tr>
+            <tr>
+              <td>Vat ({{invoice.vatRate}}%)</td>
+              <td>{{{amountToPrice invoice.vatAmount invoice.currency}}}</td>
+            </tr>
+            <tr class="total">
+              <td>Total</td>
+              <td>{{{amountToPrice invoice.totalAmount invoice.currency}}}</td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </div>
+</body>
+
+</html>
