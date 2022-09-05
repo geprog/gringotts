@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, it, MockContext, vi } from 'vitest';
 
+import { getFixtures } from '~/../test/fixtures';
 import { init as apiInit } from '~/api';
 import * as config from '~/config';
 import * as database from '~/database';
@@ -19,6 +20,9 @@ describe('Subscription endpoints', () => {
   });
 
   it('should create a subscription', async () => {
+    // given
+    const testData = getFixtures();
+
     const customer = <Customer>{
       _id: '123',
       name: 'John Doe',
@@ -34,6 +38,11 @@ describe('Subscription endpoints', () => {
       customers: {
         findOne() {
           return Promise.resolve(customer);
+        },
+      },
+      projects: {
+        findOne() {
+          return Promise.resolve(testData.project);
         },
       },
       em: {
@@ -55,12 +64,17 @@ describe('Subscription endpoints', () => {
       customerId: customer._id,
     };
 
+    // when
     const response = await server.inject({
       method: 'POST',
+      headers: {
+        authorization: `Bearer ${testData.project.apiToken}`,
+      },
       url: '/subscription',
       payload: subscriptionPayload,
     });
 
+    // then
     expect(response.statusCode).toBe(200);
 
     const responseData: { checkoutUrl: string; subscriptionId: string } = response.json();
@@ -70,6 +84,9 @@ describe('Subscription endpoints', () => {
   });
 
   it('should update a subscription', async () => {
+    // given
+    const testData = getFixtures();
+
     const customer = <Customer>{
       _id: '123',
       name: 'John Doe',
@@ -97,6 +114,11 @@ describe('Subscription endpoints', () => {
           return Promise.resolve(subscription);
         },
       },
+      projects: {
+        findOne() {
+          return Promise.resolve(testData.project);
+        },
+      },
       em: {
         persistAndFlush: dbPersistAndFlush,
       },
@@ -105,19 +127,24 @@ describe('Subscription endpoints', () => {
     const paymentProvider = getPaymentProvider({ paymentProvider: 'mock' } as Project);
     await paymentProvider?.createCustomer(customer);
 
-    const server = await apiInit();
-
     const subscriptionPayload = {
       pricePerUnit: 15.69,
       units: 33,
     };
 
+    const server = await apiInit();
+
+    // when
     const response = await server.inject({
       method: 'PATCH',
+      headers: {
+        authorization: `Bearer ${testData.project.apiToken}`,
+      },
       url: `/subscription/${subscription._id}`,
       payload: subscriptionPayload,
     });
 
+    // then
     expect(response.statusCode).toBe(200);
 
     const responseData: { ok: boolean } = response.json();

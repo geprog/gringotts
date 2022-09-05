@@ -20,7 +20,7 @@ exports[`Invoice endpoints > should get an html invoice 1`] = `
           <table>
             <tr>
               <td class='title'>
-                <img src='/static/images/invoice-logo.svg' style='width: 100%; max-width: 150px' />
+                <img src='http://localhost/my-logo.png' style='width: 100%; max-width: 150px' />
               </td>
 
               <td>
@@ -60,17 +60,18 @@ exports[`Invoice endpoints > should get an html invoice 1`] = `
 
               <td>
                 <div style=\\"text-align: left; width: fit-content; margin-left: auto\\">
-                  GEPROG GmbH<br />
-                  Schauenburgerstr. 116<br />
-                  24118 Kiel<br />
-                  info@geprog.com
+                  Test company<br />
+                  My Street 123<br />
+                  Postbox 321<br />
+                  GB-12345 London<br />
+                  GB
+                  test@example.tld
                 </div>
               </td>
             </tr>
           </table>
         </td>
       </tr>
-
 
       <tr class='heading'>
         <td>Item</td>

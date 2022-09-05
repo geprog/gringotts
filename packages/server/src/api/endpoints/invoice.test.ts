@@ -1,53 +1,10 @@
-import dayjs from 'dayjs';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
+import { getFixtures } from '~/../test/fixtures';
 import { init as apiInit } from '~/api';
 import * as config from '~/config';
 import * as database from '~/database';
-import { Customer, Invoice, Subscription } from '~/entities';
-import { getPeriodFromAnchorDate } from '~/utils';
-
-function getTestData() {
-  const customer = new Customer({
-    addressLine1: 'BigBen Street 954',
-    addressLine2: '123',
-    city: 'London',
-    country: 'GB',
-    email: 'john@doe.co.uk',
-    name: 'John Doe',
-    zipCode: 'ENG-1234',
-    paymentProviderId: '123',
-    invoicePrefix: 'INV-F1B-0B6H',
-  });
-
-  const subscription = new Subscription({
-    anchorDate: dayjs('2020-01-01').toDate(),
-    customer,
-  });
-  subscription.changePlan({ pricePerUnit: 12.34, units: 12 });
-  subscription.changePlan({ pricePerUnit: 12.34, units: 15, changeDate: dayjs('2020-01-15').toDate() });
-  subscription.changePlan({ pricePerUnit: 5.43, units: 15, changeDate: dayjs('2020-01-20').toDate() });
-
-  const { start, end } = getPeriodFromAnchorDate(dayjs('2020-01-15').toDate(), subscription.anchorDate);
-  const period = subscription.getPeriod(start, end);
-
-  const invoice = new Invoice({
-    _id: '123',
-    vatRate: 19.0,
-    currency: 'EUR',
-    end,
-    start,
-    sequentialId: 2,
-    status: 'paid',
-    subscription,
-  });
-
-  period.getInvoiceItems().forEach((item) => {
-    invoice.items.add(item);
-  });
-
-  return { customer, subscription, invoice };
-}
+import { Invoice } from '~/entities';
 
 describe('Invoice endpoints', () => {
   beforeAll(async () => {
@@ -63,7 +20,7 @@ describe('Invoice endpoints', () => {
 
   it('should get an invoice', async () => {
     // given
-    const testData = getTestData();
+    const testData = getFixtures();
 
     vi.spyOn(database, 'database', 'get').mockReturnValue({
       invoices: {
@@ -81,6 +38,11 @@ describe('Invoice endpoints', () => {
           return Promise.resolve(testData.subscription);
         },
       },
+      projects: {
+        findOne() {
+          return Promise.resolve(testData.project);
+        },
+      },
     } as unknown as database.Database);
 
     const server = await apiInit();
@@ -88,6 +50,9 @@ describe('Invoice endpoints', () => {
     // when
     const response = await server.inject({
       method: 'GET',
+      headers: {
+        authorization: `Bearer ${testData.project.apiToken}`,
+      },
       url: `/invoice/${testData.invoice._id}`,
     });
 
@@ -101,7 +66,7 @@ describe('Invoice endpoints', () => {
 
   it('should get an html invoice', async () => {
     // given
-    const testData = getTestData();
+    const testData = getFixtures();
 
     vi.spyOn(database, 'database', 'get').mockReturnValue({
       invoices: {
@@ -119,6 +84,11 @@ describe('Invoice endpoints', () => {
           return Promise.resolve(testData.subscription);
         },
       },
+      projects: {
+        findOne() {
+          return Promise.resolve(testData.project);
+        },
+      },
     } as unknown as database.Database);
 
     const server = await apiInit();
@@ -126,6 +96,9 @@ describe('Invoice endpoints', () => {
     // when
     const response = await server.inject({
       method: 'GET',
+      headers: {
+        authorization: `Bearer ${testData.project.apiToken}`,
+      },
       url: `/invoice/${testData.invoice._id}/html`,
     });
 

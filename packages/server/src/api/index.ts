@@ -36,7 +36,11 @@ export async function init(): Promise<FastifyInstance> {
     },
   });
 
-  server.addHook('onRequest', async (request, reply) => {
+  server.addHook('onError', async (request, reply, err) => {
+    console.log(err);
+  });
+
+  server.addHook('preParsing', async (request, reply) => {
     if (!request.routerPath) {
       await reply.code(404).send({
         error: 'Not found',
@@ -50,10 +54,6 @@ export async function init(): Promise<FastifyInstance> {
     }
 
     if (request.routerPath === '/payment/webhook') {
-      return;
-    }
-
-    if (request.routerPath === '/invoice/:invoiceId/html') {
       return;
     }
 

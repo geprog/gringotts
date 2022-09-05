@@ -1,32 +1,36 @@
-import fastify from 'fastify';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { addSchemas } from '~/api/schema';
+import { getFixtures } from '~/../test/fixtures';
+import { init as apiInit } from '~/api';
 import * as config from '~/config';
 import * as database from '~/database';
 import { Customer } from '~/entities';
 
-import { customerEndpoints } from './customer';
-
 describe('Customer endpoints', () => {
-  beforeAll(() => {
+  beforeAll(async () => {
     vi.spyOn(config, 'config', 'get').mockReturnValue({
       port: 1234,
       adminToken: '',
-      postgresUrl: '',
+      postgresUrl: 'postgres://postgres:postgres@localhost:5432/postgres',
       publicUrl: '',
     });
+
+    await database.database.init();
   });
 
   it('should create a customer', async () => {
-    const server = fastify();
-    customerEndpoints(server);
-    addSchemas(server);
+    // given
+    const testData = getFixtures();
 
     vi.spyOn(database, 'database', 'get').mockReturnValue({
       customers: {
         findOne() {
           return Promise.resolve(null);
+        },
+      },
+      projects: {
+        findOne() {
+          return Promise.resolve(testData.project);
         },
       },
       em: {
@@ -46,12 +50,19 @@ describe('Customer endpoints', () => {
       zipCode: 'ENG-1234',
     };
 
+    const server = await apiInit();
+
+    // when
     const response = await server.inject({
       method: 'POST',
+      headers: {
+        authorization: `Bearer ${testData.project.apiToken}`,
+      },
       url: '/customer',
       payload: customerData,
     });
 
+    // then
     expect(response.statusCode).toBe(200);
 
     const customer: Customer = response.json();
@@ -60,9 +71,8 @@ describe('Customer endpoints', () => {
   });
 
   it('should find a customer by its email', async () => {
-    const server = fastify();
-    customerEndpoints(server);
-    addSchemas(server);
+    // given
+    const testData = getFixtures();
 
     const customerData = <Customer>{
       _id: '123',
@@ -81,17 +91,29 @@ describe('Customer endpoints', () => {
           return Promise.resolve([customerData]);
         },
       },
+      projects: {
+        findOne() {
+          return Promise.resolve(testData.project);
+        },
+      },
     } as unknown as database.Database);
 
+    const server = await apiInit();
+
+    // when
     const customersResponse = await server.inject({
       method: 'GET',
       url: `/customer`,
+      headers: {
+        authorization: `Bearer ${testData.project.apiToken}`,
+      },
       query: {
         email: customerData.email,
       },
       payload: customerData,
     });
 
+    // then
     expect(customersResponse.statusCode).toBe(200);
 
     const customers: Customer[] = customersResponse.json();
@@ -101,9 +123,8 @@ describe('Customer endpoints', () => {
   });
 
   it('should update a customer', async () => {
-    const server = fastify();
-    customerEndpoints(server);
-    addSchemas(server);
+    // given
+    const testData = getFixtures();
 
     const customerData = <Customer>{
       _id: '123',
@@ -124,17 +145,29 @@ describe('Customer endpoints', () => {
           return Promise.resolve(customerData);
         },
       },
+      projects: {
+        findOne() {
+          return Promise.resolve(testData.project);
+        },
+      },
       em: {
         persistAndFlush: updateMock,
       },
     } as unknown as database.Database);
 
+    const server = await apiInit();
+
+    // when
     const response = await server.inject({
       method: 'PATCH',
+      headers: {
+        authorization: `Bearer ${testData.project.apiToken}`,
+      },
       url: `/customer/${customerData._id}`,
       payload: customerData,
     });
 
+    // then
     expect(response.statusCode).toBe(200);
 
     const customer: Customer = response.json();
@@ -145,9 +178,8 @@ describe('Customer endpoints', () => {
   });
 
   it('should delete a customer', async () => {
-    const server = fastify();
-    customerEndpoints(server);
-    addSchemas(server);
+    // given
+    const testData = getFixtures();
 
     const customerData = <Customer>{
       _id: '123',
@@ -168,16 +200,28 @@ describe('Customer endpoints', () => {
           return Promise.resolve(customerData);
         },
       },
+      projects: {
+        findOne() {
+          return Promise.resolve(testData.project);
+        },
+      },
       em: {
         removeAndFlush: deleteMock,
       },
     } as unknown as database.Database);
 
+    const server = await apiInit();
+
+    // when
     const response = await server.inject({
       method: 'DELETE',
+      headers: {
+        authorization: `Bearer ${testData.project.apiToken}`,
+      },
       url: `/customer/${customerData._id}`,
     });
 
+    // then
     expect(response.statusCode).toBe(200);
 
     const customer: Customer = response.json();
