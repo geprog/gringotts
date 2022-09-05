@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify';
 
+import { getProjectFromRequest } from '~/api/helpers';
 import { database } from '~/database';
 import { Payment, Subscription } from '~/entities';
 import { Invoice } from '~/entities/invoice';
@@ -10,6 +11,7 @@ import { getActiveUntilDate, getPeriodFromAnchorDate } from '~/utils';
 export function subscriptionEndpoints(server: FastifyInstance): void {
   server.post('/subscription', {
     schema: {
+      summary: 'Create a subscription',
       tags: ['subscription'],
       body: {
         type: 'object',
@@ -42,6 +44,8 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
       },
     },
     handler: async (request, reply) => {
+      const project = await getProjectFromRequest(request);
+
       const body = request.body as {
         pricePerUnit: number;
         units: number;
@@ -61,7 +65,10 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
         });
       }
 
-      const customer = await database.customers.findOne({ _id: body.customerId }, { populate: ['subscriptions'] });
+      const customer = await database.customers.findOne(
+        { _id: body.customerId, project },
+        { populate: ['subscriptions'] },
+      );
       if (!customer) {
         return reply.code(404).send({
           error: 'Customer not found',
@@ -73,13 +80,14 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
       const subscription = new Subscription({
         anchorDate: now,
         customer,
+        project,
       });
 
       const period = getPeriodFromAnchorDate(now, subscription.anchorDate);
 
       subscription.changePlan({ units: body.units, pricePerUnit: body.pricePerUnit });
 
-      const paymentProvider = getPaymentProvider();
+      const paymentProvider = getPaymentProvider(project);
       if (!paymentProvider) {
         return reply.code(500).send({
           error: 'Payment provider not configured',
@@ -106,6 +114,7 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
         currency: payment.currency,
         vatRate: 19.0, // TODO: german vat rate => allow to configure
         payment,
+        project,
       });
 
       invoice.items.add(
@@ -137,6 +146,7 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
 
   server.patch('/subscription/:subscriptionId', {
     schema: {
+      summary: 'Patch a subscription',
       tags: ['subscription'],
       params: {
         type: 'object',
@@ -168,6 +178,8 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
       },
     },
     handler: async (request, reply) => {
+      const project = await getProjectFromRequest(request);
+
       const body = request.body as { pricePerUnit: number; units: number };
 
       if (body.units < 1) {
@@ -185,7 +197,7 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
       const { subscriptionId } = request.params as { subscriptionId: string };
 
       const subscription = await database.subscriptions.findOne(
-        { _id: subscriptionId },
+        { _id: subscriptionId, project },
         { populate: ['customer', 'changes'] },
       );
       if (!subscription) {
@@ -201,6 +213,7 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
 
   server.get('/subscription/:subscriptionId', {
     schema: {
+      summary: 'Get a subscription',
       tags: ['subscription'],
       params: {
         type: 'object',
@@ -220,10 +233,12 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
       },
     },
     handler: async (request, reply) => {
+      const project = await getProjectFromRequest(request);
+
       const { subscriptionId } = request.params as { subscriptionId: string };
 
       const subscription = await database.subscriptions.findOne(
-        { _id: subscriptionId },
+        { _id: subscriptionId, project },
         { populate: ['customer', 'changes', 'invoices'] },
       );
       if (!subscription) {

@@ -38,7 +38,7 @@ export class Mollie implements PaymentProvider {
       description: payment.description,
       sequenceType: SequenceType.first,
       redirectUrl,
-      webhookUrl: `${config.publicUrl}/payment/webhook`,
+      webhookUrl: `${config.publicUrl}/payment/webhook/mollie`,
       metadata: <Metadata>{
         paymentId: payment._id,
       },

@@ -1,30 +1,28 @@
-import fastify from 'fastify';
 import { beforeAll, describe, expect, it, MockContext, vi } from 'vitest';
 
-import { addSchemas } from '~/api/schema';
+import { getFixtures } from '~/../test/fixtures';
+import { init as apiInit } from '~/api';
 import * as config from '~/config';
 import * as database from '~/database';
-import { Customer, Subscription } from '~/entities';
+import { Customer, Project, Subscription } from '~/entities';
 import { getPaymentProvider } from '~/payment_providers';
-
-import { subscriptionEndpoints } from './subscription';
 
 describe('Subscription endpoints', () => {
   beforeAll(async () => {
     vi.spyOn(config, 'config', 'get').mockReturnValue({
-      paymentProvider: 'mocked',
       port: 1234,
-      mollieApiKey: '',
-      jwtSecret: '',
+      adminToken: '',
       postgresUrl: 'postgres://postgres:postgres@localhost:5432/postgres',
       publicUrl: '',
-      webhookUrl: '',
     });
 
     await database.database.init();
   });
 
   it('should create a subscription', async () => {
+    // given
+    const testData = getFixtures();
+
     const customer = <Customer>{
       _id: '123',
       name: 'John Doe',
@@ -42,6 +40,11 @@ describe('Subscription endpoints', () => {
           return Promise.resolve(customer);
         },
       },
+      projects: {
+        findOne() {
+          return Promise.resolve(testData.project);
+        },
+      },
       em: {
         persistAndFlush() {
           return Promise.resolve();
@@ -49,12 +52,10 @@ describe('Subscription endpoints', () => {
       },
     } as unknown as database.Database);
 
-    const paymentProvider = getPaymentProvider();
+    const paymentProvider = getPaymentProvider({ paymentProvider: 'mock' } as Project);
     await paymentProvider?.createCustomer(customer);
 
-    const server = fastify();
-    subscriptionEndpoints(server);
-    addSchemas(server);
+    const server = await apiInit();
 
     const subscriptionPayload = {
       pricePerUnit: 15.69,
@@ -63,12 +64,17 @@ describe('Subscription endpoints', () => {
       customerId: customer._id,
     };
 
+    // when
     const response = await server.inject({
       method: 'POST',
+      headers: {
+        authorization: `Bearer ${testData.project.apiToken}`,
+      },
       url: '/subscription',
       payload: subscriptionPayload,
     });
 
+    // then
     expect(response.statusCode).toBe(200);
 
     const responseData: { checkoutUrl: string; subscriptionId: string } = response.json();
@@ -78,6 +84,9 @@ describe('Subscription endpoints', () => {
   });
 
   it('should update a subscription', async () => {
+    // given
+    const testData = getFixtures();
+
     const customer = <Customer>{
       _id: '123',
       name: 'John Doe',
@@ -105,29 +114,37 @@ describe('Subscription endpoints', () => {
           return Promise.resolve(subscription);
         },
       },
+      projects: {
+        findOne() {
+          return Promise.resolve(testData.project);
+        },
+      },
       em: {
         persistAndFlush: dbPersistAndFlush,
       },
     } as unknown as database.Database);
 
-    const paymentProvider = getPaymentProvider();
+    const paymentProvider = getPaymentProvider({ paymentProvider: 'mock' } as Project);
     await paymentProvider?.createCustomer(customer);
-
-    const server = fastify();
-    subscriptionEndpoints(server);
-    addSchemas(server);
 
     const subscriptionPayload = {
       pricePerUnit: 15.69,
       units: 33,
     };
 
+    const server = await apiInit();
+
+    // when
     const response = await server.inject({
       method: 'PATCH',
+      headers: {
+        authorization: `Bearer ${testData.project.apiToken}`,
+      },
       url: `/subscription/${subscription._id}`,
       payload: subscriptionPayload,
     });
 
+    // then
     expect(response.statusCode).toBe(200);
 
     const responseData: { ok: boolean } = response.json();

@@ -1,22 +1,21 @@
 import { FastifyInstance } from 'fastify';
 
 import { database } from '~/database';
-import { Invoice } from '~/entities';
-import { getPaymentProvider } from '~/payment_providers';
+import { parsePaymentWebhook } from '~/payment_providers';
 import { triggerWebhook } from '~/webhook';
 
 export function paymentEndpoints(server: FastifyInstance): void {
-  server.post('/payment/webhook', {
+  server.post('/payment/webhook/:paymentProviderName', {
     schema: { hide: true },
     handler: async (request, reply) => {
-      const paymentProvider = getPaymentProvider();
-      if (!paymentProvider) {
+      const { paymentProviderName } = request.params as { paymentProviderName: string };
+
+      const payload = await parsePaymentWebhook(paymentProviderName, request.body);
+      if (!payload) {
         return reply.code(500).send({
-          error: 'Payment provider not configured',
+          error: 'Payment provider not configured or payload parsing failed',
         });
       }
-
-      const payload = await paymentProvider.parsePaymentWebhook(request.body);
 
       const payment = await database.payments.findOne({ _id: payload.paymentId }, { populate: ['subscription'] });
       if (!payment) {
@@ -25,20 +24,9 @@ export function paymentEndpoints(server: FastifyInstance): void {
 
       const subscription = payment.subscription;
 
-      let invoice: Invoice;
-      if (payment.isRecurring) {
-        const _invoice = await database.invoices.findOne({ payment }, { populate: ['subscription'] });
-        if (!_invoice) {
-          throw new Error('Payment has no invoice');
-        }
-        invoice = _invoice;
-      } else {
-        invoice = await database.invoices.findOneOrFail({ subscription });
-      }
-
-      if (!invoice) {
-        throw new Error('Invoice not found');
-      }
+      const invoice = await database.invoices.findOneOrFail(payment.isRecurring ? { payment } : { subscription }, {
+        populate: ['project'],
+      });
 
       if (payload.paymentStatus === 'paid') {
         subscription.lastPayment = payload.paidAt;
@@ -51,12 +39,13 @@ export function paymentEndpoints(server: FastifyInstance): void {
 
       await database.em.persistAndFlush([payment, invoice, subscription]);
 
-      const token = server.jwt.sign({ subscriptionId: subscription._id }, { expiresIn: '12h' });
+      const project = invoice.project;
+
       void triggerWebhook({
+        url: project.webhookUrl,
         body: {
           subscriptionId: subscription._id,
         },
-        token,
       });
 
       await reply.send({ ok: true });

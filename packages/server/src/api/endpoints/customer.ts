@@ -1,5 +1,6 @@
 import { FastifyInstance } from 'fastify';
 
+import { getProjectFromRequest } from '~/api/helpers';
 import { database } from '~/database';
 import { Customer } from '~/entities';
 import { getPaymentProvider } from '~/payment_providers';
@@ -28,6 +29,7 @@ export function customerEndpoints(server: FastifyInstance): void {
 
   server.post('/customer', {
     schema: {
+      summary: 'Create a customer',
       tags: ['customer'],
       body: {
         $ref: 'CustomerUpdateBody',
@@ -45,9 +47,11 @@ export function customerEndpoints(server: FastifyInstance): void {
       },
     },
     handler: async (request, reply) => {
+      const project = await getProjectFromRequest(request);
+
       const body = request.body as CustomerUpdateBody;
 
-      let customer = await database.customers.findOne({ email: body.email });
+      let customer = await database.customers.findOne({ email: body.email, project });
       if (customer) {
         return reply.code(400).send({
           error: 'Customer already exists',
@@ -62,9 +66,10 @@ export function customerEndpoints(server: FastifyInstance): void {
         city: body.city,
         country: body.country,
         zipCode: body.zipCode,
+        project,
       });
 
-      const paymentProvider = getPaymentProvider();
+      const paymentProvider = getPaymentProvider(project);
       if (!paymentProvider) {
         return reply.code(500).send({
           error: 'Payment provider not configured',
@@ -80,6 +85,7 @@ export function customerEndpoints(server: FastifyInstance): void {
 
   server.get('/customer', {
     schema: {
+      summary: 'Get a customer',
       tags: ['customer'],
       querystring: {
         type: 'object',
@@ -101,9 +107,11 @@ export function customerEndpoints(server: FastifyInstance): void {
       },
     },
     handler: async (request, reply) => {
+      const project = await getProjectFromRequest(request);
+
       const { email } = request.query as Partial<{ email?: string }>;
 
-      const customers = await database.customers.find({ email });
+      const customers = await database.customers.find({ email, project });
 
       await reply.send(customers);
     },
@@ -111,6 +119,7 @@ export function customerEndpoints(server: FastifyInstance): void {
 
   server.patch('/customer/:customerId', {
     schema: {
+      summary: 'Patch a customer',
       tags: ['customer'],
       params: {
         type: 'object',
@@ -133,10 +142,12 @@ export function customerEndpoints(server: FastifyInstance): void {
       },
     },
     handler: async (request, reply) => {
+      const project = await getProjectFromRequest(request);
+
       const { customerId } = request.params as { customerId: string };
       const body = request.body as CustomerUpdateBody;
 
-      let customer = await database.customers.findOne({ _id: customerId });
+      let customer = await database.customers.findOne({ _id: customerId, project });
       if (!customer) {
         return reply.code(404).send({ error: 'Customer not found' });
       }
@@ -149,7 +160,7 @@ export function customerEndpoints(server: FastifyInstance): void {
       customer.country = body.country;
       customer.zipCode = body.zipCode;
 
-      const paymentProvider = getPaymentProvider();
+      const paymentProvider = getPaymentProvider(project);
       if (!paymentProvider) {
         return reply.code(500).send({
           error: 'Payment provider not configured',
@@ -166,6 +177,7 @@ export function customerEndpoints(server: FastifyInstance): void {
 
   server.delete('/customer/:customerId', {
     schema: {
+      summary: 'Delete a customer',
       tags: ['customer'],
       params: {
         type: 'object',
@@ -188,14 +200,16 @@ export function customerEndpoints(server: FastifyInstance): void {
       },
     },
     handler: async (request, reply) => {
+      const project = await getProjectFromRequest(request);
+
       const { customerId } = request.params as { customerId: string };
 
-      const customer = await database.customers.findOne({ _id: customerId });
+      const customer = await database.customers.findOne({ _id: customerId, project });
       if (!customer) {
         return reply.code(404).send({ error: 'Customer not found' });
       }
 
-      const paymentProvider = getPaymentProvider();
+      const paymentProvider = getPaymentProvider(project);
       if (!paymentProvider) {
         return reply.code(500).send({
           error: 'Payment provider not configured',

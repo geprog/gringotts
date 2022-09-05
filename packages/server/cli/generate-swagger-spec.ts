@@ -5,7 +5,7 @@ import { init } from '~/api';
 import { config } from '~/config';
 
 async function generateSwaggerSpec() {
-  config.jwtSecret = '123'; // TODO: find proper solution
+  config.adminToken = '123'; // TODO: find proper solution
 
   const server = await init();
   await server.ready();

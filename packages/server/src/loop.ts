@@ -21,11 +21,6 @@ export function addSubscriptionChangesToInvoice(subscription: Subscription, invo
 export async function chargeInvoices(): Promise<void> {
   const now = new Date();
 
-  const paymentProvider = getPaymentProvider();
-  if (!paymentProvider) {
-    throw new Error('Payment provider not configured');
-  }
-
   let page = 0;
 
   // eslint-disable-next-line no-constant-condition
@@ -33,13 +28,15 @@ export async function chargeInvoices(): Promise<void> {
     // get draft invoice from past periods
     const invoices = await database.invoices.find(
       { end: { $lt: now }, status: 'draft' },
-      { limit: pageSize, offset: page * pageSize },
+      { limit: pageSize, offset: page * pageSize, populate: ['project'] },
     );
 
     for await (let invoice of invoices) {
       // Lock invoice processing
       invoice.status = 'pending';
       await database.em.persistAndFlush(invoice);
+
+      const { project } = invoice;
 
       const subscription = invoice.subscription;
       if (!subscription) {
@@ -67,6 +64,11 @@ export async function chargeInvoices(): Promise<void> {
 
         invoice.payment = payment;
 
+        const paymentProvider = getPaymentProvider(project);
+        if (!paymentProvider) {
+          throw new Error(`Payment provider for '${project._id}' not configured`);
+        }
+
         await paymentProvider.chargePayment(payment);
         await database.em.persistAndFlush([payment, invoice]);
       }
@@ -84,6 +86,7 @@ export async function chargeInvoices(): Promise<void> {
         subscription,
         currency: 'EUR', // TODO: allow to configure currency
         vatRate: 19.0, // TODO: german vat rate => allow to configure
+        project,
       });
 
       // if price is negative add credit to next invoice

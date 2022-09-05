@@ -1,18 +1,9 @@
 import got from 'got';
 
-import { config } from '~/config';
-
-export async function triggerWebhook({ body, token }: { body: unknown; token: string }): Promise<boolean> {
-  const webhookUrl = config.webhookUrl;
-
-  const headers = {
-    authorization: 'Bearer ' + token,
-  };
-
+export async function triggerWebhook({ url, body }: { url: string; body: unknown }): Promise<boolean> {
   try {
-    await got.post(webhookUrl, {
+    await got.post(url, {
       json: body as string,
-      headers,
       retry: { limit: 10, methods: ['POST'] },
     });
     return true;

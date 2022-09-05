@@ -3,6 +3,7 @@ import { v4 } from 'uuid';
 
 import { Customer } from '~/entities/customer';
 import { Invoice } from '~/entities/invoice';
+import { Project } from '~/entities/project';
 import { SubscriptionChange } from '~/entities/subscription_change';
 import { SubscriptionPeriod } from '~/entities/subscription_period';
 
@@ -15,6 +16,7 @@ export class Subscription {
   createdAt: Date = new Date();
   updatedAt: Date = new Date();
   invoices = new Collection<Invoice>(this);
+  project!: Project;
 
   constructor(data?: Partial<Subscription>) {
     Object.assign(this, data);
@@ -71,6 +73,10 @@ export const subscriptionSchema = new EntitySchema<Subscription>({
       reference: ReferenceType.ONE_TO_MANY,
       entity: () => Invoice,
       mappedBy: (invoice) => invoice.subscription,
+    },
+    project: {
+      reference: ReferenceType.MANY_TO_ONE,
+      entity: () => Project,
     },
   },
 });

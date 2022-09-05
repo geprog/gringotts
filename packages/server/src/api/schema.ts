@@ -20,6 +20,35 @@ export function addSchemas(server: FastifyInstance): void {
   });
 
   server.addSchema({
+    $id: 'ProjectInvoiceData',
+    type: 'object',
+    properties: {
+      _id: { type: 'string' },
+      email: { type: 'string' },
+      name: { type: 'string' },
+      addressLine1: { type: 'string' },
+      addressLine2: { type: 'string' },
+      zipCode: { type: 'string' },
+      city: { type: 'string' },
+      country: { type: 'string' },
+    },
+  });
+
+  server.addSchema({
+    $id: 'Project',
+    type: 'object',
+    properties: {
+      _id: { type: 'string' },
+      name: { type: 'string' },
+      apiToken: { type: 'string' },
+      mollieApiKey: { type: 'string' },
+      paymentProvider: { type: 'string' },
+      webhookUrl: { type: 'string' },
+      invoiceData: { $ref: 'ProjectInvoiceData' },
+    },
+  });
+
+  server.addSchema({
     $id: 'Payment',
     type: 'object',
     properties: {

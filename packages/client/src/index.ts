@@ -1,10 +1,8 @@
-import jwt from 'jsonwebtoken';
-
 import { Api, ApiConfig } from './api';
 
 export function gringottsClient<SecurityDataType = unknown>(
   baseUrl: string,
-  options?: ApiConfig<SecurityDataType> & { token?: string; jwtPayload?: Record<string, unknown> },
+  options?: ApiConfig<SecurityDataType> & { token?: string },
 ): Api<SecurityDataType> {
   return new Api({
     ...options,
@@ -17,12 +15,10 @@ export function gringottsClient<SecurityDataType = unknown>(
         return;
       }
 
-      const token = jwt.sign(options.jwtPayload || {}, options.token);
-
       return {
         secure: true,
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${options.token}`,
         },
       };
     },
