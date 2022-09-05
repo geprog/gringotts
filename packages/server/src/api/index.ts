@@ -49,7 +49,7 @@ export async function init(): Promise<FastifyInstance> {
       return;
     }
 
-    if (request.routerPath === '/payment/webhook') {
+    if (request.routerPath === '/payment/webhook/:paymentProviderName') {
       return;
     }
 

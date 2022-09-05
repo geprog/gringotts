@@ -8,9 +8,9 @@ export function paymentEndpoints(server: FastifyInstance): void {
   server.post('/payment/webhook/:paymentProviderName', {
     schema: { hide: true },
     handler: async (request, reply) => {
-      const { paymentProviderName } = request.params as { paymentProviderName: string };
+      const params = request.params as { paymentProviderName?: string };
 
-      const payload = await parsePaymentWebhook(paymentProviderName, request.body);
+      const payload = await parsePaymentWebhook(params?.paymentProviderName || '', request.body);
       if (!payload) {
         return reply.code(500).send({
           error: 'Payment provider not configured or payload parsing failed',
