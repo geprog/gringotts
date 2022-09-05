@@ -6,7 +6,6 @@ import {
   Customer,
   customerSchema,
   Invoice,
-  InvoiceItem,
   invoiceItemSchema,
   invoiceSchema,
   Payment,
@@ -15,7 +14,6 @@ import {
   projectInvoiceDataSchema,
   projectSchema,
   Subscription,
-  SubscriptionChange,
   subscriptionChangeSchema,
   subscriptionSchema,
 } from '~/entities';

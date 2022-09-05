@@ -1,7 +1,6 @@
 import { FastifyInstance } from 'fastify';
 
 import { database } from '~/database';
-import { Invoice } from '~/entities';
 import { parsePaymentWebhook } from '~/payment_providers';
 import { triggerWebhook } from '~/webhook';
 
@@ -25,20 +24,9 @@ export function paymentEndpoints(server: FastifyInstance): void {
 
       const subscription = payment.subscription;
 
-      let invoice: Invoice;
-      if (payment.isRecurring) {
-        const _invoice = await database.invoices.findOne({ payment }, { populate: ['subscription'] });
-        if (!_invoice) {
-          throw new Error('Payment has no invoice');
-        }
-        invoice = _invoice;
-      } else {
-        invoice = await database.invoices.findOneOrFail({ subscription });
-      }
-
-      if (!invoice) {
-        throw new Error('Invoice not found');
-      }
+      const invoice = await database.invoices.findOneOrFail(payment.isRecurring ? { payment } : { subscription }, {
+        populate: ['project'],
+      });
 
       if (payload.paymentStatus === 'paid') {
         subscription.lastPayment = payload.paidAt;
@@ -51,9 +39,11 @@ export function paymentEndpoints(server: FastifyInstance): void {
 
       await database.em.persistAndFlush([payment, invoice, subscription]);
 
-      // TODO: fix token
       const token = server.jwt.sign({ subscriptionId: subscription._id }, { expiresIn: '12h' });
+      const project = invoice.project;
+
       void triggerWebhook({
+        url: project.webhookUrl,
         body: {
           subscriptionId: subscription._id,
         },
