@@ -11,7 +11,7 @@ export const config = {
   port: defaultPort,
   publicUrl: process.env.PUBLIC_URL || `http://localhost:${defaultPort}`,
   postgresUrl: process.env.POSTGRES_URL as string,
-  jwtSecret: process.env.JWT_SECRET as string,
+  adminToken: process.env.ADMIN_TOKEN as string,
 };
 
 export function checkConfig(): void {
@@ -25,7 +25,7 @@ export function checkConfig(): void {
     throw new Error('Please configure POSTGRES_URL');
   }
 
-  if (!_config.jwtSecret) {
-    throw new Error('Please configure JWT_SECRET');
+  if (!_config.adminToken) {
+    throw new Error('Please configure ADMIN_TOKEN');
   }
 }

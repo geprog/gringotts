@@ -1,6 +1,5 @@
 import fastifyFormBody from '@fastify/formbody';
 import fastifyHelmet from '@fastify/helmet';
-import fastifyJwt from '@fastify/jwt';
 import fastifyStatic from '@fastify/static';
 import fastifySwagger from '@fastify/swagger';
 import fastifyView from '@fastify/view';
@@ -9,6 +8,7 @@ import Handlebars from 'handlebars';
 import path from 'path';
 
 import { config } from '~/config';
+import { database } from '~/database';
 import { Invoice } from '~/entities';
 import { Currency } from '~/entities/payment';
 import { formatDate } from '~/lib/dayjs';
@@ -16,6 +16,7 @@ import { formatDate } from '~/lib/dayjs';
 import { customerEndpoints } from './endpoints/customer';
 import { invoiceEndpoints } from './endpoints/invoice';
 import { paymentEndpoints } from './endpoints/payment';
+import { projectEndpoints } from './endpoints/project';
 import { subscriptionEndpoints } from './endpoints/subscription';
 import { addSchemas } from './schema';
 
@@ -33,10 +34,6 @@ export async function init(): Promise<FastifyInstance> {
               },
             },
     },
-  });
-
-  await server.register(fastifyJwt, {
-    secret: config.jwtSecret,
   });
 
   server.addHook('onRequest', async (request, reply) => {
@@ -64,11 +61,29 @@ export async function init(): Promise<FastifyInstance> {
       return;
     }
 
-    try {
-      await request.jwtVerify();
-    } catch (err) {
-      await reply.send(err);
+    const apiToken = (request.headers?.authorization || '').replace('Bearer ', '');
+    if (!apiToken) {
+      await reply.code(401).send({ error: 'Missing api token' });
+      return reply;
     }
+
+    if (request.routerPath?.startsWith('/project')) {
+      if (apiToken === config.adminToken) {
+        request.admin = true;
+        return;
+      }
+
+      await reply.code(401).send({ error: 'You need to have admin access' });
+      return reply;
+    }
+
+    const project = await database.projects.findOne({ apiToken });
+    if (!project) {
+      await reply.code(401).send({ error: 'Invalid api token' });
+      return reply;
+    }
+
+    request.project = project;
   });
 
   await server.register(fastifyFormBody);
@@ -129,6 +144,7 @@ export async function init(): Promise<FastifyInstance> {
   customerEndpoints(server);
   invoiceEndpoints(server);
   paymentEndpoints(server);
+  projectEndpoints(server);
 
   return server;
 }

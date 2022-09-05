@@ -7,6 +7,7 @@ import { database } from '~/database';
 export function invoiceEndpoints(server: FastifyInstance): void {
   server.get('/invoice/:invoiceId', {
     schema: {
+      summary: 'Get an invoice',
       tags: ['invoice'],
       params: {
         type: 'object',

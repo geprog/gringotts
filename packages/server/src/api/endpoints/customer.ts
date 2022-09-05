@@ -29,6 +29,7 @@ export function customerEndpoints(server: FastifyInstance): void {
 
   server.post('/customer', {
     schema: {
+      summary: 'Create a customer',
       tags: ['customer'],
       body: {
         $ref: 'CustomerUpdateBody',
@@ -84,6 +85,7 @@ export function customerEndpoints(server: FastifyInstance): void {
 
   server.get('/customer', {
     schema: {
+      summary: 'Get a customer',
       tags: ['customer'],
       querystring: {
         type: 'object',
@@ -117,6 +119,7 @@ export function customerEndpoints(server: FastifyInstance): void {
 
   server.patch('/customer/:customerId', {
     schema: {
+      summary: 'Patch a customer',
       tags: ['customer'],
       params: {
         type: 'object',
@@ -174,6 +177,7 @@ export function customerEndpoints(server: FastifyInstance): void {
 
   server.delete('/customer/:customerId', {
     schema: {
+      summary: 'Delete a customer',
       tags: ['customer'],
       params: {
         type: 'object',

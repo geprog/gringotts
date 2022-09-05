@@ -11,6 +11,7 @@ import { getActiveUntilDate, getPeriodFromAnchorDate } from '~/utils';
 export function subscriptionEndpoints(server: FastifyInstance): void {
   server.post('/subscription', {
     schema: {
+      summary: 'Create a subscription',
       tags: ['subscription'],
       body: {
         type: 'object',
@@ -145,6 +146,7 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
 
   server.patch('/subscription/:subscriptionId', {
     schema: {
+      summary: 'Patch a subscription',
       tags: ['subscription'],
       params: {
         type: 'object',
@@ -211,6 +213,7 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
 
   server.get('/subscription/:subscriptionId', {
     schema: {
+      summary: 'Get a subscription',
       tags: ['subscription'],
       params: {
         type: 'object',
