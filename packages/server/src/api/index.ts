@@ -57,7 +57,8 @@ export async function init(): Promise<FastifyInstance> {
       return;
     }
 
-    const apiToken = (request.headers?.authorization || '').replace('Bearer ', '');
+    const apiToken =
+      (request.headers?.authorization || '').replace('Bearer ', '') || (request.query as { token: string }).token;
     if (!apiToken) {
       await reply.code(401).send({ error: 'Missing api token' });
       return reply;
