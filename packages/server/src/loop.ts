@@ -36,6 +36,8 @@ export async function chargeInvoices(): Promise<void> {
       invoice.status = 'pending';
       await database.em.persistAndFlush(invoice);
 
+      const { project } = invoice;
+
       const subscription = invoice.subscription;
       if (!subscription) {
         throw new Error('Invoice has no subscription');
@@ -62,8 +64,6 @@ export async function chargeInvoices(): Promise<void> {
 
         invoice.payment = payment;
 
-        const { project } = invoice;
-
         const paymentProvider = getPaymentProvider(project);
         if (!paymentProvider) {
           throw new Error(`Payment provider for '${project._id}' not configured`);
@@ -86,6 +86,7 @@ export async function chargeInvoices(): Promise<void> {
         subscription,
         currency: 'EUR', // TODO: allow to configure currency
         vatRate: 19.0, // TODO: german vat rate => allow to configure
+        project,
       });
 
       // if price is negative add credit to next invoice

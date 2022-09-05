@@ -36,7 +36,7 @@ export async function init(): Promise<FastifyInstance> {
     },
   });
 
-  server.addHook('preParsing', async (request, reply) => {
+  server.addHook('onRequest', async (request, reply) => {
     if (!request.routerPath) {
       await reply.code(404).send({
         error: 'Not found',
