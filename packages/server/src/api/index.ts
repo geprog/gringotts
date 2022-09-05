@@ -36,10 +36,6 @@ export async function init(): Promise<FastifyInstance> {
     },
   });
 
-  server.addHook('onError', async (request, reply, err) => {
-    console.log(err);
-  });
-
   server.addHook('preParsing', async (request, reply) => {
     if (!request.routerPath) {
       await reply.code(404).send({
