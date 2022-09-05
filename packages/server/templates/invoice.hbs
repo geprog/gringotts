@@ -17,7 +17,11 @@
           <table>
             <tr>
               <td class='title'>
+                {{#if project.invoiceData.logo}}
+                <img src='{{project.invoiceData.logo}}' style='width: 100%; max-width: 150px' />
+                {{/else}}
                 <img src='/static/images/invoice-logo.svg' style='width: 100%; max-width: 150px' />
+                {{/if}}
               </td>
 
               <td>
@@ -59,28 +63,20 @@
 
               <td>
                 <div style="text-align: left; width: fit-content; margin-left: auto">
-                  GEPROG GmbH<br />
-                  Schauenburgerstr. 116<br />
-                  24118 Kiel<br />
-                  info@geprog.com
+                  {{project.invoiceData.name}}<br />
+                  {{project.invoiceData.addressLine1}}<br />
+                  {{#if project.invoiceData.addressLine2}}
+                  {{project.invoiceData.addressLine2}}<br />
+                  {{/if}}
+                  {{project.invoiceData.zipCode}} {{project.invoiceData.city}}<br />
+                  {{project.invoiceData.country}}
+                  {{project.invoiceData.email}}
                 </div>
               </td>
             </tr>
           </table>
         </td>
       </tr>
-
-      {{!-- <tr class='heading'>
-        <td>Payment Method</td>
-        <td></td>
-        <td>Check #</td>
-      </tr>
-
-      <tr class='details'>
-        <td>Check</td>
-        <td></td>
-        <td>1000</td>
-      </tr> --}}
 
       <tr class='heading'>
         <td>Item</td>

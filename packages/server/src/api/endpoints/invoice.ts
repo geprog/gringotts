@@ -75,7 +75,7 @@ export function invoiceEndpoints(server: FastifyInstance): void {
         return reply.code(404).send({ error: 'Customer not found' });
       }
 
-      await reply.view(path.join('templates', 'invoice.hbs'), { invoice: invoice.toJSON(), customer });
+      await reply.view(path.join('templates', 'invoice.hbs'), { invoice: invoice.toJSON(), project, customer });
     },
   );
 }
