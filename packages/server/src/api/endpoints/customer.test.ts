@@ -12,7 +12,7 @@ describe('Customer endpoints', () => {
   beforeAll(() => {
     vi.spyOn(config, 'config', 'get').mockReturnValue({
       port: 1234,
-      jwtSecret: '',
+      adminToken: '',
       postgresUrl: '',
       publicUrl: '',
     });

@@ -39,7 +39,6 @@ export function paymentEndpoints(server: FastifyInstance): void {
 
       await database.em.persistAndFlush([payment, invoice, subscription]);
 
-      const token = server.jwt.sign({ subscriptionId: subscription._id }, { expiresIn: '12h' });
       const project = invoice.project;
 
       void triggerWebhook({
@@ -47,7 +46,6 @@ export function paymentEndpoints(server: FastifyInstance): void {
         body: {
           subscriptionId: subscription._id,
         },
-        token,
       });
 
       await reply.send({ ok: true });

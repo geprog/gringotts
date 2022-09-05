@@ -10,7 +10,7 @@ describe('Subscription endpoints', () => {
   beforeAll(async () => {
     vi.spyOn(config, 'config', 'get').mockReturnValue({
       port: 1234,
-      jwtSecret: '',
+      adminToken: '',
       postgresUrl: 'postgres://postgres:postgres@localhost:5432/postgres',
       publicUrl: '',
     });
