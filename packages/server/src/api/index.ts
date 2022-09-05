@@ -23,15 +23,15 @@ export async function init(): Promise<FastifyInstance> {
   const server = fastify({
     logger: {
       transport:
-        process.env.NODE_ENV !== 'development'
-          ? {
+        process.env.NODE_ENV === 'production'
+          ? undefined
+          : {
               target: 'pino-pretty',
               options: {
                 translateTime: 'HH:MM:ss Z',
                 ignore: 'pid,hostname',
               },
-            }
-          : undefined,
+            },
     },
   });
 

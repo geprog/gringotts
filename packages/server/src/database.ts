@@ -11,6 +11,9 @@ import {
   invoiceSchema,
   Payment,
   paymentSchema,
+  Project,
+  projectInvoiceDataSchema,
+  projectSchema,
   Subscription,
   SubscriptionChange,
   subscriptionChangeSchema,
@@ -37,6 +40,8 @@ export class Database {
           paymentSchema,
           invoiceSchema,
           invoiceItemSchema,
+          projectSchema,
+          projectInvoiceDataSchema,
         ],
         discovery: { disableDynamicFileAccess: true },
       },
@@ -57,6 +62,10 @@ export class Database {
     return this.orm.em.fork() as EntityManager;
   }
 
+  get projects(): EntityRepository<Project> {
+    return this.em.getRepository(Project);
+  }
+
   get subscriptions(): EntityRepository<Subscription> {
     return this.em.getRepository(Subscription);
   }
@@ -65,20 +74,12 @@ export class Database {
     return this.em.getRepository(Customer);
   }
 
-  get subscriptionChanges(): EntityRepository<SubscriptionChange> {
-    return this.em.getRepository(SubscriptionChange);
-  }
-
   get payments(): EntityRepository<Payment> {
     return this.em.getRepository(Payment);
   }
 
   get invoices(): EntityRepository<Invoice> {
     return this.em.getRepository(Invoice);
-  }
-
-  get invoiceItems(): EntityRepository<InvoiceItem> {
-    return this.em.getRepository(InvoiceItem);
   }
 }
 

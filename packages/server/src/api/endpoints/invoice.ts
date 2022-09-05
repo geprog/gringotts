@@ -1,6 +1,7 @@
 import { FastifyInstance } from 'fastify';
 import path from 'path';
 
+import { getProjectFromRequest } from '~/api/helpers';
 import { database } from '~/database';
 
 export function invoiceEndpoints(server: FastifyInstance): void {
@@ -25,12 +26,14 @@ export function invoiceEndpoints(server: FastifyInstance): void {
       },
     },
     handler: async (request, reply) => {
+      const project = await getProjectFromRequest(request);
+
       const { invoiceId } = request.params as { invoiceId: string };
       if (!invoiceId) {
         return reply.code(400).send({ error: 'Missing invoiceId' });
       }
 
-      const invoice = await database.invoices.findOne({ _id: invoiceId }, { populate: ['items'] });
+      const invoice = await database.invoices.findOne({ _id: invoiceId, project }, { populate: ['items'] });
       if (!invoice) {
         return reply.code(404).send({ error: 'Invoice not found' });
       }
@@ -45,12 +48,14 @@ export function invoiceEndpoints(server: FastifyInstance): void {
       schema: { hide: true },
     },
     async (request, reply) => {
+      const project = await getProjectFromRequest(request);
+
       const { invoiceId } = request.params as { invoiceId: string };
       if (!invoiceId) {
         return reply.code(400).send({ error: 'Missing invoiceId' });
       }
 
-      const invoice = await database.invoices.findOne({ _id: invoiceId }, { populate: ['items'] });
+      const invoice = await database.invoices.findOne({ _id: invoiceId, project }, { populate: ['items'] });
       if (!invoice) {
         return reply.code(404).send({ error: 'Invoice not found' });
       }

@@ -1,24 +1,18 @@
-import fastify from 'fastify';
 import { beforeAll, describe, expect, it, MockContext, vi } from 'vitest';
 
-import { addSchemas } from '~/api/schema';
+import { init as apiInit } from '~/api';
 import * as config from '~/config';
 import * as database from '~/database';
-import { Customer, Subscription } from '~/entities';
+import { Customer, Project, Subscription } from '~/entities';
 import { getPaymentProvider } from '~/payment_providers';
-
-import { subscriptionEndpoints } from './subscription';
 
 describe('Subscription endpoints', () => {
   beforeAll(async () => {
     vi.spyOn(config, 'config', 'get').mockReturnValue({
-      paymentProvider: 'mocked',
       port: 1234,
-      mollieApiKey: '',
       jwtSecret: '',
       postgresUrl: 'postgres://postgres:postgres@localhost:5432/postgres',
       publicUrl: '',
-      webhookUrl: '',
     });
 
     await database.database.init();
@@ -49,12 +43,10 @@ describe('Subscription endpoints', () => {
       },
     } as unknown as database.Database);
 
-    const paymentProvider = getPaymentProvider();
+    const paymentProvider = getPaymentProvider({ paymentProvider: 'mock' } as Project);
     await paymentProvider?.createCustomer(customer);
 
-    const server = fastify();
-    subscriptionEndpoints(server);
-    addSchemas(server);
+    const server = await apiInit();
 
     const subscriptionPayload = {
       pricePerUnit: 15.69,
@@ -110,12 +102,10 @@ describe('Subscription endpoints', () => {
       },
     } as unknown as database.Database);
 
-    const paymentProvider = getPaymentProvider();
+    const paymentProvider = getPaymentProvider({ paymentProvider: 'mock' } as Project);
     await paymentProvider?.createCustomer(customer);
 
-    const server = fastify();
-    subscriptionEndpoints(server);
-    addSchemas(server);
+    const server = await apiInit();
 
     const subscriptionPayload = {
       pricePerUnit: 15.69,

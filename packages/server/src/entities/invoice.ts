@@ -3,6 +3,7 @@ import { v4 } from 'uuid';
 
 import { InvoiceItem } from '~/entities/invoice_item';
 import { Currency, Payment } from '~/entities/payment';
+import { Project } from '~/entities/project';
 import { Subscription } from '~/entities/subscription';
 import dayjs from '~/lib/dayjs';
 
@@ -19,6 +20,7 @@ export class Invoice {
   currency!: Currency;
   vatRate!: number;
   payment?: Payment;
+  project!: Project;
 
   constructor(data?: Partial<Invoice>) {
     Object.assign(this, data);
@@ -108,5 +110,9 @@ export const invoiceSchema = new EntitySchema<Invoice>({
     vatAmount: { type: 'float' },
     totalAmount: { type: 'float' },
     sequentialId: { type: Number },
+    project: {
+      reference: ReferenceType.MANY_TO_ONE,
+      entity: () => Project,
+    },
   },
 });

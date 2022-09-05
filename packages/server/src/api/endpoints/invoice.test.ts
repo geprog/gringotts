@@ -1,18 +1,11 @@
-import fastifyView from '@fastify/view';
 import dayjs from 'dayjs';
-import fastify from 'fastify';
-import Handlebars from 'handlebars';
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { addSchemas } from '~/api/schema';
+import { init as apiInit } from '~/api';
 import * as config from '~/config';
 import * as database from '~/database';
 import { Customer, Invoice, Subscription } from '~/entities';
-import { Currency } from '~/entities/payment';
-import { formatDate } from '~/lib/dayjs';
 import { getPeriodFromAnchorDate } from '~/utils';
-
-import { invoiceEndpoints } from './invoice';
 
 function getTestData() {
   const customer = new Customer({
@@ -59,13 +52,10 @@ function getTestData() {
 describe('Invoice endpoints', () => {
   beforeAll(async () => {
     vi.spyOn(config, 'config', 'get').mockReturnValue({
-      paymentProvider: 'mocked',
       port: 1234,
-      mollieApiKey: '',
       jwtSecret: '',
       postgresUrl: 'postgres://postgres:postgres@localhost:5432/postgres',
       publicUrl: '',
-      webhookUrl: '',
     });
 
     await database.database.init();
@@ -93,19 +83,7 @@ describe('Invoice endpoints', () => {
       },
     } as unknown as database.Database);
 
-    const server = fastify({
-      logger: {
-        transport: {
-          target: 'pino-pretty',
-          options: {
-            translateTime: 'HH:MM:ss Z',
-            ignore: 'pid,hostname',
-          },
-        },
-      },
-    });
-    invoiceEndpoints(server);
-    addSchemas(server);
+    const server = await apiInit();
 
     // when
     const response = await server.inject({
@@ -143,20 +121,7 @@ describe('Invoice endpoints', () => {
       },
     } as unknown as database.Database);
 
-    const server = fastify();
-    invoiceEndpoints(server);
-    addSchemas(server);
-
-    Handlebars.registerHelper('formatDate', (date: Date, format: string) => formatDate(date, format));
-    Handlebars.registerHelper('amountToPrice', (amount: number, currency: Currency) =>
-      Invoice.amountToPrice(amount, currency),
-    );
-
-    await server.register(fastifyView, {
-      engine: {
-        handlebars: Handlebars,
-      },
-    });
+    const server = await apiInit();
 
     // when
     const response = await server.inject({

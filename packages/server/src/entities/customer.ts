@@ -1,6 +1,7 @@
 import { Collection, EntitySchema, ReferenceType } from '@mikro-orm/core';
 import { v4 } from 'uuid';
 
+import { Project } from '~/entities/project';
 import { Subscription } from '~/entities/subscription';
 
 export class Customer {
@@ -16,6 +17,7 @@ export class Customer {
   subscriptions = new Collection<Subscription>(this);
   invoicePrefix!: string;
   invoiceCounter = 0;
+  project!: Project;
 
   constructor(data?: Partial<Customer>) {
     Object.assign(this, data);
@@ -50,6 +52,10 @@ export const customerSchema = new EntitySchema<Customer>({
       reference: ReferenceType.ONE_TO_MANY,
       entity: () => Subscription,
       mappedBy: (subscription) => subscription.customer,
+    },
+    project: {
+      reference: ReferenceType.MANY_TO_ONE,
+      entity: () => Project,
     },
   },
 });

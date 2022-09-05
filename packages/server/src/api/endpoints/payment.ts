@@ -2,21 +2,21 @@ import { FastifyInstance } from 'fastify';
 
 import { database } from '~/database';
 import { Invoice } from '~/entities';
-import { getPaymentProvider } from '~/payment_providers';
+import { parsePaymentWebhook } from '~/payment_providers';
 import { triggerWebhook } from '~/webhook';
 
 export function paymentEndpoints(server: FastifyInstance): void {
-  server.post('/payment/webhook', {
+  server.post('/payment/webhook/:paymentProviderName', {
     schema: { hide: true },
     handler: async (request, reply) => {
-      const paymentProvider = getPaymentProvider();
-      if (!paymentProvider) {
+      const { paymentProviderName } = request.params as { paymentProviderName: string };
+
+      const payload = await parsePaymentWebhook(paymentProviderName, request.body);
+      if (!payload) {
         return reply.code(500).send({
-          error: 'Payment provider not configured',
+          error: 'Payment provider not configured or payload parsing failed',
         });
       }
-
-      const payload = await paymentProvider.parsePaymentWebhook(request.body);
 
       const payment = await database.payments.findOne({ _id: payload.paymentId }, { populate: ['subscription'] });
       if (!payment) {
@@ -51,6 +51,7 @@ export function paymentEndpoints(server: FastifyInstance): void {
 
       await database.em.persistAndFlush([payment, invoice, subscription]);
 
+      // TODO: fix token
       const token = server.jwt.sign({ subscriptionId: subscription._id }, { expiresIn: '12h' });
       void triggerWebhook({
         body: {

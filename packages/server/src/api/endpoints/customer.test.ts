@@ -11,13 +11,10 @@ import { customerEndpoints } from './customer';
 describe('Customer endpoints', () => {
   beforeAll(() => {
     vi.spyOn(config, 'config', 'get').mockReturnValue({
-      paymentProvider: 'mocked',
       port: 1234,
-      mollieApiKey: '',
       jwtSecret: '',
       postgresUrl: '',
       publicUrl: '',
-      webhookUrl: '',
     });
   });
 
