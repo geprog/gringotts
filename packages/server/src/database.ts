@@ -42,6 +42,12 @@ export class Database {
           projectInvoiceDataSchema,
         ],
         discovery: { disableDynamicFileAccess: true },
+        migrations: {
+          disableForeignKeys: false,
+        },
+        schemaGenerator: {
+          disableForeignKeys: false,
+        },
       },
       false,
     );
