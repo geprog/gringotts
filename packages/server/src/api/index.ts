@@ -93,7 +93,10 @@ export async function init(): Promise<FastifyInstance> {
   });
 
   await server.register(fastifyStatic, {
-    root: path.join(__dirname, '..', '..', 'public'),
+    root:
+      process.env.NODE_ENV === 'production'
+        ? path.join(__dirname, 'public')
+        : path.join(__dirname, '..', '..', 'public'),
     prefix: '/static',
   });
 
