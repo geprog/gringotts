@@ -74,7 +74,7 @@ export async function init(): Promise<FastifyInstance> {
       return reply;
     }
 
-    const project = await database.projects.findOne({ apiToken });
+    const project = await database.projects.findOne({ apiToken }, { populate: ['invoiceData'] });
     if (!project) {
       await reply.code(401).send({ error: 'Invalid api token' });
       return reply;
