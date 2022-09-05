@@ -10,4 +10,7 @@ CMD ["node", "index.js"]
 
 COPY ./packages/server/dist/ .
 
+COPY ./packages/server/public/ ./public
+COPY ./packages/server/templates/ ./templates
+
 RUN chown -R node:node /app
