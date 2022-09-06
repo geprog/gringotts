@@ -41,7 +41,7 @@ export async function init(): Promise<FastifyInstance> {
       await reply.code(404).send({
         error: 'Not found',
       });
-      return;
+      return reply;
     }
 
     // skip requests to our docs
@@ -49,11 +49,11 @@ export async function init(): Promise<FastifyInstance> {
       return;
     }
 
-    if (request.routerPath === '/payment/webhook/:paymentProviderName') {
+    if (request.routerPath?.startsWith('/static')) {
       return;
     }
 
-    if (request.routerPath?.startsWith('/static')) {
+    if (request.routerPath === '/payment/webhook/:paymentProviderName') {
       return;
     }
 

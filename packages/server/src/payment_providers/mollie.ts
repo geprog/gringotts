@@ -93,9 +93,9 @@ export class Mollie implements PaymentProvider {
   async parsePaymentWebhook(
     payload: unknown,
   ): Promise<{ paymentId: string; paidAt: Date | undefined; paymentStatus: 'pending' | 'paid' | 'failed' }> {
-    const { id: paymentId } = payload as { id: string };
+    const _payload = payload as { id: string };
 
-    const payment = await this.api.payments.get(paymentId);
+    const payment = await this.api.payments.get(_payload?.id);
 
     const metadata = payment.metadata as Metadata;
 
