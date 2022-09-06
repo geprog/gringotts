@@ -122,6 +122,90 @@ describe('Customer endpoints', () => {
     expect(customers[0]).toContain(customerData);
   });
 
+  it('should get all customers', async () => {
+    // given
+    const testData = getFixtures();
+
+    const customer2 = <Customer>{
+      _id: '123',
+      name: 'John Doe',
+      email: 'john@doe.com',
+      addressLine1: 'BigBen Street 954',
+      addressLine2: '123',
+      city: 'London',
+      country: 'GB',
+      zipCode: 'ENG-1234',
+    };
+
+    vi.spyOn(database, 'database', 'get').mockReturnValue({
+      customers: {
+        find() {
+          return Promise.resolve([testData.customer, customer2]);
+        },
+      },
+      projects: {
+        findOne() {
+          return Promise.resolve(testData.project);
+        },
+      },
+    } as unknown as database.Database);
+
+    const server = await apiInit();
+
+    // when
+    const customersResponse = await server.inject({
+      method: 'GET',
+      url: `/customer`,
+      headers: {
+        authorization: `Bearer ${testData.project.apiToken}`,
+      },
+    });
+
+    // then
+    expect(customersResponse.statusCode).toBe(200);
+
+    const customers: Customer[] = customersResponse.json();
+    expect(customers).toBeDefined();
+    expect(customers).toHaveLength(2);
+    expect(customers[0]._id).toEqual(testData.customer._id);
+    expect(customers[1]._id).toEqual(customer2._id);
+  });
+
+  it('should get a customer by its id', async () => {
+    // given
+    const testData = getFixtures();
+
+    vi.spyOn(database, 'database', 'get').mockReturnValue({
+      customers: {
+        findOne() {
+          return Promise.resolve(testData.customer);
+        },
+      },
+      projects: {
+        findOne() {
+          return Promise.resolve(testData.project);
+        },
+      },
+    } as unknown as database.Database);
+
+    const server = await apiInit();
+
+    // when
+    const customerResponse = await server.inject({
+      method: 'GET',
+      url: `/customer/${testData.customer._id}`,
+      headers: {
+        authorization: `Bearer ${testData.project.apiToken}`,
+      },
+    });
+
+    // then
+    expect(customerResponse.statusCode).toBe(200);
+
+    const customer: Customer = customerResponse.json();
+    expect(customer._id).toContain(testData.customer._id);
+  });
+
   it('should update a customer', async () => {
     // given
     const testData = getFixtures();
