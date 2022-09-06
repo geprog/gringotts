@@ -136,10 +136,7 @@ export function customerEndpoints(server: FastifyInstance): void {
       },
       response: {
         200: {
-          type: 'array',
-          items: {
-            $ref: 'Customer',
-          },
+          $ref: 'Customer',
         },
         404: {
           $ref: 'ErrorResponse',
