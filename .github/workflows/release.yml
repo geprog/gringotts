@@ -133,14 +133,14 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         if: "github.ref_type == 'tag'"
 
-      - name: Release pre version
-        working-directory: packages/client/
-        run: |
-          pnpm version 1.0.0-pre.1 --no-commit-hooks --no-git-tag-version
-          pnpm publish --no-git-check --access public --tag pre
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-        if: "github.ref_type != 'tag'"
+      # - name: Release pre version
+      #   working-directory: packages/client/
+      #   run: |
+      #     pnpm version 1.0.0-pre.1 --no-commit-hooks --no-git-tag-version
+      #     pnpm publish --no-git-check --access public --tag pre
+      #   env:
+      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      #   if: "github.ref_type != 'tag'"
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4.2.3
