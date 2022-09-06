@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 
 import { getProjectFromRequest } from '~/api/helpers';
 import { database } from '~/database';
-import { Customer } from '~/entities';
+import { Customer, Project } from '~/entities';
 import { getPaymentProvider } from '~/payment_providers';
 
 export function customerEndpoints(server: FastifyInstance): void {
@@ -85,7 +85,7 @@ export function customerEndpoints(server: FastifyInstance): void {
 
   server.get('/customer', {
     schema: {
-      summary: 'Get a customer',
+      summary: 'List all customers or search by email',
       tags: ['customer'],
       querystring: {
         type: 'object',
@@ -111,9 +111,52 @@ export function customerEndpoints(server: FastifyInstance): void {
 
       const { email } = request.query as Partial<{ email?: string }>;
 
-      const customers = await database.customers.find({ email, project });
+      const query = { project } as { project: Project; email: string };
+      if (email) {
+        query.email = email;
+      }
+
+      const customers = await database.customers.find(query);
 
       await reply.send(customers);
+    },
+  });
+
+  server.get('/customer/:customerId', {
+    schema: {
+      summary: 'Get a customer',
+      tags: ['customer'],
+      params: {
+        type: 'object',
+        required: ['customerId'],
+        additionalProperties: false,
+        properties: {
+          customerId: { type: 'string' },
+        },
+      },
+      response: {
+        200: {
+          type: 'array',
+          items: {
+            $ref: 'Customer',
+          },
+        },
+        404: {
+          $ref: 'ErrorResponse',
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      const project = await getProjectFromRequest(request);
+
+      const { customerId } = request.params as { customerId: string };
+
+      const customer = await database.customers.findOne({ _id: customerId, project });
+      if (!customer) {
+        return reply.code(404).send({ error: 'Customer not found' });
+      }
+
+      await reply.send(customer);
     },
   });
 
