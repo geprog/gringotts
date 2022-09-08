@@ -127,6 +127,7 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
       );
 
       const { checkoutUrl } = await paymentProvider.startSubscription({
+        project,
         subscription,
         payment,
         redirectUrl: body.redirectUrl,
