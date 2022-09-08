@@ -51,14 +51,7 @@ export function customerEndpoints(server: FastifyInstance): void {
 
       const body = request.body as CustomerUpdateBody;
 
-      let customer = await database.customers.findOne({ email: body.email, project });
-      if (customer) {
-        return reply.code(400).send({
-          error: 'Customer already exists',
-        });
-      }
-
-      customer = new Customer({
+      let customer = new Customer({
         email: body.email,
         name: body.name,
         addressLine1: body.addressLine1,
