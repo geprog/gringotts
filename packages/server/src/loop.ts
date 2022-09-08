@@ -69,7 +69,7 @@ export async function chargeInvoices(): Promise<void> {
           throw new Error(`Payment provider for '${project._id}' not configured`);
         }
 
-        await paymentProvider.chargePayment(payment);
+        await paymentProvider.chargePayment({ payment, project });
         await database.em.persistAndFlush([payment, invoice]);
       }
 
