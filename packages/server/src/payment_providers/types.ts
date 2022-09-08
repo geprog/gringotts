@@ -1,13 +1,18 @@
-import { Customer, Payment, Subscription } from '~/entities';
+import { Customer, Payment, Project, Subscription } from '~/entities';
 
 export interface PaymentProvider {
-  startSubscription(d: { subscription: Subscription; redirectUrl: string; payment: Payment }): Promise<{
+  startSubscription(d: {
+    project: Project;
+    subscription: Subscription;
+    redirectUrl: string;
+    payment: Payment;
+  }): Promise<{
     checkoutUrl: string;
   }>;
   createCustomer(customer: Customer): Promise<Customer>;
   deleteCustomer(customer: Customer): Promise<void>;
   updateCustomer(customer: Customer): Promise<Customer>;
-  chargePayment(payment: Payment): Promise<void>;
+  chargePayment(d: { project: Project; payment: Payment }): Promise<void>;
   parsePaymentWebhook(
     payload: unknown,
   ): Promise<{ paymentId: string; paidAt: Date | undefined; paymentStatus: 'pending' | 'paid' | 'failed' }>;

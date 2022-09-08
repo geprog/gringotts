@@ -1,7 +1,7 @@
 import { createMollieClient, MollieClient, PaymentStatus, SequenceType } from '@mollie/api-client';
 
 import { config } from '~/config';
-import { Customer, Payment, Subscription } from '~/entities';
+import { Customer, Payment, Project, Subscription } from '~/entities';
 import { PaymentProvider } from '~/payment_providers/types';
 
 type Metadata = {
@@ -20,9 +20,11 @@ export class Mollie implements PaymentProvider {
   }
 
   async startSubscription({
+    project,
     redirectUrl,
     payment,
   }: {
+    project: Project;
     subscription: Subscription;
     redirectUrl: string;
     payment: Payment;
@@ -38,7 +40,7 @@ export class Mollie implements PaymentProvider {
       description: payment.description,
       sequenceType: SequenceType.first,
       redirectUrl,
-      webhookUrl: `${config.publicUrl}/payment/webhook/mollie`,
+      webhookUrl: `${config.publicUrl}/payment/webhook/${project._id}`,
       metadata: <Metadata>{
         paymentId: payment._id,
       },
@@ -52,7 +54,7 @@ export class Mollie implements PaymentProvider {
     return { checkoutUrl };
   }
 
-  async chargePayment(payment: Payment): Promise<void> {
+  async chargePayment({ payment, project }: { payment: Payment; project: Project }): Promise<void> {
     if (!payment.customer.paymentProviderId) {
       throw new Error('No customer id');
     }
@@ -66,7 +68,7 @@ export class Mollie implements PaymentProvider {
       customerId: customer.id,
       description: payment.description,
       sequenceType: SequenceType.recurring,
-      webhookUrl: `${config.publicUrl}/payment/webhook`,
+      webhookUrl: `${config.publicUrl}/payment/webhook/${project._id}`,
       metadata: <Metadata>{
         paymentId: payment._id,
       },

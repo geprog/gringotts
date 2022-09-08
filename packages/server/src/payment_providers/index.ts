@@ -14,19 +14,3 @@ export function getPaymentProvider(project: Project): PaymentProvider | undefine
 
   return undefined;
 }
-
-export function parsePaymentWebhook(
-  paymentProviderName: string,
-  payload: unknown,
-): ReturnType<PaymentProvider['parsePaymentWebhook']> | undefined {
-  if (paymentProviderName === 'mock') {
-    return new Mocked().parsePaymentWebhook(payload);
-  }
-
-  if (paymentProviderName === 'mollie') {
-    // TODO: think about way to load mollie provider without key?
-    return new Mollie({ apiKey: 'todo' }).parsePaymentWebhook(payload);
-  }
-
-  return undefined;
-}
