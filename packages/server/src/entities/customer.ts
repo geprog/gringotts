@@ -40,7 +40,7 @@ export const customerSchema = new EntitySchema<Customer>({
     _id: { type: 'uuid', onCreate: () => v4(), primary: true },
     paymentProviderId: { type: 'string' },
     name: { type: 'string' },
-    email: { type: 'string', unique: true },
+    email: { type: 'string' },
     addressLine1: { type: 'string' },
     addressLine2: { type: 'string', nullable: true },
     city: { type: 'string' },
