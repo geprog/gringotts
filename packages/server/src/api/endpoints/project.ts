@@ -91,7 +91,10 @@ export function projectEndpoints(server: FastifyInstance): void {
         logo: body.invoiceData?.logo,
       });
 
-      const apiToken = await generateApiToken();
+      const apiToken = body.apiToken || (await generateApiToken());
+      if (apiToken.length >= 32) {
+        return reply.code(400).send({ error: 'Api token must be at least 32 characters long' });
+      }
 
       const project = new Project({
         name: body.name,

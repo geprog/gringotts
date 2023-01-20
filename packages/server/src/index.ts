@@ -16,6 +16,29 @@ async function start() {
 
   const server = await serverInit();
 
+  if (process.env.CREATE_PROJECT_DATA) {
+    // check if there is already a project
+    const projectsAmount = await database.projects.count({});
+    if (projectsAmount === 0) {
+      // eslint-disable-next-line no-console
+      console.log('Creating project ...', JSON.parse(process.env.CREATE_PROJECT_DATA));
+      const response = await server.inject({
+        method: 'POST',
+        headers: {
+          authorization: `Bearer ${config.adminToken}`,
+        },
+        url: '/project',
+        payload: JSON.parse(process.env.CREATE_PROJECT_DATA) as Record<string, unknown>,
+      });
+
+      if (response.statusCode !== 200) {
+        // eslint-disable-next-line no-console
+        console.error(response.body);
+        process.exit(1);
+      }
+    }
+  }
+
   try {
     // eslint-disable-next-line no-console
     console.log(`Starting server ${config.publicUrl} ...`);
