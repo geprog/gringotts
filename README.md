@@ -37,13 +37,13 @@ The container image can be found at `ghcr.io/geprog/gringotts`.
 
 ### Environment Variables
 
-| Name | Description | Default |
-|------|-------------|---------|
-| PORT | Port on which the server should listen | 3000 |
-| PUBLIC_URL | Url on which the server is reachable | http://localhost:3000 |
-| POSTGRES_URL | Url to the postgres database | postgres://postgres:postgres@localhost:5432/gringotts |
-| ADMIN_TOKEN | Token which is used to authenticate admin endpoints like project |  |
-| CREATE_PROJECT_DATA | Json string which is used to create the first project |  |
+| Name                | Description                                                      | Default                                               |
+| ------------------- | ---------------------------------------------------------------- | ----------------------------------------------------- |
+| PORT                | Port on which the server should listen                           | 3000                                                  |
+| PUBLIC_URL          | Url on which the server is reachable                             | http://localhost:3000                                 |
+| POSTGRES_URL        | Url to the postgres database                                     | postgres://postgres:postgres@localhost:5432/gringotts |
+| ADMIN_TOKEN         | Token which is used to authenticate admin endpoints like project |                                                       |
+| CREATE_PROJECT_DATA | Json string which is used to create the first project            |                                                       |
 
 ### OpenApi Documention
 
