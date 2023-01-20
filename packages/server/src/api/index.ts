@@ -45,7 +45,7 @@ export async function init(): Promise<FastifyInstance> {
     }
 
     // skip requests to our docs
-    if (request.routerPath?.startsWith('/documentation')) {
+    if (request.routerPath?.startsWith('/docs')) {
       return;
     }
 
@@ -107,7 +107,7 @@ export async function init(): Promise<FastifyInstance> {
   );
 
   await server.register(fastifySwagger, {
-    routePrefix: '/documentation',
+    routePrefix: '/docs',
     swagger: {
       info: {
         title: 'Gringotts api',
