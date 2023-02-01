@@ -114,7 +114,7 @@ export async function init(): Promise<FastifyInstance> {
         description: 'Documentation for the Gringotts api',
         version: '0.1.0',
       },
-      host: 'localhost:3000',
+      host: `localhost:${config.port}`,
       schemes: ['http', 'https'],
       consumes: ['application/json'],
       produces: ['application/json'],

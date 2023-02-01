@@ -250,7 +250,14 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
         ? getActiveUntilDate(subscription.lastPayment, subscription.anchorDate)
         : undefined;
 
-      await reply.send({ ...subscription, activeUntil });
+      const _subscription = {
+        ...subscription,
+        activeUntil,
+        changes: subscription.changes.getItems().map((change) => ({ ...change, subscription: undefined })),
+        invoices: subscription.invoices.getItems().map((invoice) => ({ ...invoice, subscription: undefined })),
+      };
+
+      await reply.send(_subscription);
     },
   });
 }
