@@ -6,7 +6,7 @@ import { Payment, Subscription } from '~/entities';
 import { Invoice } from '~/entities/invoice';
 import { InvoiceItem } from '~/entities/invoice_item';
 import { getPaymentProvider } from '~/payment_providers';
-import { getActiveUntilDate, getPeriodFromAnchorDate } from '~/utils';
+import { getActiveUntilDate } from '~/utils';
 
 export function subscriptionEndpoints(server: FastifyInstance): void {
   server.post('/subscription', {
@@ -83,8 +83,6 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
         project,
       });
 
-      const period = getPeriodFromAnchorDate(now, subscription.anchorDate);
-
       subscription.changePlan({ units: body.units, pricePerUnit: body.pricePerUnit });
 
       const paymentProvider = getPaymentProvider(project);
@@ -97,7 +95,7 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
       customer.invoiceCounter += 1;
 
       const invoice = new Invoice({
-        date: period.end,
+        date: now,
         sequentialId: customer.invoiceCounter,
         status: 'draft',
         subscription,
