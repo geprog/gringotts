@@ -32,12 +32,8 @@
                       <td>{{invoice.number}}</td>
                     </tr>
                     <tr>
-                      <td>Period end:</td>
+                      <td>Date:</td>
                       <td>{{{formatDate invoice.start "DD.MM.YYYY"}}}</td>
-                    </tr>
-                    <tr>
-                      <td>Period start:</td>
-                      <td>{{{formatDate invoice.end "DD.MM.YYYY"}}}</td>
                     </tr>
                   </table>
                 </div>
@@ -69,7 +65,7 @@
                   {{project.invoiceData.addressLine2}}<br />
                   {{/if}}
                   {{project.invoiceData.zipCode}} {{project.invoiceData.city}}<br />
-                  {{project.invoiceData.country}}
+                  {{project.invoiceData.country}}<br />
                   {{project.invoiceData.email}}
                 </div>
               </td>

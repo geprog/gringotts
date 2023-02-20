@@ -31,12 +31,8 @@ exports[`Invoice endpoints > should get an html invoice 1`] = `
                       <td>INV-F1B-0B6H-002</td>
                     </tr>
                     <tr>
-                      <td>Period end:</td>
+                      <td>Date:</td>
                       <td>01.01.2020</td>
-                    </tr>
-                    <tr>
-                      <td>Period start:</td>
-                      <td>01.02.2020</td>
                     </tr>
                   </table>
                 </div>
@@ -64,7 +60,7 @@ exports[`Invoice endpoints > should get an html invoice 1`] = `
                   My Street 123<br />
                   Postbox 321<br />
                   GB-12345 London<br />
-                  GB
+                  GB<br />
                   test@example.tld
                 </div>
               </td>

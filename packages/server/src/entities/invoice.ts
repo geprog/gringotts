@@ -11,8 +11,7 @@ export type InvoiceStatus = 'draft' | 'pending' | 'paid' | 'failed';
 
 export class Invoice {
   _id: string = v4();
-  start!: Date; // TODO: should this really be part of an invoice?
-  end!: Date; // TODO: should this really be part of an invoice?
+  date!: Date;
   sequentialId!: number;
   items = new Collection<InvoiceItem>(this);
   status: InvoiceStatus = 'draft';
@@ -59,7 +58,7 @@ export class Invoice {
 
   toString(): string {
     const formatDate = (date: Date) => dayjs(date).format('DD.MM.YYYY HH:mm');
-    return `Invoice from ${formatDate(this.start)} to ${formatDate(this.end)}\n${this.items
+    return `Invoice from ${formatDate(this.date)}\n${this.items
       .getItems()
       .map((item) => {
         const basePrice = Invoice.roundPrice(item.pricePerUnit * item.units);
@@ -87,8 +86,7 @@ export const invoiceSchema = new EntitySchema<Invoice>({
   properties: {
     _id: { type: 'uuid', onCreate: () => v4(), primary: true },
     number: { type: 'string' },
-    start: { type: 'date' },
-    end: { type: 'date' },
+    date: { type: 'date' },
     status: { type: String },
     items: {
       reference: ReferenceType.ONE_TO_MANY,

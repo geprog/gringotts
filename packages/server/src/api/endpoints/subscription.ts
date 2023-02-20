@@ -94,37 +94,39 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
         });
       }
 
-      const payment = new Payment({
-        amount: 1.0, // TODO: change first payment price based on currency
-        currency: 'EUR', // TODO: allow to change currency
-        status: 'pending',
-        customer,
-        description: 'Subscription start', // TODO: allow to set description
-        subscription,
-      });
-
       customer.invoiceCounter += 1;
 
       const invoice = new Invoice({
-        start: period.start,
-        end: period.end,
+        date: period.end,
         sequentialId: customer.invoiceCounter,
         status: 'draft',
         subscription,
-        currency: payment.currency,
-        vatRate: 19.0, // TODO: german vat rate => allow to configure
-        payment,
+        currency: 'EUR', // TODO: allow to change currency
+        vatRate: 0, // Set to 0 as payment verification is not a real invoice
         project,
       });
 
       invoice.items.add(
         new InvoiceItem({
-          description: 'Subscription start (Payment verification)', // TODO: allow to configure text
-          pricePerUnit: payment.amount,
+          description: 'Payment verification', // TODO: allow to configure text
+          pricePerUnit: 1.0, // TODO: change first payment price based on currency
           units: 1,
           invoice,
         }),
       );
+
+      const amount = Invoice.roundPrice(invoice.totalAmount);
+
+      const payment = new Payment({
+        amount,
+        status: 'pending',
+        customer,
+        description: 'Payment verification', // TODO: allow to set description
+        subscription,
+        currency: invoice.currency,
+      });
+
+      invoice.payment = payment;
 
       const { checkoutUrl } = await paymentProvider.startSubscription({
         project,
