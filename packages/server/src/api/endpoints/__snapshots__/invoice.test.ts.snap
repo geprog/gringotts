@@ -100,7 +100,7 @@ exports[`Invoice endpoints > should get an html invoice 1`] = `
         <td>31.53€</td>
       </tr>
 
-      <tr>
+      <tr class=\\"sum\\">
         <td></td>
 
         <td colspan=\\"2\\">
@@ -121,6 +121,8 @@ exports[`Invoice endpoints > should get an html invoice 1`] = `
         </td>
       </tr>
     </table>
+
+    <p>The total amount will be debited from your bank account soon.</p>
   </div>
 </body>
 
