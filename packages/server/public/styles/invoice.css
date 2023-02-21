@@ -96,3 +96,18 @@
 .invoice-box.rtl table tr td:nth-child(3) {
   text-align: left;
 }
+
+.invoice-box .sum > td {
+  padding: 0;
+}
+
+.invoice-box .sum table {
+  border-collapse: collapse;
+  width: min-content;
+  margin-left: auto;
+}
+
+.invoice-box .sum table td {
+  white-space: nowrap;
+}
+
