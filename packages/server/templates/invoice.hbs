@@ -32,12 +32,8 @@
                       <td>{{invoice.number}}</td>
                     </tr>
                     <tr>
-                      <td>Period end:</td>
-                      <td>{{{formatDate invoice.start "DD.MM.YYYY"}}}</td>
-                    </tr>
-                    <tr>
-                      <td>Period start:</td>
-                      <td>{{{formatDate invoice.end "DD.MM.YYYY"}}}</td>
+                      <td>Date:</td>
+                      <td>{{{formatDate invoice.date "DD.MM.YYYY"}}}</td>
                     </tr>
                   </table>
                 </div>
@@ -69,7 +65,7 @@
                   {{project.invoiceData.addressLine2}}<br />
                   {{/if}}
                   {{project.invoiceData.zipCode}} {{project.invoiceData.city}}<br />
-                  {{project.invoiceData.country}}
+                  {{project.invoiceData.country}}<br />
                   {{project.invoiceData.email}}
                 </div>
               </td>
@@ -92,7 +88,7 @@
       </tr>
       {{/each}}
 
-      <tr>
+      <tr class="sum">
         <td></td>
 
         <td colspan="2">
@@ -113,6 +109,8 @@
         </td>
       </tr>
     </table>
+
+    <p>The total amount will be debited from your bank account soon.</p>
   </div>
 </body>
 

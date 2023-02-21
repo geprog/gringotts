@@ -77,16 +77,15 @@ export function addSchemas(server: FastifyInstance): void {
     type: 'object',
     properties: {
       _id: { type: 'string' },
-      start: { type: 'string' },
-      end: { type: 'string' },
+      date: { type: 'string' },
       sequentialId: { type: 'number' },
-      items: {
-        // TODO: items.items is throwing: The value '[object Object]' does not match schema definition.
-        // type: 'array',
-        // items: {
-        //   $ref: 'InvoiceItem',
-        // },
-      },
+      // items: {
+      //    TODO: items.items is throwing: The value '[object Object]' does not match schema definition.
+      //    type: 'array',
+      //    items: {
+      //      $ref: 'InvoiceItem',
+      //    },
+      // },
       subscription: { $ref: 'Subscription' },
       status: { type: 'string' },
       currency: { type: 'string' },

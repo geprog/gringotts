@@ -51,7 +51,7 @@ export const customerSchema = new EntitySchema<Customer>({
     subscriptions: {
       reference: ReferenceType.ONE_TO_MANY,
       entity: () => Subscription,
-      mappedBy: (subscription) => subscription.customer,
+      mappedBy: (subscription: Subscription) => subscription.customer,
     },
     project: {
       reference: ReferenceType.MANY_TO_ONE,
