@@ -28,6 +28,6 @@ export const projectInvoiceDataSchema = new EntitySchema<ProjectInvoiceData>({
     city: { type: 'string' },
     zipCode: { type: 'string' },
     country: { type: 'string' },
-    logo: { type: 'string' },
+    logo: { type: 'text', nullable: true },
   },
 });

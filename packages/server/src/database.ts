@@ -18,6 +18,7 @@ import {
   subscriptionSchema,
 } from '~/entities';
 import { addExitHook } from '~/lib/exit_hooks';
+import { MigrationAlterColumnLogo } from '~/migrations/alter_column_logo_to_text';
 import { MigrationReplaceStartAndEndWithDate } from '~/migrations/replace_start_and_end_with_date_invoice';
 
 export class Database {
@@ -48,6 +49,10 @@ export class Database {
             {
               name: 'MigrationReplaceStartAndEndWithDate',
               class: MigrationReplaceStartAndEndWithDate,
+            },
+            {
+              name: 'MigrationAlterColumnLogo',
+              class: MigrationAlterColumnLogo,
             },
           ],
           disableForeignKeys: false,
