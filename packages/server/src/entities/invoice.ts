@@ -91,7 +91,7 @@ export const invoiceSchema = new EntitySchema<Invoice>({
     items: {
       reference: ReferenceType.ONE_TO_MANY,
       entity: () => InvoiceItem,
-      mappedBy: (item) => item.invoice,
+      mappedBy: (item: InvoiceItem) => item.invoice,
     },
     subscription: {
       reference: ReferenceType.MANY_TO_ONE,

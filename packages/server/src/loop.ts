@@ -14,7 +14,9 @@ export function addSubscriptionChangesToInvoice(subscription: Subscription, invo
 
   // TODO: check if invoice items are already in the invoice
 
-  invoice.items.add(...newInvoiceItems);
+  newInvoiceItems.forEach((item) => {
+    invoice.items.add(item);
+  });
 
   return invoice;
 }
