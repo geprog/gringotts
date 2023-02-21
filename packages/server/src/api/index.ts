@@ -85,7 +85,13 @@ export async function init(): Promise<FastifyInstance> {
 
   await server.register(fastifyFormBody);
 
-  await server.register(fastifyHelmet);
+  await server.register(fastifyHelmet, {
+    contentSecurityPolicy: {
+      directives: {
+        imgSrc: ["'self'", 'data:', 'https:'],
+      },
+    },
+  });
 
   await server.register(fastifyView, {
     engine: {
