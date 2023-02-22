@@ -240,7 +240,7 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
 
       const subscription = await database.subscriptions.findOne(
         { _id: subscriptionId, project },
-        { populate: ['customer', 'changes', 'invoices'] },
+        { populate: ['customer', 'changes'] },
       );
       if (!subscription) {
         return reply.code(404).send({ error: 'Subscription not found' });
@@ -251,13 +251,51 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
         : undefined;
 
       const _subscription = {
-        ...subscription,
+        ...subscription.toJSON(),
         activeUntil,
-        changes: subscription.changes.getItems().map((change) => ({ ...change, subscription: undefined })),
-        invoices: subscription.invoices.getItems().map((invoice) => ({ ...invoice, subscription: undefined })),
       };
 
       await reply.send(_subscription);
+    },
+  });
+
+  server.get('/subscription/:subscriptionId/invoice', {
+    schema: {
+      summary: 'List all invoices of a subscription',
+      tags: ['subscription', 'invoice'],
+      params: {
+        type: 'object',
+        required: ['subscriptionId'],
+        additionalProperties: false,
+        properties: {
+          subscriptionId: { type: 'string' },
+        },
+      },
+      response: {
+        200: {
+          type: 'array',
+          items: {
+            $ref: 'Invoice',
+          },
+        },
+        404: {
+          $ref: 'ErrorResponse',
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      const project = await getProjectFromRequest(request);
+
+      const { subscriptionId } = request.params as { subscriptionId: string };
+
+      const subscription = await database.subscriptions.findOne({ _id: subscriptionId, project });
+      if (!subscription) {
+        return reply.code(404).send({ error: 'Subscription not found' });
+      }
+
+      const invoices = await database.invoices.find({ subscription, project }, { populate: ['items'] });
+
+      await reply.send(invoices.map((invoice) => invoice.toJSON()));
     },
   });
 }

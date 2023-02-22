@@ -85,7 +85,7 @@ export function addSchemas(server: FastifyInstance): void {
           $ref: 'InvoiceItem',
         },
       },
-      subscription: { $ref: 'Subscription' },
+      // subscription: { $ref: 'Subscription' },
       status: { type: 'string' },
       currency: { type: 'string' },
       vatRate: { type: 'number' },
@@ -138,10 +138,10 @@ export function addSchemas(server: FastifyInstance): void {
         type: 'array',
         items: { $ref: 'SubscriptionChange' },
       },
-      invoices: {
-        type: 'array',
-        items: { $ref: 'Invoice' },
-      },
+      // invoices: {
+      //   type: 'array',
+      //   items: { $ref: 'Invoice' },
+      // },
     },
   });
 }
