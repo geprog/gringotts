@@ -1,5 +1,6 @@
 import fetch from 'cross-fetch';
 import { FastifyInstance } from 'fastify';
+import NodeFormData from 'form-data';
 import fs from 'fs';
 import jwt from 'jsonwebtoken';
 import path from 'path';
@@ -19,14 +20,12 @@ async function generateInvoicePdf(invoice: Invoice, project: Project) {
     return invoice;
   }
 
+  const formData = new NodeFormData() as unknown as FormData;
+  formData.append('url', `${config.publicUrl}/invoice/${invoice._id}/html?token=${project.apiToken}`);
+
   const response = await fetch(`${config.gotenbergUrl}/forms/chromium/convert/url`, {
     method: 'POST',
-    // headers: {
-    //   'Gotenberg-Trace': 'debug',
-    // },
-    body: JSON.stringify({
-      url: `${config.publicUrl}/invoice/${invoice._id}/html?token=${project.apiToken}`,
-    }),
+    body: formData,
   });
 
   if (!response.ok || !response.body) {
@@ -40,9 +39,12 @@ async function generateInvoicePdf(invoice: Invoice, project: Project) {
   // cast as response.body is a ReadableStream from DOM and not NodeJS.ReadableStream
   const httpStream = response.body as unknown as NodeJS.ReadableStream;
 
-  await stream.finished(httpStream, fs.createWriteStream(filePath));
+  await stream.pipeline(httpStream, fs.createWriteStream(filePath));
 
   invoice.file = fileName;
+
+  await database.em.persistAndFlush(invoice);
+
   return invoice;
 }
 
@@ -118,10 +120,10 @@ export function invoiceEndpoints(server: FastifyInstance): void {
   );
 
   server.get(
-    '/invoice/:invoiceId/generate-download',
+    '/invoice/:invoiceId/generate-download-link',
     {
       schema: {
-        summary: 'Download an invoice',
+        summary: 'Get a download link for an invoice',
         tags: ['invoice'],
         params: {
           type: 'object',
@@ -129,6 +131,22 @@ export function invoiceEndpoints(server: FastifyInstance): void {
           additionalProperties: false,
           properties: {
             invoiceId: { type: 'string' },
+          },
+        },
+        response: {
+          200: {
+            type: 'object',
+            required: ['url'],
+            additionalProperties: false,
+            properties: {
+              url: { type: 'string' },
+            },
+          },
+          400: {
+            $ref: 'ErrorResponse',
+          },
+          404: {
+            $ref: 'ErrorResponse',
           },
         },
       },
@@ -150,12 +168,9 @@ export function invoiceEndpoints(server: FastifyInstance): void {
         return reply.code(400).send({ error: 'Invoice is not ready yet' });
       }
 
-      if (!invoice.file) {
-        await generateInvoicePdf(invoice, project);
-        await database.em.persistAndFlush(invoice);
-      }
+      await generateInvoicePdf(invoice, project);
 
-      const downloadToken = jwt.sign({ invoiceId }, config.jwtSecret, { expiresIn: '1d' });
+      const downloadToken = jwt.sign({ invoiceId, projectId: project._id }, config.jwtSecret, { expiresIn: '1d' });
       return reply.send({
         url: `${config.publicUrl}/invoice/download?token=${downloadToken}`,
       });
@@ -168,22 +183,27 @@ export function invoiceEndpoints(server: FastifyInstance): void {
       schema: { hide: true },
     },
     async (request, reply) => {
-      const project = await getProjectFromRequest(request);
-
       const { token } = request.query as { token?: string };
       if (!token) {
         return reply.code(400).send({ error: 'Missing token' });
       }
 
+      let projectId: string;
       let invoiceId: string;
       try {
-        const decoded = jwt.verify(token, config.jwtSecret) as { invoiceId?: string };
-        if (!decoded.invoiceId) {
+        const decoded = jwt.verify(token, config.jwtSecret) as { invoiceId?: string; projectId?: string };
+        if (!decoded.invoiceId || !decoded.projectId) {
           return reply.code(400).send({ error: 'Invalid token' });
         }
         invoiceId = decoded.invoiceId;
+        projectId = decoded.projectId;
       } catch (error) {
         return reply.code(400).send({ error: 'Invalid token' });
+      }
+
+      const project = await database.projects.findOne({ _id: projectId });
+      if (!project) {
+        return reply.code(404).send({ error: 'Project not found' });
       }
 
       const invoice = await database.invoices.findOne({ _id: invoiceId, project }, { populate: ['items'] });
@@ -191,8 +211,12 @@ export function invoiceEndpoints(server: FastifyInstance): void {
         return reply.code(404).send({ error: 'Invoice not found' });
       }
 
-      const downloadPath = path.join(config.dataPath, invoice.file);
-      return reply.sendFile(downloadPath);
+      const downloadPath = path.join(config.dataPath, 'invoices', invoice.file);
+      if (!fs.existsSync(downloadPath)) {
+        return reply.code(404).send({ error: 'Invoice PDF file not found' });
+      }
+
+      return reply.sendFile(path.basename(downloadPath), path.dirname(downloadPath));
     },
   );
 }
