@@ -12,6 +12,9 @@ export const config = {
   publicUrl: process.env.PUBLIC_URL || `http://localhost:${defaultPort}`,
   postgresUrl: process.env.POSTGRES_URL as string,
   adminToken: process.env.ADMIN_TOKEN as string,
+  jwtSecret: process.env.JWT_SECRET as string,
+  gotenbergUrl: process.env.GOTENBERG_URL || 'http://localhost:3000',
+  dataPath: process.env.STORAGE_PATH || path.join(__dirname, 'data'),
 };
 
 export function checkConfig(): void {

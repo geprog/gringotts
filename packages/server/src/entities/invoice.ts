@@ -20,6 +20,7 @@ export class Invoice {
   vatRate!: number;
   payment?: Payment;
   project!: Project;
+  file?: string;
 
   constructor(data?: Partial<Invoice>) {
     Object.assign(this, data);
@@ -77,6 +78,7 @@ export class Invoice {
       amount: this.amount,
       totalAmount: this.totalAmount,
       number: this.number,
+      items: this.items.getItems(),
     };
   }
 }
@@ -112,5 +114,6 @@ export const invoiceSchema = new EntitySchema<Invoice>({
       reference: ReferenceType.MANY_TO_ONE,
       entity: () => Project,
     },
+    file: { type: 'string', nullable: true },
   },
 });
