@@ -50,6 +50,13 @@ export class Subscription {
   getPeriod(start: Date, end: Date): SubscriptionPeriod {
     return new SubscriptionPeriod(this, start, end);
   }
+
+  toJSON(): Subscription {
+    return {
+      ...this,
+      changes: this.changes.getItems().map((change) => ({ ...change, subscription: undefined })),
+    };
+  }
 }
 
 export const subscriptionSchema = new EntitySchema<Subscription>({

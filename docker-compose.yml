@@ -8,3 +8,8 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 'pA_sw0rd'
+
+  gotenberg:
+    image: gotenberg/gotenberg:7
+    ports:
+      - 3030:3000

@@ -1,8 +1,52 @@
+import fetch from 'cross-fetch';
 import { FastifyInstance } from 'fastify';
+import NodeFormData from 'form-data';
+import fs from 'fs';
+import jwt from 'jsonwebtoken';
 import path from 'path';
+import stream from 'stream/promises';
 
 import { getProjectFromRequest } from '~/api/helpers';
+import { config } from '~/config';
 import { database } from '~/database';
+import { Invoice, Project } from '~/entities';
+
+async function generateInvoicePdf(invoice: Invoice, project: Project) {
+  const fileName = path.join(project._id, `invoice-${invoice._id}.pdf`);
+  const filePath = path.join(config.dataPath, 'invoices', fileName);
+
+  if (fs.existsSync(filePath)) {
+    invoice.file = fileName;
+    return invoice;
+  }
+
+  const formData = new NodeFormData() as unknown as FormData;
+  formData.append('url', `${config.publicUrl}/invoice/${invoice._id}/html?token=${project.apiToken}`);
+
+  const response = await fetch(`${config.gotenbergUrl}/forms/chromium/convert/url`, {
+    method: 'POST',
+    body: formData,
+  });
+
+  if (!response.ok || !response.body) {
+    throw new Error(`unexpected response ${response.statusText}`);
+  }
+
+  if (!fs.existsSync(path.dirname(filePath))) {
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  }
+
+  // cast as response.body is a ReadableStream from DOM and not NodeJS.ReadableStream
+  const httpStream = response.body as unknown as NodeJS.ReadableStream;
+
+  await stream.pipeline(httpStream, fs.createWriteStream(filePath));
+
+  invoice.file = fileName;
+
+  await database.em.persistAndFlush(invoice);
+
+  return invoice;
+}
 
 export function invoiceEndpoints(server: FastifyInstance): void {
   server.get('/invoice/:invoiceId', {
@@ -39,7 +83,7 @@ export function invoiceEndpoints(server: FastifyInstance): void {
         return reply.code(404).send({ error: 'Invoice not found' });
       }
 
-      await reply.send(invoice);
+      await reply.send(invoice.toJSON());
     },
   });
 
@@ -72,6 +116,107 @@ export function invoiceEndpoints(server: FastifyInstance): void {
       }
 
       await reply.view(path.join('templates', 'invoice.hbs'), { invoice: invoice.toJSON(), project, customer });
+    },
+  );
+
+  server.get(
+    '/invoice/:invoiceId/generate-download-link',
+    {
+      schema: {
+        summary: 'Get a download link for an invoice',
+        tags: ['invoice'],
+        params: {
+          type: 'object',
+          required: ['invoiceId'],
+          additionalProperties: false,
+          properties: {
+            invoiceId: { type: 'string' },
+          },
+        },
+        response: {
+          200: {
+            type: 'object',
+            required: ['url'],
+            additionalProperties: false,
+            properties: {
+              url: { type: 'string' },
+            },
+          },
+          400: {
+            $ref: 'ErrorResponse',
+          },
+          404: {
+            $ref: 'ErrorResponse',
+          },
+        },
+      },
+    },
+    async (request, reply) => {
+      const project = await getProjectFromRequest(request);
+
+      const { invoiceId } = request.params as { invoiceId: string };
+      if (!invoiceId) {
+        return reply.code(400).send({ error: 'Missing invoiceId' });
+      }
+
+      const invoice = await database.invoices.findOne({ _id: invoiceId, project }, { populate: ['items'] });
+      if (!invoice) {
+        return reply.code(404).send({ error: 'Invoice not found' });
+      }
+
+      if (invoice.date < new Date()) {
+        return reply.code(400).send({ error: 'Invoice is not ready yet' });
+      }
+
+      await generateInvoicePdf(invoice, project);
+
+      const downloadToken = jwt.sign({ invoiceId, projectId: project._id }, config.jwtSecret, { expiresIn: '1d' });
+      return reply.send({
+        url: `${config.publicUrl}/invoice/download?token=${downloadToken}`,
+      });
+    },
+  );
+
+  server.get(
+    '/invoice/download',
+    {
+      schema: { hide: true },
+    },
+    async (request, reply) => {
+      const { token } = request.query as { token?: string };
+      if (!token) {
+        return reply.code(400).send({ error: 'Missing token' });
+      }
+
+      let projectId: string;
+      let invoiceId: string;
+      try {
+        const decoded = jwt.verify(token, config.jwtSecret) as { invoiceId?: string; projectId?: string };
+        if (!decoded.invoiceId || !decoded.projectId) {
+          return reply.code(400).send({ error: 'Invalid token' });
+        }
+        invoiceId = decoded.invoiceId;
+        projectId = decoded.projectId;
+      } catch (error) {
+        return reply.code(400).send({ error: 'Invalid token' });
+      }
+
+      const project = await database.projects.findOne({ _id: projectId });
+      if (!project) {
+        return reply.code(404).send({ error: 'Project not found' });
+      }
+
+      const invoice = await database.invoices.findOne({ _id: invoiceId, project }, { populate: ['items'] });
+      if (!invoice || !invoice.file) {
+        return reply.code(404).send({ error: 'Invoice not found' });
+      }
+
+      const downloadPath = path.join(config.dataPath, 'invoices', invoice.file);
+      if (!fs.existsSync(downloadPath)) {
+        return reply.code(404).send({ error: 'Invoice PDF file not found' });
+      }
+
+      return reply.sendFile(path.basename(downloadPath), path.dirname(downloadPath));
     },
   );
 }
