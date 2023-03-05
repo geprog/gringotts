@@ -5,6 +5,8 @@ services:
     image: postgres:14.2
     ports:
       - 5432:5432
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: 'pA_sw0rd'
@@ -13,3 +15,6 @@ services:
     image: gotenberg/gotenberg:7
     ports:
       - 3030:3000
+
+volumes:
+  postgres-data:
