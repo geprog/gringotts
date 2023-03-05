@@ -49,7 +49,6 @@ The container image can be found at `ghcr.io/geprog/gringotts`.
 
 The OpenApi documentation can be found at `https://<PUBLIC_URL>/docs` like <http://localhost:3000/docs>
 
-
 ## Development
 
 ### Setup
