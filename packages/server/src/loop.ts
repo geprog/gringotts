@@ -6,7 +6,7 @@ import { getNextPeriodFromDate, getPeriodFromAnchorDate } from '~/utils';
 
 const pageSize = 10;
 
-export function addSubscriptionChangesToInvoice(subscription: Subscription, invoice: Invoice): Invoice {
+export function addSubscriptionChangesToInvoice<T extends Invoice>(subscription: Subscription, invoice: T): T {
   const currentPeriod = getPeriodFromAnchorDate(invoice.date, subscription.anchorDate);
   const period = new SubscriptionPeriod(subscription, currentPeriod.start, currentPeriod.end);
 
@@ -31,7 +31,11 @@ export async function chargeInvoices(): Promise<void> {
     // get draft invoice from past periods
     const invoices = await database.invoices.find(
       { date: { $lt: now }, status: 'draft' },
-      { limit: pageSize, offset: page * pageSize, populate: ['project'] },
+      {
+        limit: pageSize,
+        offset: page * pageSize,
+        populate: ['project', 'subscription.changes', 'subscription.customer'],
+      },
     );
 
     for await (let invoice of invoices) {
@@ -39,14 +43,12 @@ export async function chargeInvoices(): Promise<void> {
       invoice.status = 'pending';
       await database.em.persistAndFlush(invoice);
 
-      const { project } = invoice;
+      const { project, subscription } = invoice;
 
-      const subscription = invoice.subscription;
       if (!subscription) {
         throw new Error('Invoice has no subscription');
       }
 
-      await database.em.populate(subscription, ['changes']);
       invoice = addSubscriptionChangesToInvoice(subscription, invoice);
 
       const amount = Invoice.roundPrice(invoice.totalAmount);
