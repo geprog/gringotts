@@ -164,13 +164,14 @@ export function invoiceEndpoints(server: FastifyInstance): void {
         return reply.code(404).send({ error: 'Invoice not found' });
       }
 
-      if (invoice.date < new Date()) {
+      // invoice date is in the future
+      if (invoice.date > new Date()) {
         return reply.code(400).send({ error: 'Invoice is not ready yet' });
       }
 
       await generateInvoicePdf(invoice, project);
 
-      const downloadToken = jwt.sign({ invoiceId, projectId: project._id }, config.jwtSecret, { expiresIn: '1d' });
+      const downloadToken = jwt.sign({ invoiceId }, config.jwtSecret, { expiresIn: '1d' });
       return reply.send({
         url: `${config.publicUrl}/invoice/download?token=${downloadToken}`,
       });
@@ -188,25 +189,18 @@ export function invoiceEndpoints(server: FastifyInstance): void {
         return reply.code(400).send({ error: 'Missing token' });
       }
 
-      let projectId: string;
       let invoiceId: string;
       try {
-        const decoded = jwt.verify(token, config.jwtSecret) as { invoiceId?: string; projectId?: string };
-        if (!decoded.invoiceId || !decoded.projectId) {
+        const decoded = jwt.verify(token, config.jwtSecret) as { invoiceId?: string };
+        if (!decoded.invoiceId) {
           return reply.code(400).send({ error: 'Invalid token' });
         }
         invoiceId = decoded.invoiceId;
-        projectId = decoded.projectId;
       } catch (error) {
         return reply.code(400).send({ error: 'Invalid token' });
       }
 
-      const project = await database.projects.findOne({ _id: projectId });
-      if (!project) {
-        return reply.code(404).send({ error: 'Project not found' });
-      }
-
-      const invoice = await database.invoices.findOne({ _id: invoiceId, project }, { populate: ['items'] });
+      const invoice = await database.invoices.findOne({ _id: invoiceId }, { populate: ['items'] });
       if (!invoice || !invoice.file) {
         return reply.code(404).send({ error: 'Invoice not found' });
       }
