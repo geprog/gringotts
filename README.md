@@ -44,6 +44,15 @@ The container image can be found at `ghcr.io/geprog/gringotts`.
 | POSTGRES_URL        | Url to the postgres database                                     | postgres://postgres:postgres@localhost:5432/gringotts |
 | ADMIN_TOKEN         | Token which is used to authenticate admin endpoints like project |                                                       |
 | CREATE_PROJECT_DATA | Json string which is used to create the first project            |                                                       |
+| DATA_PATH           | Path to the data directory                                       | /data                                                 |
+| GOTENBERG_URL       | Url to the gotenberg server                                      | http://localhost:3000                                 |
+| JWT_SECRET          | Secret used to sign jwt tokens                                   | supersecret                                           |
+
+To create a project on start you can set the `CREATE_PROJECT_DATA` environment variable to a json string like this:
+
+`CREATE_PROJECT_DATA='{ "name": "TestProject", "mollieApiKey": "123", "paymentProvider": "mollie", "webhookUrl": "http://localhost:4000/payments/webhook", "invoiceData": { "email": "test@example.com", "name": "Company ABC", "addressLine1": "Diagon Alley 1337", "addressLine2": "string", "zipCode": "12345", "city": "London", "country": "Germany", "logo": "https://geprog.com/logo.svg" } }'`
+
+> Keep in mind that this wont be updated later if you change the environment variables after the first start.
 
 ### OpenApi Documention
 
