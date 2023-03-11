@@ -106,9 +106,6 @@ export const invoiceSchema = new EntitySchema<Invoice>({
     },
     vatRate: { type: 'float' },
     currency: { type: String },
-    amount: { type: 'float' },
-    vatAmount: { type: 'float' },
-    totalAmount: { type: 'float' },
     sequentialId: { type: Number },
     project: {
       reference: ReferenceType.MANY_TO_ONE,

@@ -10,24 +10,32 @@ Gringotts is an api service (maybe a frontend will follow at some point) which c
 - [x] start subscription
 - [x] change subscription in middle of period (prorations)
 - [ ] end / pause subscription
-- [x] charge customers at end of subscription period
+- [x] charge customer at end of subscription period
+- [ ] charge customer at start of subscription period
+- [ ] charge customer one-time fee
+- [ ] allow customers to charge other customers
 - [x] manage customers
 - [x] notify SAAS backend about subscription updates
-- [x] payment providers
+- [ ] payment providers
   - [x] mollie
   - [ ] stripe
 - [x] authentication for SAAS backends
-- [ ] authentication for payment provider webhook calls
-- [ ] invoices for customers per email
+- [ ] invoices
+  - [x] for subscriptions
   - [ ] themes for invoices
-- [ ] notify customer about upcoming payment
+- [ ] notify customer about
+  - [ ] new invoices
+  - [ ] upcoming payment
 - [ ] get subscription costs forecast
 - [x] typescript api client => `@geprog/gringotts-client`
 - [ ] support name for subscription changes & invoice positions
 - [ ] configurable payment interval (currently 1 month)
 - [ ] add logic to definitely prevent duplicate payments
-- [ ] save payments and their status to the database
+- [x] save payments and their status to the database
 - [ ] skip subscription change if equal to currently active
+- [ ] customer payment methods
+  - [ ] add payment method
+  - [ ] verify payment method
 
 ## Usage
 
@@ -44,7 +52,7 @@ The container image can be found at `ghcr.io/geprog/gringotts`.
 | POSTGRES_URL        | Url to the postgres database                                     | postgres://postgres:postgres@localhost:5432/gringotts |
 | ADMIN_TOKEN         | Token which is used to authenticate admin endpoints like project |                                                       |
 | CREATE_PROJECT_DATA | Json string which is used to create the first project            |                                                       |
-| DATA_PATH           | Path to the data directory                                       | /data                                                 |
+| DATA_PATH           | Path to the data directory                                       | Local: ./data Container: /app/data                    |
 | GOTENBERG_URL       | Url to the gotenberg server                                      | http://localhost:3000                                 |
 | JWT_SECRET          | Secret used to sign jwt tokens                                   | supersecret                                           |
 
