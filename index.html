@@ -25,28 +25,40 @@
 <li><input checked="" disabled="" type="checkbox"> start subscription</li>
 <li><input checked="" disabled="" type="checkbox"> change subscription in middle of period (prorations)</li>
 <li><input disabled="" type="checkbox"> end / pause subscription</li>
-<li><input checked="" disabled="" type="checkbox"> charge customers at end of subscription period</li>
+<li><input checked="" disabled="" type="checkbox"> charge customer at end of subscription period</li>
+<li><input disabled="" type="checkbox"> charge customer at start of subscription period</li>
+<li><input disabled="" type="checkbox"> charge customer one-time fee</li>
+<li><input disabled="" type="checkbox"> allow customers to charge other customers</li>
 <li><input checked="" disabled="" type="checkbox"> manage customers</li>
 <li><input checked="" disabled="" type="checkbox"> notify SAAS backend about subscription updates</li>
-<li><input checked="" disabled="" type="checkbox"> payment providers<ul>
+<li><input disabled="" type="checkbox"> payment providers<ul>
 <li><input checked="" disabled="" type="checkbox"> mollie</li>
 <li><input disabled="" type="checkbox"> stripe</li>
 </ul>
 </li>
 <li><input checked="" disabled="" type="checkbox"> authentication for SAAS backends</li>
-<li><input disabled="" type="checkbox"> authentication for payment provider webhook calls</li>
-<li><input disabled="" type="checkbox"> invoices for customers per email<ul>
+<li><input disabled="" type="checkbox"> invoices<ul>
+<li><input checked="" disabled="" type="checkbox"> for subscriptions</li>
 <li><input disabled="" type="checkbox"> themes for invoices</li>
 </ul>
 </li>
-<li><input disabled="" type="checkbox"> notify customer about upcoming payment</li>
+<li><input disabled="" type="checkbox"> notify customer about<ul>
+<li><input disabled="" type="checkbox"> new invoices</li>
+<li><input disabled="" type="checkbox"> upcoming payment</li>
+</ul>
+</li>
 <li><input disabled="" type="checkbox"> get subscription costs forecast</li>
 <li><input checked="" disabled="" type="checkbox"> typescript api client =&gt; <code>@geprog/gringotts-client</code></li>
 <li><input disabled="" type="checkbox"> support name for subscription changes &amp; invoice positions</li>
 <li><input disabled="" type="checkbox"> configurable payment interval (currently 1 month)</li>
 <li><input disabled="" type="checkbox"> add logic to definitely prevent duplicate payments</li>
-<li><input disabled="" type="checkbox"> save payments and their status to the database</li>
+<li><input checked="" disabled="" type="checkbox"> save payments and their status to the database</li>
 <li><input disabled="" type="checkbox"> skip subscription change if equal to currently active</li>
+<li><input disabled="" type="checkbox"> customer payment methods<ul>
+<li><input disabled="" type="checkbox"> add payment method</li>
+<li><input disabled="" type="checkbox"> verify payment method</li>
+</ul>
+</li>
 </ul>
 
 <a href="#usage" id="usage" style="color: inherit; text-decoration: none;">
@@ -97,7 +109,7 @@
 <tr>
 <td>DATA_PATH</td>
 <td>Path to the data directory</td>
-<td>/data</td>
+<td>Local: ./data Container: /app/data</td>
 </tr>
 <tr>
 <td>GOTENBERG_URL</td>
