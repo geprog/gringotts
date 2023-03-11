@@ -57,7 +57,6 @@ export function addSchemas(server: FastifyInstance): void {
       currency: { type: 'string' },
       amount: { type: 'number' },
       description: { type: 'number' },
-      isRecurring: { type: 'boolean' },
     },
   });
 

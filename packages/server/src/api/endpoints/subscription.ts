@@ -6,7 +6,7 @@ import { Payment, Subscription } from '~/entities';
 import { Invoice } from '~/entities/invoice';
 import { InvoiceItem } from '~/entities/invoice_item';
 import { getPaymentProvider } from '~/payment_providers';
-import { getActiveUntilDate } from '~/utils';
+import { getActiveUntilDate, getPeriodFromAnchorDate } from '~/utils';
 
 export function subscriptionEndpoints(server: FastifyInstance): void {
   server.post('/subscription', {
@@ -97,7 +97,7 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
       const invoice = new Invoice({
         date: now,
         sequentialId: customer.invoiceCounter,
-        status: 'draft',
+        status: 'pending',
         subscription,
         currency: 'EUR', // TODO: allow to change currency
         vatRate: 0, // Set to 0 as payment verification is not a real invoice
@@ -126,6 +126,25 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
 
       invoice.payment = payment;
 
+      const period = getPeriodFromAnchorDate(now, subscription.anchorDate);
+      const newInvoice = new Invoice({
+        date: period.end,
+        sequentialId: customer.invoiceCounter,
+        status: 'draft',
+        subscription,
+        currency: 'EUR', // TODO: allow to configure currency
+        vatRate: 19.0, // TODO: german vat rate => allow to configure
+        project,
+      });
+
+      newInvoice.items.add(
+        new InvoiceItem({
+          description: 'Credit from payment verification',
+          pricePerUnit: payment.amount * -1,
+          units: 1,
+        }),
+      );
+
       const { checkoutUrl } = await paymentProvider.startSubscription({
         project,
         subscription,
@@ -136,7 +155,7 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
       // TODO: do we need this?
       // customer.subscriptions.add(subscription);
 
-      await database.em.persistAndFlush([customer, subscription, invoice, payment]);
+      await database.em.persistAndFlush([customer, subscription, invoice, payment, newInvoice]);
 
       await reply.send({
         subscriptionId: subscription._id,

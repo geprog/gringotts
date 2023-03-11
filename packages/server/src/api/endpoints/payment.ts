@@ -10,14 +10,14 @@ export function paymentEndpoints(server: FastifyInstance): void {
     handler: async (request, reply) => {
       const params = request.params as { projectId?: string };
       if (!params.projectId) {
-        throw new Error('ProjectId not provided');
+        return reply.code(400).send({ error: 'ProjectId not provided' });
       }
 
       const project = await database.projects.findOneOrFail(params?.projectId);
 
       const paymentProvider = getPaymentProvider(project);
       if (!paymentProvider) {
-        throw new Error('Unable to detect PaymentProvider');
+        return reply.code(500).send({ error: 'Unable to detect PaymentProvider' });
       }
 
       const payload = await paymentProvider.parsePaymentWebhook(request.body);
@@ -32,22 +32,27 @@ export function paymentEndpoints(server: FastifyInstance): void {
         return reply.code(404).send({ error: 'Payment not found' });
       }
 
-      const subscription = payment.subscription;
-
-      const invoice = await database.invoices.findOneOrFail(payment.isRecurring ? { payment } : { subscription }, {
-        populate: ['project'],
-      });
-
-      if (payload.paymentStatus === 'paid') {
-        subscription.lastPayment = payload.paidAt;
-        payment.status = 'paid';
-
-        if (payment.isRecurring) {
-          invoice.status = 'paid';
-        }
+      if (payload.paymentStatus === 'paid' || payload.paymentStatus === 'failed') {
+        payment.status = payload.paymentStatus;
+        await database.em.persistAndFlush([payment]);
       }
 
-      await database.em.persistAndFlush([payment, invoice, subscription]);
+      const subscription = payment.subscription;
+      if (subscription && payload.paymentStatus === 'paid') {
+        subscription.lastPayment = payload.paidAt;
+        await database.em.persistAndFlush([subscription]);
+      }
+
+      const invoice = await database.invoices.findOne(
+        { payment },
+        {
+          populate: ['project'],
+        },
+      );
+      if (invoice && (payload.paymentStatus === 'paid' || payload.paymentStatus === 'failed')) {
+        invoice.status = payload.paymentStatus;
+        await database.em.persistAndFlush([invoice]);
+      }
 
       void triggerWebhook({
         url: project.webhookUrl,

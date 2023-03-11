@@ -21,101 +21,115 @@ export function addSubscriptionChangesToInvoice<T extends Invoice>(subscription:
   return invoice;
 }
 
+let isCharging = false;
+
 export async function chargeInvoices(): Promise<void> {
-  const now = new Date();
+  if (isCharging) {
+    return;
+  }
+  isCharging = true;
 
-  let page = 0;
+  try {
+    const now = new Date();
 
-  // eslint-disable-next-line no-constant-condition
-  while (true) {
-    // get draft invoice from past periods
-    const invoices = await database.invoices.find(
-      { date: { $lt: now }, status: 'draft' },
-      {
-        limit: pageSize,
-        offset: page * pageSize,
-        populate: ['project', 'subscription.changes', 'subscription.customer'],
-      },
-    );
+    let page = 0;
 
-    for await (let invoice of invoices) {
-      // Lock invoice processing
-      invoice.status = 'pending';
-      await database.em.persistAndFlush(invoice);
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      // get draft invoice from past periods
+      const invoices = await database.invoices.find(
+        { date: { $lte: now }, status: 'draft' },
+        {
+          limit: pageSize,
+          offset: page * pageSize,
+          populate: ['project', 'items', 'subscription.changes', 'subscription.customer'],
+        },
+      );
 
-      const { project, subscription } = invoice;
+      for await (let invoice of invoices) {
+        // Lock invoice processing
+        invoice.status = 'pending';
+        await database.em.persistAndFlush(invoice);
 
-      if (!subscription) {
-        throw new Error('Invoice has no subscription');
-      }
-
-      invoice = addSubscriptionChangesToInvoice(subscription, invoice);
-
-      const amount = Invoice.roundPrice(invoice.totalAmount);
-      const currentPeriod = getPeriodFromAnchorDate(invoice.date, subscription.anchorDate);
-
-      // skip negative amounts (credits) and zero amounts
-      if (amount > 0) {
-        const formatDate = (d: Date) => dayjs(d).format('DD.MM.YYYY');
-        const paymentDescription = `Subscription for period ${formatDate(currentPeriod.start)} - ${formatDate(
-          currentPeriod.end,
-        )}`; // TODO: think about text
-
-        const payment = new Payment({
-          amount,
-          currency: 'EUR', // TODO: allow to configure currency
-          customer: subscription.customer,
-          status: 'pending',
-          description: paymentDescription,
-          subscription,
-        });
-
-        invoice.payment = payment;
-
-        const paymentProvider = getPaymentProvider(project);
-        if (!paymentProvider) {
-          throw new Error(`Payment provider for '${project._id}' not configured`);
+        const { project, subscription } = invoice;
+        if (!subscription) {
+          throw new Error('Invoice has no subscription');
         }
 
-        await paymentProvider.chargePayment({ payment, project });
-        await database.em.persistAndFlush([payment, invoice]);
+        invoice = addSubscriptionChangesToInvoice(subscription, invoice);
+
+        const amount = Invoice.roundPrice(invoice.totalAmount);
+        const currentPeriod = getPeriodFromAnchorDate(invoice.date, subscription.anchorDate);
+
+        // skip negative amounts (credits) and zero amounts
+        if (amount > 0) {
+          const formatDate = (d: Date) => dayjs(d).format('DD.MM.YYYY');
+          const paymentDescription = `Subscription for period ${formatDate(currentPeriod.start)} - ${formatDate(
+            currentPeriod.end,
+          )}`; // TODO: think about text
+
+          const payment = new Payment({
+            amount,
+            currency: 'EUR', // TODO: allow to configure currency
+            customer: subscription.customer,
+            status: 'pending',
+            description: paymentDescription,
+            subscription,
+          });
+
+          invoice.payment = payment;
+
+          const paymentProvider = getPaymentProvider(project);
+          if (!paymentProvider) {
+            throw new Error(`Payment provider for '${project._id}' not configured`);
+          }
+
+          await paymentProvider.chargePayment({ payment, project });
+          await database.em.persistAndFlush([payment]);
+        }
+
+        const customer = subscription.customer;
+        customer.invoiceCounter += 1;
+        await database.em.persistAndFlush([customer]);
+
+        const nextPeriod = getNextPeriodFromDate(invoice.date, subscription.anchorDate);
+        const newInvoice = new Invoice({
+          date: nextPeriod.end,
+          sequentialId: customer.invoiceCounter,
+          status: 'draft',
+          subscription,
+          currency: 'EUR', // TODO: allow to configure currency
+          vatRate: 19.0, // TODO: german vat rate => allow to configure
+          project,
+        });
+
+        // if price is negative add credit to next invoice
+        if (amount < 0) {
+          newInvoice.items.add(
+            new InvoiceItem({
+              description: 'Credit from last payment', // TODO: think about text
+              pricePerUnit: amount,
+              units: 1,
+              invoice: newInvoice,
+            }),
+          );
+        }
+
+        await database.em.persistAndFlush([invoice, newInvoice]);
       }
 
-      const customer = subscription.customer;
-      customer.invoiceCounter += 1;
-
-      const nextPeriod = getNextPeriodFromDate(invoice.date, subscription.anchorDate);
-      const newInvoice = new Invoice({
-        date: nextPeriod.end,
-        sequentialId: customer.invoiceCounter,
-        status: 'draft',
-        subscription,
-        currency: 'EUR', // TODO: allow to configure currency
-        vatRate: 19.0, // TODO: german vat rate => allow to configure
-        project,
-      });
-
-      // if price is negative add credit to next invoice
-      if (amount < 0) {
-        newInvoice.items.add(
-          new InvoiceItem({
-            description: 'Credit from last payment', // TODO: think about text
-            pricePerUnit: amount,
-            units: 1,
-            invoice: newInvoice,
-          }),
-        );
+      if (invoices.length < pageSize) {
+        break;
       }
 
-      await database.em.persistAndFlush([newInvoice, customer]);
+      page += 1;
     }
-
-    if (invoices.length < pageSize) {
-      return;
-    }
-
-    page += 1;
+  } catch (e) {
+    // eslint-disable-next-line no-console
+    console.error('Error in loop:', e);
   }
+
+  isCharging = false;
 }
 
 export function startLoops(): void {

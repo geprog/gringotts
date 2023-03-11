@@ -15,7 +15,6 @@ export class Payment {
   customer!: Customer;
   amount!: number;
   description!: string;
-  isRecurring = false;
   subscription!: Subscription;
 
   constructor(data?: Partial<Payment>) {
@@ -31,7 +30,6 @@ export const paymentSchema = new EntitySchema<Payment>({
     currency: { type: String },
     amount: { type: 'float' },
     description: { type: String },
-    isRecurring: { type: Boolean },
     customer: {
       reference: ReferenceType.MANY_TO_ONE,
       entity: () => Customer,
