@@ -27,7 +27,10 @@ export function paymentEndpoints(server: FastifyInstance): void {
         });
       }
 
-      const payment = await database.payments.findOne({ _id: payload.paymentId }, { populate: ['subscription'] });
+      const payment = await database.payments.findOne(
+        { _id: payload.paymentId },
+        { populate: ['subscription', 'customer'] },
+      );
       if (!payment) {
         return reply.code(404).send({ error: 'Payment not found' });
       }
@@ -37,29 +40,42 @@ export function paymentEndpoints(server: FastifyInstance): void {
         await database.em.persistAndFlush([payment]);
       }
 
+      if (payment.type === 'verification' && payload.paymentStatus === 'paid') {
+        const paymentMethod = await paymentProvider.getPaymentMethod(payload.paymentId);
+        if (!paymentMethod) {
+          return reply.code(500).send({ error: 'Payment method not found' });
+        }
+
+        const { customer } = payment;
+        customer.activePaymentMethod = paymentMethod; // auto-activate new payment method
+        customer.balance = Math.max(customer.balance - payment.amount, 0);
+        await database.em.persistAndFlush([customer, paymentMethod]);
+      }
+
       const subscription = payment.subscription;
-      if (subscription && payload.paymentStatus === 'paid') {
+      if (subscription && payment.type === 'recurring' && payload.paymentStatus === 'paid') {
         subscription.lastPayment = payload.paidAt;
         await database.em.persistAndFlush([subscription]);
+        void triggerWebhook({
+          url: project.webhookUrl,
+          body: {
+            subscriptionId: subscription._id,
+          },
+        });
       }
 
-      const invoice = await database.invoices.findOne(
-        { payment },
-        {
-          populate: ['project'],
-        },
-      );
-      if (invoice && (payload.paymentStatus === 'paid' || payload.paymentStatus === 'failed')) {
-        invoice.status = payload.paymentStatus;
-        await database.em.persistAndFlush([invoice]);
+      if (payment.type === 'one-off' || payment.type === 'recurring') {
+        const invoice = await database.invoices.findOne(
+          { payment },
+          {
+            populate: ['project'],
+          },
+        );
+        if (invoice && (payload.paymentStatus === 'paid' || payload.paymentStatus === 'failed')) {
+          invoice.status = payload.paymentStatus;
+          await database.em.persistAndFlush([invoice]);
+        }
       }
-
-      void triggerWebhook({
-        url: project.webhookUrl,
-        body: {
-          subscriptionId: subscription._id,
-        },
-      });
 
       await reply.send({ ok: true });
     },

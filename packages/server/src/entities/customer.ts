@@ -1,12 +1,14 @@
 import { Collection, EntitySchema, ReferenceType } from '@mikro-orm/core';
 import { v4 } from 'uuid';
 
+import { PaymentMethod } from '~/entities/payment_method';
 import { Project } from '~/entities/project';
 import { Subscription } from '~/entities/subscription';
 
 export class Customer {
   _id: string = v4();
   paymentProviderId!: string;
+  balance = 0;
   name!: string;
   email!: string;
   addressLine1!: string;
@@ -18,6 +20,7 @@ export class Customer {
   invoicePrefix!: string;
   invoiceCounter = 0;
   project!: Project;
+  activePaymentMethod?: PaymentMethod;
 
   constructor(data?: Partial<Customer>) {
     Object.assign(this, data);
@@ -39,6 +42,7 @@ export const customerSchema = new EntitySchema<Customer>({
   properties: {
     _id: { type: 'uuid', onCreate: () => v4(), primary: true },
     paymentProviderId: { type: 'string' },
+    balance: { type: 'float' },
     name: { type: 'string' },
     email: { type: 'string' },
     addressLine1: { type: 'string' },
@@ -57,5 +61,6 @@ export const customerSchema = new EntitySchema<Customer>({
       reference: ReferenceType.MANY_TO_ONE,
       entity: () => Project,
     },
+    activePaymentMethod: { reference: ReferenceType.MANY_TO_ONE, entity: () => PaymentMethod, nullable: true },
   },
 });

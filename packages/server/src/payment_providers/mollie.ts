@@ -1,7 +1,7 @@
-import { createMollieClient, MollieClient, PaymentStatus, SequenceType } from '@mollie/api-client';
+import { createMollieClient, Mandate, MollieClient, PaymentStatus, SequenceType } from '@mollie/api-client';
 
 import { config } from '~/config';
-import { Customer, Payment, Project, Subscription } from '~/entities';
+import { Customer, Payment, PaymentMethod, Project } from '~/entities';
 import { PaymentProvider } from '~/payment_providers/types';
 
 type Metadata = {
@@ -19,15 +19,14 @@ export class Mollie implements PaymentProvider {
     this.api = createMollieClient({ apiKey });
   }
 
-  async startSubscription({
+  async chargeForegroundPayment({
     project,
-    redirectUrl,
     payment,
+    redirectUrl,
   }: {
     project: Project;
-    subscription: Subscription;
-    redirectUrl: string;
     payment: Payment;
+    redirectUrl: string;
   }): Promise<{ checkoutUrl: string }> {
     const customer = await this.api.customers.get(payment.customer.paymentProviderId);
 
@@ -54,20 +53,20 @@ export class Mollie implements PaymentProvider {
     return { checkoutUrl };
   }
 
-  async chargePayment({ payment, project }: { payment: Payment; project: Project }): Promise<void> {
-    if (!payment.customer.paymentProviderId) {
-      throw new Error('No customer id');
+  async chargeBackgroundPayment({ payment, project }: { payment: Payment; project: Project }): Promise<void> {
+    const paymentMethod = payment?.customer?.activePaymentMethod;
+    if (!paymentMethod) {
+      throw new Error('No payment method configured for this customer');
     }
-    const customer = await this.api.customers.get(payment.customer.paymentProviderId);
 
     await this.api.payments.create({
       amount: {
         value: this.priceToMolliePrice(payment.amount),
         currency: payment.currency,
       },
-      customerId: customer.id,
       description: payment.description,
       sequenceType: SequenceType.recurring,
+      mandateId: paymentMethod.paymentProviderId,
       webhookUrl: `${config.publicUrl}/payment/webhook/${project._id}`,
       metadata: <Metadata>{
         paymentId: payment._id,
@@ -134,7 +133,61 @@ export class Mollie implements PaymentProvider {
     await this.api.customers.delete(customer.paymentProviderId);
   }
 
+  async getPaymentMethod(paymentId: string): Promise<PaymentMethod> {
+    const payment = await this.api.payments.get(paymentId);
+
+    if (!payment.mandateId) {
+      throw new Error('No mandate id set');
+    }
+
+    if (!payment.customerId) {
+      throw new Error('No customer id set');
+    }
+
+    const mandate = await this.api.customerMandates.get(payment.mandateId, { customerId: payment.customerId });
+
+    const details = this.getPaymentMethodDetails(mandate);
+
+    return new PaymentMethod({
+      paymentProviderId: mandate.id,
+      name: details.name,
+      type: details.type,
+    });
+  }
+
+  private getPaymentMethodDetails(mandate: Mandate): { type: string; name: string } {
+    if ((mandate.details as MandateDetailsCreditCard).cardNumber) {
+      return {
+        type: 'credit_card',
+        name: `**** ${(mandate.details as MandateDetailsCreditCard).cardNumber}`,
+      };
+    }
+
+    if ((mandate.details as MandateDetailsDirectDebit).consumerName) {
+      return {
+        type: 'direct_debit',
+        name: `**** ${(mandate.details as MandateDetailsDirectDebit).consumerAccount.substring(-4)}`,
+      };
+    }
+
+    return {
+      type: 'unknown',
+      name: '',
+    };
+  }
+
   private priceToMolliePrice(price: number): string {
     return `${(Math.round(price * 100) / 100).toFixed(2)}`;
   }
 }
+
+type MandateDetailsDirectDebit = {
+  consumerName: string;
+  consumerAccount: string;
+  consumerBic: string;
+};
+
+type MandateDetailsCreditCard = {
+  cardHolder: string;
+  cardNumber: string;
+};

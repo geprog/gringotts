@@ -111,4 +111,94 @@ describe('Invoice endpoints', () => {
     const responseData = response.body;
     expect(responseData).toMatchSnapshot();
   });
+
+  it('should generate a pdf invoice', async () => {
+    // given
+    const testData = getFixtures();
+
+    vi.spyOn(database, 'database', 'get').mockReturnValue({
+      invoices: {
+        findOne() {
+          return Promise.resolve(testData.invoice);
+        },
+      },
+      customers: {
+        findOne() {
+          return Promise.resolve(testData.customer);
+        },
+      },
+      subscriptions: {
+        findOne() {
+          return Promise.resolve(testData.subscription);
+        },
+      },
+      projects: {
+        findOne() {
+          return Promise.resolve(testData.project);
+        },
+      },
+    } as unknown as database.Database);
+
+    const server = await apiInit();
+
+    // when
+    const response = await server.inject({
+      method: 'GET',
+      headers: {
+        authorization: `Bearer ${testData.project.apiToken}`,
+      },
+      url: `/invoice/${testData.invoice._id}/html`,
+    });
+
+    // then
+    expect(response.statusCode).toBe(200);
+
+    const responseData = response.body;
+    expect(responseData).toMatchSnapshot();
+  });
+
+  it('should generate a pdf invoice', async () => {
+    // given
+    const testData = getFixtures();
+
+    vi.spyOn(database, 'database', 'get').mockReturnValue({
+      invoices: {
+        findOne() {
+          return Promise.resolve(testData.invoice);
+        },
+      },
+      customers: {
+        findOne() {
+          return Promise.resolve(testData.customer);
+        },
+      },
+      subscriptions: {
+        findOne() {
+          return Promise.resolve(testData.subscription);
+        },
+      },
+      projects: {
+        findOne() {
+          return Promise.resolve(testData.project);
+        },
+      },
+    } as unknown as database.Database);
+
+    const server = await apiInit();
+
+    // when
+    const response = await server.inject({
+      method: 'GET',
+      headers: {
+        authorization: `Bearer ${testData.project.apiToken}`,
+      },
+      url: `/invoice/${testData.invoice._id}/html`,
+    });
+
+    // then
+    expect(response.statusCode).toBe(200);
+
+    const responseData = response.body;
+    expect(responseData).toMatchSnapshot();
+  });
 });

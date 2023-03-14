@@ -9,6 +9,7 @@ import {
   invoiceItemSchema,
   invoiceSchema,
   Payment,
+  PaymentMethod,
   paymentSchema,
   Project,
   projectInvoiceDataSchema,
@@ -97,6 +98,10 @@ export class Database {
 
   get invoices(): EntityRepository<Invoice> {
     return this.em.getRepository(Invoice);
+  }
+
+  get paymentMethods(): EntityRepository<PaymentMethod> {
+    return this.em.getRepository(PaymentMethod);
   }
 }
 

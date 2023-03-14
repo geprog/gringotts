@@ -11,11 +11,12 @@ export type Currency = 'EUR';
 export class Payment {
   _id: string = v4();
   status: PaymentStatus = 'pending';
+  type!: 'recurring' | 'one-off' | 'verification';
   currency!: Currency;
   customer!: Customer;
   amount!: number;
   description!: string;
-  subscription!: Subscription;
+  subscription?: Subscription;
 
   constructor(data?: Partial<Payment>) {
     Object.assign(this, data);
@@ -27,6 +28,7 @@ export const paymentSchema = new EntitySchema<Payment>({
   properties: {
     _id: { type: 'uuid', onCreate: () => v4(), primary: true },
     status: { type: String },
+    type: { type: String, enum: ['pending', 'one-time', 'verification'] },
     currency: { type: String },
     amount: { type: 'float' },
     description: { type: String },
@@ -37,6 +39,7 @@ export const paymentSchema = new EntitySchema<Payment>({
     subscription: {
       reference: ReferenceType.MANY_TO_ONE,
       entity: () => Subscription,
+      nullable: true,
     },
   },
 });

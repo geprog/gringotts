@@ -1,4 +1,4 @@
-import { Customer, Payment, Project, Subscription } from '~/entities';
+import { Customer, Payment, Project } from '~/entities';
 import { PaymentProvider } from '~/payment_providers/types';
 
 export let customers: Customer[] = [];
@@ -6,11 +6,10 @@ export const payments: { paymentId: string; status: string; customerId: string }
 
 export class Mocked implements PaymentProvider {
   // eslint-disable-next-line @typescript-eslint/require-await
-  async startSubscription({
+  async chargeForegroundPayment({
     payment,
   }: {
     project: Project;
-    subscription: Subscription;
     redirectUrl: string;
     payment: Payment;
   }): Promise<{ checkoutUrl: string }> {
@@ -31,7 +30,7 @@ export class Mocked implements PaymentProvider {
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
-  async chargePayment({ payment }: { project: Project; payment: Payment }): Promise<void> {
+  async chargeBackgroundPayment({ payment }: { project: Project; payment: Payment }): Promise<void> {
     const customer = customers.find((c) => c._id === payment.customer._id);
     if (!customer) {
       throw new Error('No customer');
