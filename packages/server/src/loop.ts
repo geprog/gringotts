@@ -7,7 +7,10 @@ import { getNextPeriodFromDate, getPeriodFromAnchorDate } from '~/utils';
 const pageSize = 10;
 
 export function addSubscriptionChangesToInvoice<T extends Invoice>(subscription: Subscription, invoice: T): T {
-  const currentPeriod = getPeriodFromAnchorDate(invoice.date, subscription.anchorDate);
+  const currentPeriod = getPeriodFromAnchorDate(
+    dayjs(invoice.date).subtract(1, 'second').toDate(), // TODO: check if this is correct
+    subscription.anchorDate,
+  );
   const period = new SubscriptionPeriod(subscription, currentPeriod.start, currentPeriod.end);
 
   const newInvoiceItems = period.getInvoiceItems();
@@ -58,8 +61,27 @@ export async function chargeInvoices(): Promise<void> {
 
         invoice = addSubscriptionChangesToInvoice(subscription, invoice);
 
-        const amount = Invoice.roundPrice(invoice.totalAmount);
         const currentPeriod = getPeriodFromAnchorDate(invoice.date, subscription.anchorDate);
+
+        const { customer } = subscription;
+        await database.em.populate(customer, ['activePaymentMethod']);
+        if (!customer.activePaymentMethod) {
+          throw new Error('Customer has no active payment method');
+        }
+
+        let amount = Invoice.roundPrice(invoice.totalAmount);
+        if (customer.balance > 0) {
+          invoice.items.add(
+            new InvoiceItem({
+              description: 'Balance from user',
+              pricePerUnit: customer.balance * -1,
+              units: 1,
+            }),
+          );
+          amount -= customer.balance;
+          customer.balance = 0;
+          await database.em.persistAndFlush([customer]);
+        }
 
         // skip negative amounts (credits) and zero amounts
         if (amount > 0) {
@@ -71,7 +93,7 @@ export async function chargeInvoices(): Promise<void> {
           const payment = new Payment({
             amount,
             currency: 'EUR', // TODO: allow to configure currency
-            customer: subscription.customer,
+            customer,
             status: 'pending',
             description: paymentDescription,
             subscription,
@@ -84,11 +106,10 @@ export async function chargeInvoices(): Promise<void> {
             throw new Error(`Payment provider for '${project._id}' not configured`);
           }
 
-          await paymentProvider.chargePayment({ payment, project });
+          await paymentProvider.chargeBackgroundPayment({ payment, project });
           await database.em.persistAndFlush([payment]);
         }
 
-        const customer = subscription.customer;
         customer.invoiceCounter += 1;
         await database.em.persistAndFlush([customer]);
 
@@ -103,16 +124,10 @@ export async function chargeInvoices(): Promise<void> {
           project,
         });
 
-        // if price is negative add credit to next invoice
+        // if price is negative add credit to customer balance
         if (amount < 0) {
-          newInvoice.items.add(
-            new InvoiceItem({
-              description: 'Credit from last payment', // TODO: think about text
-              pricePerUnit: amount,
-              units: 1,
-              invoice: newInvoice,
-            }),
-          );
+          customer.balance += amount;
+          await database.em.persistAndFlush([customer]);
         }
 
         await database.em.persistAndFlush([invoice, newInvoice]);

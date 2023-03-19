@@ -53,6 +53,7 @@ export function addSchemas(server: FastifyInstance): void {
     type: 'object',
     properties: {
       _id: { type: 'string' },
+      type: { type: 'string' },
       status: { type: 'string' },
       currency: { type: 'string' },
       amount: { type: 'number' },
@@ -109,6 +110,8 @@ export function addSchemas(server: FastifyInstance): void {
       country: { type: 'string' },
       invoicePrefix: { type: 'string' },
       invoiceCounter: { type: 'string' },
+      balance: { type: 'number' },
+      activePaymentMethod: { $ref: 'PaymentMethod' },
     },
   });
 
@@ -141,6 +144,17 @@ export function addSchemas(server: FastifyInstance): void {
       //   type: 'array',
       //   items: { $ref: 'Invoice' },
       // },
+    },
+  });
+
+  server.addSchema({
+    $id: 'PaymentMethod',
+    type: 'object',
+    properties: {
+      _id: { type: 'string' },
+      customer: { $ref: 'Customer' },
+      type: { type: 'string' },
+      name: { type: 'string' },
     },
   });
 }

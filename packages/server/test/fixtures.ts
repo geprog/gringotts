@@ -1,4 +1,4 @@
-import { Customer, Invoice, Project, ProjectInvoiceData, Subscription } from '~/entities';
+import { Customer, Invoice, PaymentMethod, Project, ProjectInvoiceData, Subscription } from '~/entities';
 import dayjs from '~/lib/dayjs';
 import { getPeriodFromAnchorDate } from '~/utils';
 
@@ -47,8 +47,7 @@ export function getFixtures() {
   subscription.changePlan({ pricePerUnit: 12.34, units: 15, changeDate: dayjs('2020-01-15').toDate() });
   subscription.changePlan({ pricePerUnit: 5.43, units: 15, changeDate: dayjs('2020-01-20').toDate() });
 
-  const { start, end } = getPeriodFromAnchorDate(dayjs('2020-01-15').toDate(), subscription.anchorDate);
-  const period = subscription.getPeriod(start, end);
+  const { end } = getPeriodFromAnchorDate(dayjs('2020-01-15').toDate(), subscription.anchorDate);
 
   const invoice = new Invoice({
     _id: '123',
@@ -56,14 +55,19 @@ export function getFixtures() {
     currency: 'EUR',
     date: end,
     sequentialId: 2,
-    status: 'paid',
+    status: 'draft',
     subscription,
     project,
   });
 
-  period.getInvoiceItems().forEach((item) => {
-    invoice.items.add(item);
+  const paymentMethod = new PaymentMethod({
+    _id: '123',
+    customer,
+    paymentProviderId: 'mock-123',
+    name: 'Visa',
+    type: 'credit-card',
+    project,
   });
 
-  return { customer, subscription, invoice, project };
+  return { customer, subscription, invoice, project, paymentMethod };
 }

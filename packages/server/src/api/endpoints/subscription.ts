@@ -2,10 +2,8 @@ import { FastifyInstance } from 'fastify';
 
 import { getProjectFromRequest } from '~/api/helpers';
 import { database } from '~/database';
-import { Payment, Subscription } from '~/entities';
+import { Subscription } from '~/entities';
 import { Invoice } from '~/entities/invoice';
-import { InvoiceItem } from '~/entities/invoice_item';
-import { getPaymentProvider } from '~/payment_providers';
 import { getActiveUntilDate, getPeriodFromAnchorDate } from '~/utils';
 
 export function subscriptionEndpoints(server: FastifyInstance): void {
@@ -20,7 +18,6 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
         properties: {
           pricePerUnit: { type: 'number' },
           units: { type: 'number' },
-          redirectUrl: { type: 'string' },
           customerId: { type: 'string' },
         },
       },
@@ -29,7 +26,6 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
           type: 'object',
           properties: {
             subscriptionId: { type: 'string' },
-            checkoutUrl: { type: 'string' },
           },
         },
         400: {
@@ -67,11 +63,17 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
 
       const customer = await database.customers.findOne(
         { _id: body.customerId, project },
-        { populate: ['subscriptions'] },
+        { populate: ['subscriptions', 'activePaymentMethod'] },
       );
       if (!customer) {
         return reply.code(404).send({
           error: 'Customer not found',
+        });
+      }
+
+      if (!customer.activePaymentMethod) {
+        return reply.code(400).send({
+          error: 'Customer has no active payment method',
         });
       }
 
@@ -85,47 +87,6 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
 
       subscription.changePlan({ units: body.units, pricePerUnit: body.pricePerUnit });
 
-      const paymentProvider = getPaymentProvider(project);
-      if (!paymentProvider) {
-        return reply.code(500).send({
-          error: 'Payment provider not configured',
-        });
-      }
-
-      customer.invoiceCounter += 1;
-
-      const invoice = new Invoice({
-        date: now,
-        sequentialId: customer.invoiceCounter,
-        status: 'pending',
-        subscription,
-        currency: 'EUR', // TODO: allow to change currency
-        vatRate: 0, // Set to 0 as payment verification is not a real invoice
-        project,
-      });
-
-      invoice.items.add(
-        new InvoiceItem({
-          description: 'Payment verification', // TODO: allow to configure text
-          pricePerUnit: 1.0, // TODO: change first payment price based on currency
-          units: 1,
-          invoice,
-        }),
-      );
-
-      const amount = Invoice.roundPrice(invoice.totalAmount);
-
-      const payment = new Payment({
-        amount,
-        status: 'pending',
-        customer,
-        description: 'Payment verification', // TODO: allow to set description
-        subscription,
-        currency: invoice.currency,
-      });
-
-      invoice.payment = payment;
-
       const period = getPeriodFromAnchorDate(now, subscription.anchorDate);
       const newInvoice = new Invoice({
         date: period.end,
@@ -137,29 +98,10 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
         project,
       });
 
-      newInvoice.items.add(
-        new InvoiceItem({
-          description: 'Credit from payment verification',
-          pricePerUnit: payment.amount * -1,
-          units: 1,
-        }),
-      );
-
-      const { checkoutUrl } = await paymentProvider.startSubscription({
-        project,
-        subscription,
-        payment,
-        redirectUrl: body.redirectUrl,
-      });
-
-      // TODO: do we need this?
-      // customer.subscriptions.add(subscription);
-
-      await database.em.persistAndFlush([customer, subscription, invoice, payment, newInvoice]);
+      await database.em.persistAndFlush([customer, subscription, newInvoice]);
 
       await reply.send({
         subscriptionId: subscription._id,
-        checkoutUrl,
       });
     },
   });

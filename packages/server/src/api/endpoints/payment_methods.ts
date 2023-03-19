@@ -6,13 +6,21 @@ import { Payment } from '~/entities';
 import { getPaymentProvider } from '~/payment_providers';
 
 export function paymentMethodEndpoints(server: FastifyInstance): void {
-  server.post('/payment-method', {
+  server.post('/customer/:customerId/payment-method', {
     schema: {
-      summary: 'Create and verify a payment-method',
+      summary: 'Create payment and by accepting it a new payment-method',
       tags: ['payment-method'],
+      params: {
+        type: 'object',
+        required: ['customerId'],
+        additionalProperties: false,
+        properties: {
+          customerId: { type: 'string' },
+        },
+      },
       body: {
         type: 'object',
-        required: ['redirectUrl', 'customerId'],
+        required: ['redirectUrl'],
         additionalProperties: false,
         properties: {
           redirectUrl: { type: 'string' },
@@ -41,12 +49,18 @@ export function paymentMethodEndpoints(server: FastifyInstance): void {
     handler: async (request, reply) => {
       const project = await getProjectFromRequest(request);
 
+      const { customerId } = request.params as { customerId: string };
+      if (!customerId) {
+        return reply.code(400).send({
+          error: 'Missing customerId',
+        });
+      }
+
       const body = request.body as {
         redirectUrl: string;
-        customerId: string;
       };
 
-      const customer = await database.customers.findOne({ _id: body.customerId, project });
+      const customer = await database.customers.findOne({ _id: customerId, project });
       if (!customer) {
         return reply.code(404).send({
           error: 'Customer not found',
@@ -82,15 +96,16 @@ export function paymentMethodEndpoints(server: FastifyInstance): void {
     },
   });
 
-  server.get('/payment-method/:paymentMethodId', {
+  server.get('/customer/:customerId/payment-method/:paymentMethodId', {
     schema: {
       summary: 'Get a payment-method',
       tags: ['payment-method'],
       params: {
         type: 'object',
-        required: ['paymentMethodId'],
+        required: ['customerId', 'paymentMethodId'],
         additionalProperties: false,
         properties: {
+          customerId: { type: 'string' },
           paymentMethodId: { type: 'string' },
         },
       },
@@ -106,7 +121,7 @@ export function paymentMethodEndpoints(server: FastifyInstance): void {
     handler: async (request, reply) => {
       const project = await getProjectFromRequest(request);
 
-      const { paymentMethodId } = request.params as { paymentMethodId: string };
+      const { paymentMethodId } = request.params as { paymentMethodId: string; customerId: string };
 
       const paymentMethod = await database.paymentMethods.findOne({ _id: paymentMethodId, project });
       if (!paymentMethod) {
@@ -117,15 +132,53 @@ export function paymentMethodEndpoints(server: FastifyInstance): void {
     },
   });
 
-  server.delete('/payment-method/:paymentMethodId', {
+  server.get('/customer/:customerId/payment-method', {
+    schema: {
+      summary: 'Get all payment-methods of a customer',
+      tags: ['payment-method'],
+      params: {
+        type: 'object',
+        required: ['customerId'],
+        additionalProperties: false,
+        properties: {
+          customerId: { type: 'string' },
+        },
+      },
+      response: {
+        200: {
+          type: 'array',
+          items: {
+            $ref: 'PaymentMethod',
+          },
+        },
+        404: {
+          $ref: 'ErrorResponse',
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      const project = await getProjectFromRequest(request);
+
+      const { customerId } = request.params as { paymentMethodId: string; customerId: string };
+      const customer = await database.customers.findOne({ _id: customerId, project }, { populate: ['paymentMethods'] });
+      if (!customer) {
+        return reply.code(404).send({ error: 'Customer not found' });
+      }
+
+      await reply.send(customer.paymentMethods);
+    },
+  });
+
+  server.delete('/customer/:customerId/payment-method/:paymentMethodId', {
     schema: {
       summary: 'Delete a payment method',
       tags: ['payment-method'],
       params: {
         type: 'object',
-        required: ['paymentMethodId'],
+        required: ['customerId', 'paymentMethodId'],
         additionalProperties: false,
         properties: {
+          customerId: { type: 'string' },
           paymentMethodId: { type: 'string' },
         },
       },

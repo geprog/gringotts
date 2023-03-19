@@ -21,6 +21,7 @@ export class Customer {
   invoiceCounter = 0;
   project!: Project;
   activePaymentMethod?: PaymentMethod;
+  paymentMethods = new Collection<PaymentMethod>(this);
 
   constructor(data?: Partial<Customer>) {
     Object.assign(this, data);
@@ -61,6 +62,11 @@ export const customerSchema = new EntitySchema<Customer>({
       reference: ReferenceType.MANY_TO_ONE,
       entity: () => Project,
     },
+    // paymentMethods: {
+    //   reference: ReferenceType.ONE_TO_MANY,
+    //   entity: () => PaymentMethod,
+    //   mappedBy: (paymentMethod: PaymentMethod) => paymentMethod.customer,
+    // },
     activePaymentMethod: { reference: ReferenceType.MANY_TO_ONE, entity: () => PaymentMethod, nullable: true },
   },
 });

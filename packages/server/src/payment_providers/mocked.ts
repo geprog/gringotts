@@ -1,4 +1,4 @@
-import { Customer, Payment, Project } from '~/entities';
+import { Customer, Payment, PaymentMethod, Project } from '~/entities';
 import { PaymentProvider } from '~/payment_providers/types';
 
 export let customers: Customer[] = [];
@@ -10,8 +10,8 @@ export class Mocked implements PaymentProvider {
     payment,
   }: {
     project: Project;
-    redirectUrl: string;
     payment: Payment;
+    redirectUrl: string;
   }): Promise<{ checkoutUrl: string }> {
     const customer = customers.find((c) => c._id === payment.customer._id);
     if (!customer) {
@@ -72,5 +72,14 @@ export class Mocked implements PaymentProvider {
   // eslint-disable-next-line @typescript-eslint/require-await
   async deleteCustomer(customer: Customer): Promise<void> {
     customers = customers.filter((c) => c._id !== customer._id);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await, @typescript-eslint/no-unused-vars
+  async getPaymentMethod(paymentId: string): Promise<PaymentMethod> {
+    return new PaymentMethod({
+      paymentProviderId: 'mocked-123',
+      type: 'mocked',
+      name: 'mocked',
+    });
   }
 }
