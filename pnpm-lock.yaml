@@ -66,7 +66,6 @@ importers:
       uuid: ^8.3.2
       vite: ^4.2.0
       vitest: ^0.29.3
-      vitest-mock-extended: ^1.1.0
     dependencies:
       '@fastify/formbody': 7.0.1
       '@fastify/helmet': 9.1.0
@@ -105,7 +104,6 @@ importers:
       typescript: 4.7.4
       vite: 4.2.0_@types+node@18.6.0
       vitest: 0.29.3_@vitest+ui@0.18.1
-      vitest-mock-extended: 1.1.0_lfu45w5f7qpy5qiw4iyxjj7rmi
 
 packages:
 
@@ -4902,14 +4900,6 @@ packages:
     hasBin: true
     dev: true
 
-  /ts-essentials/9.3.1_typescript@4.7.4:
-    resolution: {integrity: sha512-9CChSvQMyVRo29Vb1A2jbs+LKo3d/bAf+ndSaX0T8cEiy/HChVaRN/HY5DqUryZ8hZ6uol9bEgCnGmnDbwBR9Q==}
-    peerDependencies:
-      typescript: '>=4.1.0'
-    dependencies:
-      typescript: 4.7.4
-    dev: true
-
   /ts-interface-checker/0.1.13:
     resolution: {integrity: sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==}
     dev: true
@@ -5175,17 +5165,6 @@ packages:
       rollup: 3.19.1
     optionalDependencies:
       fsevents: 2.3.2
-    dev: true
-
-  /vitest-mock-extended/1.1.0_lfu45w5f7qpy5qiw4iyxjj7rmi:
-    resolution: {integrity: sha512-4AMVDXmbBd7kImh1Hi2B0EBuDy6hTy+8r4CVEcpEsmlVmxjHB2vszr/6B1W6ONYw76RLhlLDJlmk9fOE5B9H8w==}
-    peerDependencies:
-      typescript: 3.x || 4.x
-      vitest: '>=0.29.2'
-    dependencies:
-      ts-essentials: 9.3.1_typescript@4.7.4
-      typescript: 4.7.4
-      vitest: 0.29.3_@vitest+ui@0.18.1
     dev: true
 
   /vitest/0.22.1_@vitest+ui@0.18.1:
