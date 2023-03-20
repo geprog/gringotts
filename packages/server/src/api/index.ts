@@ -16,6 +16,7 @@ import { formatDate } from '~/lib/dayjs';
 import { customerEndpoints } from './endpoints/customer';
 import { invoiceEndpoints } from './endpoints/invoice';
 import { paymentEndpoints } from './endpoints/payment';
+import { paymentMethodEndpoints } from './endpoints/payment_method';
 import { projectEndpoints } from './endpoints/project';
 import { subscriptionEndpoints } from './endpoints/subscription';
 import { addSchemas } from './schema';
@@ -155,6 +156,7 @@ export async function init(): Promise<FastifyInstance> {
   invoiceEndpoints(server);
   paymentEndpoints(server);
   projectEndpoints(server);
+  paymentMethodEndpoints(server);
 
   return server;
 }

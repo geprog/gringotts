@@ -94,6 +94,7 @@ export async function chargeInvoices(): Promise<void> {
             amount,
             currency: 'EUR', // TODO: allow to configure currency
             customer,
+            type: 'recurring',
             status: 'pending',
             description: paymentDescription,
             subscription,

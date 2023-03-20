@@ -10,6 +10,7 @@ import {
   invoiceSchema,
   Payment,
   PaymentMethod,
+  paymentMethodSchema,
   paymentSchema,
   Project,
   projectInvoiceDataSchema,
@@ -43,6 +44,7 @@ export class Database {
           invoiceItemSchema,
           projectSchema,
           projectInvoiceDataSchema,
+          paymentMethodSchema,
         ],
         discovery: { disableDynamicFileAccess: true },
         migrations: {

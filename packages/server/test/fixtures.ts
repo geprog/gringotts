@@ -1,4 +1,4 @@
-import { Customer, Invoice, PaymentMethod, Project, ProjectInvoiceData, Subscription } from '~/entities';
+import { Customer, Invoice, InvoiceItem, PaymentMethod, Project, ProjectInvoiceData, Subscription } from '~/entities';
 import dayjs from '~/lib/dayjs';
 import { getPeriodFromAnchorDate } from '~/utils';
 
@@ -60,6 +60,22 @@ export function getFixtures() {
     project,
   });
 
+  invoice.items.add(
+    new InvoiceItem({
+      description: 'Test item',
+      pricePerUnit: 12.34,
+      units: 13,
+    }),
+  );
+
+  invoice.items.add(
+    new InvoiceItem({
+      description: 'Second test item',
+      pricePerUnit: 54.32,
+      units: 1,
+    }),
+  );
+
   const paymentMethod = new PaymentMethod({
     _id: '123',
     customer,
@@ -68,6 +84,8 @@ export function getFixtures() {
     type: 'credit-card',
     project,
   });
+  customer.paymentMethods.add(paymentMethod);
+  customer.activePaymentMethod = paymentMethod;
 
   return { customer, subscription, invoice, project, paymentMethod };
 }

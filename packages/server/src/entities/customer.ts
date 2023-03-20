@@ -62,11 +62,11 @@ export const customerSchema = new EntitySchema<Customer>({
       reference: ReferenceType.MANY_TO_ONE,
       entity: () => Project,
     },
-    // paymentMethods: {
-    //   reference: ReferenceType.ONE_TO_MANY,
-    //   entity: () => PaymentMethod,
-    //   mappedBy: (paymentMethod: PaymentMethod) => paymentMethod.customer,
-    // },
+    paymentMethods: {
+      reference: ReferenceType.ONE_TO_MANY,
+      entity: () => PaymentMethod,
+      mappedBy: (paymentMethod: PaymentMethod) => paymentMethod.customer,
+    },
     activePaymentMethod: { reference: ReferenceType.MANY_TO_ONE, entity: () => PaymentMethod, nullable: true },
   },
 });

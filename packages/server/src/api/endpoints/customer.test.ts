@@ -113,7 +113,6 @@ describe('Customer endpoints', () => {
       query: {
         email: customerData.email,
       },
-      payload: customerData,
     });
 
     // then

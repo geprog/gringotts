@@ -78,6 +78,7 @@ export function paymentMethodEndpoints(server: FastifyInstance): void {
         amount: 1, // TODO: Use the smallest amount possible
         currency: 'EUR', // TODO: Allow to configure this
         description: 'Payment method verification',
+        type: 'verification',
         customer,
         status: 'pending',
       });
@@ -160,12 +161,13 @@ export function paymentMethodEndpoints(server: FastifyInstance): void {
       const project = await getProjectFromRequest(request);
 
       const { customerId } = request.params as { paymentMethodId: string; customerId: string };
+
       const customer = await database.customers.findOne({ _id: customerId, project }, { populate: ['paymentMethods'] });
       if (!customer) {
         return reply.code(404).send({ error: 'Customer not found' });
       }
 
-      await reply.send(customer.paymentMethods);
+      await reply.send(customer.paymentMethods.getItems());
     },
   });
 
@@ -186,7 +188,7 @@ export function paymentMethodEndpoints(server: FastifyInstance): void {
         200: {
           type: 'object',
           properties: {
-            success: { type: 'boolean' },
+            ok: { type: 'boolean' },
           },
         },
         404: {
@@ -206,7 +208,7 @@ export function paymentMethodEndpoints(server: FastifyInstance): void {
 
       await database.paymentMethods.removeAndFlush(paymentMethod);
 
-      await reply.send({ success: true });
+      await reply.send({ ok: true });
     },
   });
 }
