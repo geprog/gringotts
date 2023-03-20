@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { beforeAll, describe, expect, it, MockContext, vi } from 'vitest';
 
 import { getFixtures } from '~/../test/fixtures';
@@ -55,6 +56,9 @@ describe('Subscription endpoints', () => {
       customerId: testData.customer._id,
     };
 
+    const date = new Date('2021-01-01');
+    vi.setSystemTime(date);
+
     // when
     const response = await server.inject({
       method: 'POST',
@@ -75,6 +79,7 @@ describe('Subscription endpoints', () => {
     const [[, subscription, newInvoice]] = persistAndFlush.mock.lastCall as [[Customer, Subscription, Invoice]];
     expect(responseData._id).toStrictEqual(subscription._id);
     expect(newInvoice).toBeDefined();
+    expect(newInvoice.date).toStrictEqual(dayjs(date).add(1, 'month').toDate());
   });
 
   it('should update a subscription', async () => {

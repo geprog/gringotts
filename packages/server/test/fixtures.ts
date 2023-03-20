@@ -39,7 +39,7 @@ export function getFixtures() {
   });
 
   const subscription = new Subscription({
-    anchorDate: dayjs('2020-01-01').toDate(),
+    anchorDate: dayjs('2020-01-01 07:23').toDate(),
     customer,
     project,
   });

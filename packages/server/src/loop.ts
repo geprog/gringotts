@@ -7,10 +7,9 @@ import { getNextPeriodFromDate, getPeriodFromAnchorDate } from '~/utils';
 const pageSize = 10;
 
 export function addSubscriptionChangesToInvoice<T extends Invoice>(subscription: Subscription, invoice: T): T {
-  const currentPeriod = getPeriodFromAnchorDate(
-    dayjs(invoice.date).subtract(1, 'second').toDate(), // TODO: check if this is correct
-    subscription.anchorDate,
-  );
+  const currentPeriod = getPeriodFromAnchorDate(invoice.date, subscription.anchorDate);
+  console.log(currentPeriod);
+
   const period = new SubscriptionPeriod(subscription, currentPeriod.start, currentPeriod.end);
 
   const newInvoiceItems = period.getInvoiceItems();

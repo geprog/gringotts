@@ -1,5 +1,5 @@
 import dayjs from 'dayjs';
-import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import * as config from '~/config';
 import * as databaseExports from '~/database';
@@ -22,16 +22,6 @@ describe('Loop', () => {
     });
 
     await databaseExports.database.init();
-  });
-
-  beforeEach(() => {
-    // tell vitest we use mocked time
-    vi.useFakeTimers();
-  });
-
-  afterEach(() => {
-    // restoring date after each test run
-    vi.useRealTimers();
   });
 
   it('should loop and charge for open invoices', async () => {
@@ -92,9 +82,12 @@ describe('Loop', () => {
     expect(oldInvoice?.status).toStrictEqual('draft');
     expect(oldInvoice?.items.length).toStrictEqual(2);
     expect(oldInvoice?.date).toStrictEqual(invoiceDate.toDate());
+    console.log(oldInvoice?.date);
 
     // when
     await chargeInvoices();
+
+    console.log(oldInvoice?.items.getItems());
 
     // then
     oldInvoice = db.invoices.get(testData.invoice._id);
