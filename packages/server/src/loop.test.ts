@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import * as config from '~/config';
@@ -33,7 +34,7 @@ describe('Loop', () => {
     vi.useRealTimers();
   });
 
-  it.only('should loop and charge for open invoices', async () => {
+  it('should loop and charge for open invoices', async () => {
     // given
     const testData = getFixtures();
 
@@ -83,8 +84,8 @@ describe('Loop', () => {
       },
     } as unknown as databaseExports.Database);
 
-    const date = new Date('2020-02-02');
-    vi.setSystemTime(date);
+    const invoiceDate = dayjs(testData.invoice.date);
+    vi.setSystemTime(invoiceDate.add(1, 'day').toDate());
 
     // before when
     let oldInvoice = db.invoices.get(testData.invoice._id);
@@ -94,39 +95,11 @@ describe('Loop', () => {
     // when
     await chargeInvoices();
 
-    // const o = Array.from(db.invoices.values());
-
-    // const r = (_i: Record<string, unknown>) => {
-    //   const i = typeof _i?.toJSON === 'function' ? _i.toJSON() : _i;
-    //   return Object.entries(i).reduce((acc, [k, v]) => {
-    //     if (typeof v === 'object' && (v as { _id?: string })?._id) {
-    //       return {
-    //         ...acc,
-    //         [k]: { _id: (v as { _id: string })._id },
-    //       };
-    //     }
-
-    //     if (Array.isArray(v)) {
-    //       return {
-    //         ...acc,
-    //         [k]: v.map(r),
-    //       };
-    //     }
-
-    //     return {
-    //       ...acc,
-    //       [k]: v,
-    //     };
-    //   }, {});
-    // };
-
-    // console.log(o.map(r));
-
     // then
     oldInvoice = db.invoices.get(testData.invoice._id);
     expect(oldInvoice).toBeDefined();
     expect(oldInvoice?.status).toStrictEqual('pending');
-    // expect(oldInvoice?.date).toStrictEqual(new Date('2020-02-28')); // TODO: check invoice date
+    expect(oldInvoice?.date).toStrictEqual(invoiceDate.toDate());
     expect(oldInvoice?.items.length).toStrictEqual(5);
     expect(oldInvoice?.totalAmount).toStrictEqual(405.61);
 
@@ -139,22 +112,24 @@ describe('Loop', () => {
     expect(db.invoices.size).toBe(2);
     let newInvoice = Array.from(db.invoices.values()).at(-1);
     expect(newInvoice).toBeDefined();
+    expect(newInvoice?.date).toStrictEqual(invoiceDate.add(1, 'month').toDate());
     expect(newInvoice?.status).toStrictEqual('draft');
 
     // next period
     newInvoice?.subscription.changePlan({ pricePerUnit: 13, units: 2, changeDate: new Date('2020-02-09') });
     newInvoice?.subscription.changePlan({ pricePerUnit: 40, units: 4, changeDate: new Date('2020-02-24') });
-    vi.setSystemTime(new Date('2020-03-02'));
+
+    vi.setSystemTime(invoiceDate.add(1, 'month').add(1, 'day').toDate());
     await chargeInvoices();
 
     newInvoice = Array.from(db.invoices.values()).at(-1);
     expect(newInvoice).toBeDefined();
-    // expect(newInvoice?.date).toStrictEqual(new Date('2020-03-31')); // TODO: check invoice date
+    expect(newInvoice?.date).toStrictEqual(invoiceDate.add(1, 'month').toDate());
     expect(newInvoice?.status).toStrictEqual('draft');
     expect(newInvoice?.items.length).toStrictEqual(0);
   });
 
-  it('should apply customer balance to invoice');
+  it.todo('should apply customer balance to invoice');
 
-  it('should apply customer balance to invoice and add negative rest amount to balance again');
+  it.todo('should apply customer balance to invoice and add negative rest amount to balance again');
 });
