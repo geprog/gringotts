@@ -206,7 +206,7 @@ export function paymentMethodEndpoints(server: FastifyInstance): void {
         return reply.code(404).send({ error: 'Payment-method not found' });
       }
 
-      await database.paymentMethods.removeAndFlush(paymentMethod);
+      await database.em.removeAndFlush(paymentMethod);
 
       await reply.send({ ok: true });
     },

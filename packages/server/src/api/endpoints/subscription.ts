@@ -23,10 +23,7 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
       },
       response: {
         200: {
-          type: 'object',
-          properties: {
-            subscriptionId: { type: 'string' },
-          },
+          $ref: 'Subscription',
         },
         400: {
           $ref: 'ErrorResponse',
@@ -100,9 +97,7 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
 
       await database.em.persistAndFlush([customer, subscription, newInvoice]);
 
-      await reply.send({
-        subscriptionId: subscription._id,
-      });
+      await reply.send(subscription.toJSON());
     },
   });
 

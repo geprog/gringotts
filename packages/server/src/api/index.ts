@@ -6,6 +6,7 @@ import fastifyView from '@fastify/view';
 import fastify, { FastifyInstance } from 'fastify';
 import Handlebars from 'handlebars';
 import path from 'path';
+import pino from 'pino';
 
 import { config } from '~/config';
 import { database } from '~/database';
@@ -22,19 +23,29 @@ import { subscriptionEndpoints } from './endpoints/subscription';
 import { addSchemas } from './schema';
 
 export async function init(): Promise<FastifyInstance> {
-  const server = fastify({
-    logger: {
-      transport:
-        process.env.NODE_ENV === 'production'
-          ? undefined
-          : {
-              target: 'pino-pretty',
-              options: {
-                translateTime: 'HH:MM:ss Z',
-                ignore: 'pid,hostname',
-              },
+  const logger =
+    process.env.NODE_ENV === 'test'
+      ? pino(
+          {},
+          {
+            // eslint-disable-next-line no-console
+            write: (data: string) => console.log(data),
+          },
+        )
+      : process.env.NODE_ENV === 'production'
+      ? true
+      : pino({
+          transport: {
+            target: 'pino-pretty',
+            options: {
+              translateTime: 'HH:MM:ss Z',
+              ignore: 'pid,hostname',
             },
-    },
+          },
+        });
+
+  const server = fastify({
+    logger,
   });
 
   server.addHook('onRequest', async (request, reply) => {
