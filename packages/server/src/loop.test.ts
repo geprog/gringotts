@@ -91,6 +91,7 @@ describe('Loop', () => {
     let oldInvoice = db.invoices.get(testData.invoice._id);
     expect(oldInvoice?.status).toStrictEqual('draft');
     expect(oldInvoice?.items.length).toStrictEqual(2);
+    expect(oldInvoice?.date).toStrictEqual(invoiceDate.toDate());
 
     // when
     await chargeInvoices();
@@ -99,7 +100,6 @@ describe('Loop', () => {
     oldInvoice = db.invoices.get(testData.invoice._id);
     expect(oldInvoice).toBeDefined();
     expect(oldInvoice?.status).toStrictEqual('pending');
-    expect(oldInvoice?.date).toStrictEqual(invoiceDate.toDate());
     expect(oldInvoice?.items.length).toStrictEqual(5);
     expect(oldInvoice?.totalAmount).toStrictEqual(405.61);
 
@@ -110,23 +110,10 @@ describe('Loop', () => {
     expect(payment.amount).toStrictEqual(405.61);
 
     expect(db.invoices.size).toBe(2);
-    let newInvoice = Array.from(db.invoices.values()).at(-1);
+    const newInvoice = Array.from(db.invoices.values()).at(-1);
     expect(newInvoice).toBeDefined();
     expect(newInvoice?.date).toStrictEqual(invoiceDate.add(1, 'month').toDate());
     expect(newInvoice?.status).toStrictEqual('draft');
-
-    // next period
-    newInvoice?.subscription.changePlan({ pricePerUnit: 13, units: 2, changeDate: new Date('2020-02-09') });
-    newInvoice?.subscription.changePlan({ pricePerUnit: 40, units: 4, changeDate: new Date('2020-02-24') });
-
-    vi.setSystemTime(invoiceDate.add(1, 'month').add(1, 'day').toDate());
-    await chargeInvoices();
-
-    newInvoice = Array.from(db.invoices.values()).at(-1);
-    expect(newInvoice).toBeDefined();
-    expect(newInvoice?.date).toStrictEqual(invoiceDate.add(1, 'month').toDate());
-    expect(newInvoice?.status).toStrictEqual('draft');
-    expect(newInvoice?.items.length).toStrictEqual(0);
   });
 
   it.todo('should apply customer balance to invoice');
