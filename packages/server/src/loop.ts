@@ -73,12 +73,12 @@ export async function chargeInvoices(): Promise<void> {
         if (customer.balance > 0) {
           invoice.items.add(
             new InvoiceItem({
-              description: 'Balance from user',
+              description: 'Credit',
               pricePerUnit: customer.balance * -1,
               units: 1,
             }),
           );
-          amount -= customer.balance;
+          amount = amount - customer.balance;
           customer.balance = 0;
           await database.em.persistAndFlush([customer]);
         }

@@ -13,7 +13,10 @@ export function paymentEndpoints(server: FastifyInstance): void {
         return reply.code(400).send({ error: 'ProjectId not provided' });
       }
 
-      const project = await database.projects.findOneOrFail(params?.projectId);
+      const project = await database.projects.findOne(params?.projectId);
+      if (!project) {
+        return reply.code(404).send({ error: 'Project not found' });
+      }
 
       const paymentProvider = getPaymentProvider(project);
       if (!paymentProvider) {
@@ -29,7 +32,7 @@ export function paymentEndpoints(server: FastifyInstance): void {
 
       const payment = await database.payments.findOne(
         { _id: payload.paymentId },
-        { populate: ['subscription', 'customer'] },
+        { populate: ['subscription', 'customer', 'invoice'] },
       );
       if (!payment) {
         return reply.code(404).send({ error: 'Payment not found' });
@@ -49,12 +52,12 @@ export function paymentEndpoints(server: FastifyInstance): void {
 
         const { customer } = payment;
         customer.activePaymentMethod = paymentMethod; // auto-activate new payment method
-        customer.balance = Math.max(customer.balance - payment.amount, 0);
+        customer.balance = Math.max(customer.balance + payment.amount, 0);
         await database.em.persistAndFlush([customer, paymentMethod]);
       }
 
-      const subscription = payment.subscription;
-      if (subscription && payment.type === 'recurring' && payload.paymentStatus === 'paid') {
+      const { subscription } = payment;
+      if (subscription && payload.paymentStatus === 'paid') {
         subscription.lastPayment = payload.paidAt;
         await database.em.persistAndFlush([subscription]);
         void triggerWebhook({
@@ -65,17 +68,10 @@ export function paymentEndpoints(server: FastifyInstance): void {
         });
       }
 
-      if (payment.type === 'one-off' || payment.type === 'recurring') {
-        const invoice = await database.invoices.findOne(
-          { payment },
-          {
-            populate: ['project'],
-          },
-        );
-        if (invoice && (payload.paymentStatus === 'paid' || payload.paymentStatus === 'failed')) {
-          invoice.status = payload.paymentStatus;
-          await database.em.persistAndFlush([invoice]);
-        }
+      const { invoice } = payment;
+      if (invoice && (payload.paymentStatus === 'paid' || payload.paymentStatus === 'failed')) {
+        invoice.status = payload.paymentStatus;
+        await database.em.persistAndFlush([invoice]);
       }
 
       await reply.send({ ok: true });

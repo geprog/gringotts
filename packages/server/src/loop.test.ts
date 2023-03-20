@@ -88,8 +88,8 @@ describe('Loop', () => {
 
     // before when
     let oldInvoice = db.invoices.get(testData.invoice._id);
-    expect(oldInvoice?.status).toBe('draft');
-    expect(oldInvoice?.items.length).toBe(0);
+    expect(oldInvoice?.status).toStrictEqual('draft');
+    expect(oldInvoice?.items.length).toStrictEqual(2);
 
     // when
     await chargeInvoices();
@@ -127,14 +127,14 @@ describe('Loop', () => {
     expect(oldInvoice).toBeDefined();
     expect(oldInvoice?.status).toStrictEqual('pending');
     // expect(oldInvoice?.date).toStrictEqual(new Date('2020-02-28')); // TODO: check invoice date
-    expect(oldInvoice?.items.length).toStrictEqual(3);
-    expect(oldInvoice?.totalAmount).toStrictEqual(150.07);
+    expect(oldInvoice?.items.length).toStrictEqual(5);
+    expect(oldInvoice?.totalAmount).toStrictEqual(405.61);
 
     expect(db.payments.size).toBe(1);
     const payment = Array.from(db.payments.values())[0];
     expect(payment).toBeDefined();
     expect(payment.status).toStrictEqual('pending');
-    expect(payment.amount).toStrictEqual(150.07);
+    expect(payment.amount).toStrictEqual(405.61);
 
     expect(db.invoices.size).toBe(2);
     let newInvoice = Array.from(db.invoices.values()).at(-1);
@@ -150,11 +150,11 @@ describe('Loop', () => {
     newInvoice = Array.from(db.invoices.values()).at(-1);
     expect(newInvoice).toBeDefined();
     // expect(newInvoice?.date).toStrictEqual(new Date('2020-03-31')); // TODO: check invoice date
-    expect(newInvoice?.status).toStrictEqual('pending');
-    expect(newInvoice?.items.length).toStrictEqual(1);
+    expect(newInvoice?.status).toStrictEqual('draft');
+    expect(newInvoice?.items.length).toStrictEqual(0);
   });
 
-  // it('Should apply customer balance to invoice', async () => {});
+  it('should apply customer balance to invoice');
 
-  // it('Should apply customer balance to invoice and add negative rest amount to balance again', async () => {});
+  it('should apply customer balance to invoice and add negative rest amount to balance again');
 });
