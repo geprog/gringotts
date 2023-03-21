@@ -29,11 +29,11 @@ export const paymentSchema = new EntitySchema<Payment>({
   class: Payment,
   properties: {
     _id: { type: 'uuid', onCreate: () => v4(), primary: true },
-    status: { type: String },
-    type: { type: String, enum: ['pending', 'one-time', 'verification'] },
-    currency: { type: String },
+    status: { type: 'string' },
+    type: { type: 'string', default: 'recurring' },
+    currency: { type: 'string' },
     amount: { type: 'float' },
-    description: { type: String },
+    description: { type: 'string' },
     customer: {
       reference: ReferenceType.MANY_TO_ONE,
       entity: () => Customer,

@@ -13,7 +13,7 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
       tags: ['subscription'],
       body: {
         type: 'object',
-        required: ['pricePerUnit', 'units', 'redirectUrl', 'customerId'],
+        required: ['pricePerUnit', 'units', 'customerId'],
         additionalProperties: false,
         properties: {
           pricePerUnit: { type: 'number' },

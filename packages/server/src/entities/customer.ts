@@ -36,6 +36,13 @@ export class Customer {
     const customerId = this._id.substring(this._id.length - 3);
     this.invoicePrefix = [appId, customerId, randomId].map((s) => s.toUpperCase()).join('-');
   }
+
+  toJSON(): Customer {
+    return {
+      ...this,
+      activePaymentMethod: this.activePaymentMethod?.toJSON(),
+    };
+  }
 }
 
 export const customerSchema = new EntitySchema<Customer>({
@@ -43,7 +50,7 @@ export const customerSchema = new EntitySchema<Customer>({
   properties: {
     _id: { type: 'uuid', onCreate: () => v4(), primary: true },
     paymentProviderId: { type: 'string' },
-    balance: { type: 'float' },
+    balance: { type: 'float', default: 0 },
     name: { type: 'string' },
     email: { type: 'string' },
     addressLine1: { type: 'string' },

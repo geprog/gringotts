@@ -18,6 +18,14 @@ export class PaymentMethod {
   constructor(data?: Partial<PaymentMethod>) {
     Object.assign(this, data);
   }
+
+  toJSON(): PaymentMethod {
+    return {
+      ...this,
+      project: undefined,
+      customer: undefined,
+    };
+  }
 }
 
 export const paymentMethodSchema = new EntitySchema<PaymentMethod>({
@@ -27,12 +35,10 @@ export const paymentMethodSchema = new EntitySchema<PaymentMethod>({
     paymentProviderId: { type: 'string' },
     type: { type: 'string' },
     name: { type: 'string' },
-    status: { type: 'string' },
     customer: {
       reference: ReferenceType.MANY_TO_ONE,
       entity: () => Customer,
     },
-    minimumAmount: { type: 'number' },
     project: {
       reference: ReferenceType.MANY_TO_ONE,
       entity: () => Project,
