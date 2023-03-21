@@ -1,5 +1,5 @@
 import { database } from '~/database';
-import { Invoice, InvoiceItem, Payment, Subscription, SubscriptionPeriod } from '~/entities';
+import { Customer, Invoice, InvoiceItem, Payment, Subscription, SubscriptionPeriod } from '~/entities';
 import dayjs from '~/lib/dayjs';
 import { getPaymentProvider } from '~/payment_providers';
 import { getPeriodFromAnchorDate } from '~/utils';
@@ -8,6 +8,79 @@ const pageSize = 10;
 
 function getBillingPeriod(subscription: Subscription, invoice: Invoice) {
   return getPeriodFromAnchorDate(dayjs(invoice.date).subtract(1, 'day').toDate(), subscription.anchorDate);
+}
+
+export async function chargeCustomerInvoice({
+  customer,
+  invoice,
+}: {
+  customer: Customer;
+  invoice: Invoice;
+}): Promise<void> {
+  console.log('totalAmount', invoice.totalAmount);
+
+  if (customer.balance > 0) {
+    const creditAmount = Math.min(customer.balance, invoice.totalAmount);
+    invoice.items.add(
+      new InvoiceItem({
+        description: 'Credit',
+        pricePerUnit: creditAmount * -1,
+        units: 1,
+      }),
+    );
+    console.log('customer.balance', customer.balance);
+    console.log('creditAmount', creditAmount);
+    customer.balance = Invoice.roundPrice(customer.balance - creditAmount);
+    console.log('customer.balance', customer.balance);
+    await database.em.persistAndFlush([customer]);
+  }
+
+  // skip negative amounts (credits) and zero amounts
+  const amount = Invoice.roundPrice(invoice.totalAmount);
+  console.log('totalAmount', invoice.totalAmount);
+  if (amount > 0) {
+    let paymentDescription = `Invoice ${invoice.number}`;
+
+    const { subscription } = invoice;
+    if (subscription) {
+      const formatDate = (d: Date) => dayjs(d).format('DD.MM.YYYY');
+      const billingPeriod = getBillingPeriod(subscription, invoice);
+      paymentDescription = `Subscription for period ${formatDate(billingPeriod.start)} - ${formatDate(
+        billingPeriod.end,
+      )}`; // TODO: think about text
+    }
+
+    const payment = new Payment({
+      amount,
+      currency: 'EUR', // TODO: allow to configure currency
+      customer,
+      type: 'recurring',
+      status: 'pending',
+      description: paymentDescription,
+      subscription,
+    });
+
+    invoice.payment = payment;
+
+    const { project } = customer;
+    if (!project) {
+      throw new Error(`Project for '${customer._id}' not configured`);
+    }
+
+    const paymentProvider = getPaymentProvider(project);
+    if (!paymentProvider) {
+      throw new Error(`Payment provider for '${project._id}' not configured`);
+    }
+
+    await paymentProvider.chargeBackgroundPayment({ payment, project });
+    await database.em.persistAndFlush([payment]);
+  } else {
+    invoice.status = 'paid';
+    // TODO: should we create a fake payment?
+  }
+
+  customer.invoiceCounter += 1;
+  await database.em.persistAndFlush([customer, invoice]);
 }
 
 function addSubscriptionChangesToInvoice<T extends Invoice>(subscription: Subscription, invoice: T): T {
@@ -69,51 +142,7 @@ export async function chargeInvoices(): Promise<void> {
           throw new Error('Customer has no active payment method');
         }
 
-        let amount = Invoice.roundPrice(invoice.totalAmount);
-        if (customer.balance > 0) {
-          invoice.items.add(
-            new InvoiceItem({
-              description: 'Credit',
-              pricePerUnit: customer.balance * -1,
-              units: 1,
-            }),
-          );
-          amount = amount - customer.balance;
-          customer.balance = 0;
-          await database.em.persistAndFlush([customer]);
-        }
-
-        // skip negative amounts (credits) and zero amounts
-        if (amount > 0) {
-          const formatDate = (d: Date) => dayjs(d).format('DD.MM.YYYY');
-          const billingPeriod = getBillingPeriod(subscription, invoice);
-          const paymentDescription = `Subscription for period ${formatDate(billingPeriod.start)} - ${formatDate(
-            billingPeriod.end,
-          )}`; // TODO: think about text
-
-          const payment = new Payment({
-            amount,
-            currency: 'EUR', // TODO: allow to configure currency
-            customer,
-            type: 'recurring',
-            status: 'pending',
-            description: paymentDescription,
-            subscription,
-          });
-
-          invoice.payment = payment;
-
-          const paymentProvider = getPaymentProvider(project);
-          if (!paymentProvider) {
-            throw new Error(`Payment provider for '${project._id}' not configured`);
-          }
-
-          await paymentProvider.chargeBackgroundPayment({ payment, project });
-          await database.em.persistAndFlush([payment]);
-        }
-
-        customer.invoiceCounter += 1;
-        await database.em.persistAndFlush([customer]);
+        await chargeCustomerInvoice({ customer, invoice });
 
         const nextPeriod = getPeriodFromAnchorDate(invoice.date, subscription.anchorDate);
         const newInvoice = new Invoice({
@@ -126,13 +155,7 @@ export async function chargeInvoices(): Promise<void> {
           project,
         });
 
-        // if price is negative add credit to customer balance
-        if (amount < 0) {
-          customer.balance += amount;
-          await database.em.persistAndFlush([customer]);
-        }
-
-        await database.em.persistAndFlush([invoice, newInvoice]);
+        await database.em.persistAndFlush([newInvoice]);
       }
 
       if (invoices.length < pageSize) {

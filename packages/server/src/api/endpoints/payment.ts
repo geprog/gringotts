@@ -48,6 +48,7 @@ export function paymentEndpoints(server: FastifyInstance): void {
         if (!paymentMethod) {
           return reply.code(500).send({ error: 'Payment method not found' });
         }
+        paymentMethod.project = project;
         paymentMethod.customer = payment.customer;
 
         const { customer } = payment;

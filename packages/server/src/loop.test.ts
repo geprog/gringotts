@@ -6,7 +6,7 @@ import * as databaseExports from '~/database';
 import { getFixtures } from '$/fixtures';
 
 import { Customer, Invoice, Payment } from './entities';
-import { chargeInvoices } from './loop';
+import { chargeCustomerInvoice, chargeInvoices } from './loop';
 import { getPaymentProvider } from './payment_providers';
 
 describe('Loop', () => {
@@ -28,7 +28,7 @@ describe('Loop', () => {
     // given
     const testData = getFixtures();
 
-    const customer = testData.customer;
+    const { customer } = testData;
     customer.activePaymentMethod = testData.paymentMethod;
 
     const paymentProvider = getPaymentProvider(testData.project);
@@ -108,7 +108,95 @@ describe('Loop', () => {
     expect(newInvoice?.status).toStrictEqual('draft');
   });
 
-  it.todo('should apply customer balance to invoice');
+  it('should apply customer balance to invoice', async () => {
+    // given
+    const testData = getFixtures();
+    const { invoice, customer } = testData;
 
-  it.todo('should apply customer balance to invoice and add negative rest amount to balance again');
+    customer.activePaymentMethod = testData.paymentMethod;
+
+    const paymentProvider = getPaymentProvider(testData.project);
+    if (!paymentProvider) {
+      throw new Error('Payment provider not configured');
+    }
+    await paymentProvider.createCustomer(customer);
+
+    const persistAndFlush = vi.fn();
+    vi.spyOn(databaseExports, 'database', 'get').mockReturnValue({
+      em: {
+        persistAndFlush,
+        populate() {
+          return Promise.resolve();
+        },
+      },
+    } as unknown as databaseExports.Database);
+
+    const balance = 123;
+    customer.balance = balance;
+    const invoiceAmount = invoice.totalAmount;
+
+    // when
+    await chargeCustomerInvoice({ invoice, customer });
+
+    // then
+    expect(persistAndFlush).toBeCalledTimes(3);
+    const [[updatedCustomer, updatedInvoice]] = persistAndFlush.mock.calls[2] as [[Customer, Invoice]];
+    expect(updatedInvoice).toBeDefined();
+    expect(updatedInvoice.items.getItems().find((i) => i.description === 'Credit')).toBeDefined();
+    expect(updatedInvoice.totalAmount).toStrictEqual(Invoice.roundPrice(invoiceAmount - balance));
+
+    expect(updatedCustomer).toBeDefined();
+    expect(updatedCustomer.balance).toStrictEqual(0);
+  });
+
+  it('should apply customer balance to invoice and keep remaining balance', async () => {
+    // given
+    const testData = getFixtures();
+    const { invoice, customer } = testData;
+
+    customer.activePaymentMethod = testData.paymentMethod;
+
+    const paymentProvider = getPaymentProvider(testData.project);
+    if (!paymentProvider) {
+      throw new Error('Payment provider not configured');
+    }
+    await paymentProvider.createCustomer(customer);
+
+    const persistAndFlush = vi.fn();
+    vi.spyOn(databaseExports, 'database', 'get').mockReturnValue({
+      em: {
+        persistAndFlush,
+        populate() {
+          return Promise.resolve();
+        },
+      },
+    } as unknown as databaseExports.Database);
+
+    const balance = 1000;
+    customer.balance = balance;
+    const invoiceAmount = invoice.totalAmount;
+
+    // total: 10
+    // balance: 1000
+    // payment: 0
+    // balance: 990
+
+    // total: 100
+    // balance: 10
+    // payment: 90
+    // balance: 0
+
+    // when
+    await chargeCustomerInvoice({ invoice, customer });
+
+    // then
+    expect(persistAndFlush).toBeCalledTimes(2);
+    const [[updatedCustomer, updatedInvoice]] = persistAndFlush.mock.calls[1] as [[Customer, Invoice]];
+    expect(updatedInvoice).toBeDefined();
+    expect(updatedInvoice.items.getItems().find((i) => i.description === 'Credit')).toBeDefined();
+    expect(updatedInvoice.totalAmount).toStrictEqual(Invoice.roundPrice(invoiceAmount - balance));
+
+    expect(updatedCustomer).toBeDefined();
+    expect(updatedCustomer.balance).toStrictEqual(balance + invoiceAmount);
+  });
 });

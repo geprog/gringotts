@@ -24,7 +24,6 @@ export function paymentMethodEndpoints(server: FastifyInstance): void {
         additionalProperties: false,
         properties: {
           redirectUrl: { type: 'string' },
-          customerId: { type: 'string' },
         },
       },
       response: {
