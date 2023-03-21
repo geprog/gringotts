@@ -44,8 +44,9 @@ export class Invoice {
     return [invoicePrefix, sequentialId].join('-');
   }
 
-  static roundPrice(price: number): number {
-    return Math.round((price + Number.EPSILON) * 100) / 100;
+  static roundPrice(_price: number): number {
+    const price = Math.round((_price + Number.EPSILON) * 100) / 100;
+    return price === 0 ? 0 : price; // convert -0 to 0
   }
 
   static amountToPrice(amount: number, currency: Currency): string {

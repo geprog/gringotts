@@ -17,10 +17,8 @@ export async function chargeCustomerInvoice({
   customer: Customer;
   invoice: Invoice;
 }): Promise<void> {
-  console.log('totalAmount', invoice.totalAmount);
-
   if (customer.balance > 0) {
-    const creditAmount = Math.min(customer.balance, invoice.totalAmount);
+    const creditAmount = Math.min(customer.balance, invoice.amount);
     invoice.items.add(
       new InvoiceItem({
         description: 'Credit',
@@ -28,16 +26,12 @@ export async function chargeCustomerInvoice({
         units: 1,
       }),
     );
-    console.log('customer.balance', customer.balance);
-    console.log('creditAmount', creditAmount);
     customer.balance = Invoice.roundPrice(customer.balance - creditAmount);
-    console.log('customer.balance', customer.balance);
     await database.em.persistAndFlush([customer]);
   }
 
   // skip negative amounts (credits) and zero amounts
   const amount = Invoice.roundPrice(invoice.totalAmount);
-  console.log('totalAmount', invoice.totalAmount);
   if (amount > 0) {
     let paymentDescription = `Invoice ${invoice.number}`;
 

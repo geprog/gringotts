@@ -133,7 +133,7 @@ describe('Loop', () => {
 
     const balance = 123;
     customer.balance = balance;
-    const invoiceAmount = invoice.totalAmount;
+    const invoiceAmount = invoice.amount;
 
     // when
     await chargeCustomerInvoice({ invoice, customer });
@@ -143,7 +143,10 @@ describe('Loop', () => {
     const [[updatedCustomer, updatedInvoice]] = persistAndFlush.mock.calls[2] as [[Customer, Invoice]];
     expect(updatedInvoice).toBeDefined();
     expect(updatedInvoice.items.getItems().find((i) => i.description === 'Credit')).toBeDefined();
-    expect(updatedInvoice.totalAmount).toStrictEqual(Invoice.roundPrice(invoiceAmount - balance));
+    expect(updatedInvoice.amount).toStrictEqual(Invoice.roundPrice(invoiceAmount - balance));
+    expect(updatedInvoice.totalAmount).toStrictEqual(
+      Invoice.roundPrice((invoiceAmount - balance) * (1 + invoice.vatRate / 100)),
+    );
 
     expect(updatedCustomer).toBeDefined();
     expect(updatedCustomer.balance).toStrictEqual(0);
@@ -174,17 +177,7 @@ describe('Loop', () => {
 
     const balance = 1000;
     customer.balance = balance;
-    const invoiceAmount = invoice.totalAmount;
-
-    // total: 10
-    // balance: 1000
-    // payment: 0
-    // balance: 990
-
-    // total: 100
-    // balance: 10
-    // payment: 90
-    // balance: 0
+    const invoiceAmount = invoice.amount;
 
     // when
     await chargeCustomerInvoice({ invoice, customer });
@@ -194,9 +187,10 @@ describe('Loop', () => {
     const [[updatedCustomer, updatedInvoice]] = persistAndFlush.mock.calls[1] as [[Customer, Invoice]];
     expect(updatedInvoice).toBeDefined();
     expect(updatedInvoice.items.getItems().find((i) => i.description === 'Credit')).toBeDefined();
-    expect(updatedInvoice.totalAmount).toStrictEqual(Invoice.roundPrice(invoiceAmount - balance));
+    expect(updatedInvoice.amount).toStrictEqual(0);
+    expect(updatedInvoice.totalAmount).toStrictEqual(0);
 
     expect(updatedCustomer).toBeDefined();
-    expect(updatedCustomer.balance).toStrictEqual(balance + invoiceAmount);
+    expect(updatedCustomer.balance).toStrictEqual(balance - invoiceAmount);
   });
 });
