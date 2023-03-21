@@ -43,9 +43,9 @@ importers:
       '@types/jsonwebtoken': ^8.5.8
       '@types/node': ^18.6.0
       '@types/uuid': ^8.3.4
-      '@vitest/coverage-c8': ^0.22.1
+      '@vitest/coverage-c8': ^0.29.7
       '@vitest/ui': ^0.18.1
-      c8: ^7.12.0
+      c8: ^7.13.0
       cross-fetch: ^3.1.5
       dayjs: ^1.11.4
       dotenv: ^16.0.1
@@ -97,8 +97,8 @@ importers:
       '@types/jsonwebtoken': 8.5.8
       '@types/node': 18.6.0
       '@types/uuid': 8.3.4
-      '@vitest/coverage-c8': 0.22.1_@vitest+ui@0.18.1
-      c8: 7.12.0
+      '@vitest/coverage-c8': 0.29.7_vitest@0.29.3
+      c8: 7.13.0
       esbuild: 0.14.49
       eslint: 8.20.0
       pino-pretty: 9.0.1
@@ -875,10 +875,6 @@ packages:
       '@types/chai': 4.3.4
     dev: true
 
-  /@types/chai/4.3.3:
-    resolution: {integrity: sha512-hC7OMnszpxhZPduX+m+nrx+uFoLkWOMiR4oa/AZF3MuSETYTZmFfJAHqZEM8MVlvfG7BEUcgvtwoCTxBp6hm3g==}
-    dev: true
-
   /@types/chai/4.3.4:
     resolution: {integrity: sha512-KnRanxnpfpjUTqTCXslZSEdLfXExwgNxYPdiO2WGUj8+HDjFi8R3k5RVKPeSCzLjCcshCAtVO2QBbVuAV4kTnw==}
     dev: true
@@ -1074,22 +1070,15 @@ packages:
       eslint-visitor-keys: 3.3.0
     dev: true
 
-  /@vitest/coverage-c8/0.22.1_@vitest+ui@0.18.1:
-    resolution: {integrity: sha512-KOOYpO7EGpaF+nD8GD+Y05D0JtZp12NUu6DdLXvBPqSOPo2HkZ7KNBtfR0rb6gOy3NLtGiWTYTzCwhajgb2HlA==}
+  /@vitest/coverage-c8/0.29.7_vitest@0.29.3:
+    resolution: {integrity: sha512-TSubtP9JFBuI/wuApxwknHe40VDkX8hFbBak0OXj4/jCeXrEu5B5GPWcxzyk9YvzXgCaDvoiZV79I7AvhNI9YQ==}
+    peerDependencies:
+      vitest: '>=0.29.0 <1'
     dependencies:
-      c8: 7.12.0
-      vitest: 0.22.1_@vitest+ui@0.18.1
-    transitivePeerDependencies:
-      - '@edge-runtime/vm'
-      - '@vitest/browser'
-      - '@vitest/ui'
-      - happy-dom
-      - jsdom
-      - less
-      - sass
-      - stylus
-      - supports-color
-      - terser
+      c8: 7.13.0
+      picocolors: 1.0.0
+      std-env: 3.3.2
+      vitest: 0.29.3_@vitest+ui@0.18.1
     dev: true
 
   /@vitest/expect/0.29.3:
@@ -1398,6 +1387,25 @@ packages:
       yargs-parser: 20.2.9
     dev: true
 
+  /c8/7.13.0:
+    resolution: {integrity: sha512-/NL4hQTv1gBL6J6ei80zu3IiTrmePDKXKXOTLpHvcIWZTVYQlDhVWjjWvkhICylE8EwwnMVzDZugCvdx0/DIIA==}
+    engines: {node: '>=10.12.0'}
+    hasBin: true
+    dependencies:
+      '@bcoe/v8-coverage': 0.2.3
+      '@istanbuljs/schema': 0.1.3
+      find-up: 5.0.0
+      foreground-child: 2.0.0
+      istanbul-lib-coverage: 3.2.0
+      istanbul-lib-report: 3.0.0
+      istanbul-reports: 3.1.5
+      rimraf: 3.0.2
+      test-exclude: 6.0.0
+      v8-to-istanbul: 9.0.1
+      yargs: 16.2.0
+      yargs-parser: 20.2.9
+    dev: true
+
   /cac/6.7.12:
     resolution: {integrity: sha512-rM7E2ygtMkJqD9c7WnFU6fruFcN3xe4FM5yUmgxhZzIKJk4uHl9U/fhwdajGFQbQuv43FAUo1Fe8gX/oIKDeSA==}
     engines: {node: '>=8'}
@@ -1445,19 +1453,6 @@ packages:
   /callsites/3.1.0:
     resolution: {integrity: sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ==}
     engines: {node: '>=6'}
-    dev: true
-
-  /chai/4.3.6:
-    resolution: {integrity: sha512-bbcp3YfHCUzMOvKqsztczerVgBKSsEijCySNlHHbX3VG1nskvqjz5Rfso1gGwD6w6oOV3eI60pKuMOV5MV7p3Q==}
-    engines: {node: '>=4'}
-    dependencies:
-      assertion-error: 1.1.0
-      check-error: 1.0.2
-      deep-eql: 3.0.1
-      get-func-name: 2.0.0
-      loupe: 2.3.4
-      pathval: 1.1.1
-      type-detect: 4.0.8
     dev: true
 
   /chai/4.3.7:
@@ -1720,13 +1715,6 @@ packages:
     dependencies:
       mimic-response: 3.1.0
     dev: false
-
-  /deep-eql/3.0.1:
-    resolution: {integrity: sha512-+QeIQyN5ZuO+3Uk5DYh6/1eKO0m0YmJFGNmFHGACpf1ClL1nmlV/p4gNgbl2pJGxgXb4faqo6UE+M5ACEMyVcw==}
-    engines: {node: '>=0.12'}
-    dependencies:
-      type-detect: 4.0.8
-    dev: true
 
   /deep-eql/4.1.3:
     resolution: {integrity: sha512-WaEtAOpRA1MQ0eohqZjpGD8zdI0Ovsm8mmFhaDN8dvDZzyoUMcYDnf5Y6iu7HTXxf8JDS23qWa4a+hKCDyOPzw==}
@@ -4863,11 +4851,6 @@ packages:
     resolution: {integrity: sha512-iyziEiyFxX4kyxSp+MtY1oCH/lvjH3PxFN8PGCDeqcZWAJ/i+9y+nL85w99PxVzrIvew/GSkSbDYtiGVa85Afg==}
     dev: true
 
-  /tinypool/0.2.4:
-    resolution: {integrity: sha512-Vs3rhkUH6Qq1t5bqtb816oT+HeJTXfwt2cbPH17sWHIYKTotQIFPk3tf2fgqRrVyMDVOc1EnPgzIxfIulXVzwQ==}
-    engines: {node: '>=14.0.0'}
-    dev: true
-
   /tinypool/0.3.1:
     resolution: {integrity: sha512-zLA1ZXlstbU2rlpA4CIeVaqvWq41MTWqLY3FfsAXgC8+f7Pk7zroaJQxDgxn1xNudKW6Kmj4808rPFShUlIRmQ==}
     engines: {node: '>=14.0.0'}
@@ -5113,33 +5096,6 @@ packages:
       - terser
     dev: true
 
-  /vite/3.0.7:
-    resolution: {integrity: sha512-dILhvKba1mbP1wCezVQx/qhEK7/+jVn9ciadEcyKMMhZpsuAi/eWZfJRMkmYlkSFG7Qq9NvJbgFq4XOBxugJsA==}
-    engines: {node: ^14.18.0 || >=16.0.0}
-    hasBin: true
-    peerDependencies:
-      less: '*'
-      sass: '*'
-      stylus: '*'
-      terser: ^5.4.0
-    peerDependenciesMeta:
-      less:
-        optional: true
-      sass:
-        optional: true
-      stylus:
-        optional: true
-      terser:
-        optional: true
-    dependencies:
-      esbuild: 0.14.49
-      postcss: 8.4.16
-      resolve: 1.22.1
-      rollup: 2.77.0
-    optionalDependencies:
-      fsevents: 2.3.2
-    dev: true
-
   /vite/4.2.0_@types+node@18.6.0:
     resolution: {integrity: sha512-AbDTyzzwuKoRtMIRLGNxhLRuv1FpRgdIw+1y6AQG73Q5+vtecmvzKo/yk8X/vrHDpETRTx01ABijqUHIzBXi0g==}
     engines: {node: ^14.18.0 || >=16.0.0}
@@ -5172,46 +5128,6 @@ packages:
       rollup: 3.19.1
     optionalDependencies:
       fsevents: 2.3.2
-    dev: true
-
-  /vitest/0.22.1_@vitest+ui@0.18.1:
-    resolution: {integrity: sha512-+x28YTnSLth4KbXg7MCzoDAzPJlJex7YgiZbUh6YLp0/4PqVZ7q7/zyfdL0OaPtKTpNiQFPpMC8Y2MSzk8F7dw==}
-    engines: {node: '>=v14.16.0'}
-    hasBin: true
-    peerDependencies:
-      '@edge-runtime/vm': '*'
-      '@vitest/browser': '*'
-      '@vitest/ui': '*'
-      happy-dom: '*'
-      jsdom: '*'
-    peerDependenciesMeta:
-      '@edge-runtime/vm':
-        optional: true
-      '@vitest/browser':
-        optional: true
-      '@vitest/ui':
-        optional: true
-      happy-dom:
-        optional: true
-      jsdom:
-        optional: true
-    dependencies:
-      '@types/chai': 4.3.3
-      '@types/chai-subset': 1.3.3
-      '@types/node': 18.6.0
-      '@vitest/ui': 0.18.1
-      chai: 4.3.6
-      debug: 4.3.4
-      local-pkg: 0.4.2
-      tinypool: 0.2.4
-      tinyspy: 1.0.2
-      vite: 3.0.7
-    transitivePeerDependencies:
-      - less
-      - sass
-      - stylus
-      - supports-color
-      - terser
     dev: true
 
   /vitest/0.29.3_@vitest+ui@0.18.1:

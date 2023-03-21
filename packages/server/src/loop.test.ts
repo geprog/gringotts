@@ -43,7 +43,6 @@ describe('Loop', () => {
       customers: new Map<string, Customer>(),
     };
 
-
     testData.invoice.items.removeAll();
     db.invoices.set(testData.invoice._id, testData.invoice);
 
@@ -84,19 +83,16 @@ describe('Loop', () => {
     expect(oldInvoice?.status).toStrictEqual('draft');
     expect(oldInvoice?.items.length).toStrictEqual(0);
     expect(oldInvoice?.date).toStrictEqual(invoiceDate.toDate());
-    console.log(oldInvoice?.date);
 
     // when
     await chargeInvoices();
-
-    console.log(oldInvoice?.items.getItems());
 
     // then
     oldInvoice = db.invoices.get(testData.invoice._id);
     expect(oldInvoice).toBeDefined();
     expect(oldInvoice?.status).toStrictEqual('pending');
     expect(oldInvoice?.items.length).toStrictEqual(3);
-    const itemAmounts = [14/31 * 12 * 12.34, 5/31 * 15 * 12.34, 12/31 * 15 * 5.43];
+    const itemAmounts = [(14 / 31) * 12 * 12.34, (5 / 31) * 15 * 12.34, (12 / 31) * 15 * 5.43];
     expect(oldInvoice?.amount).toStrictEqual(itemAmounts.reduce((sum, amount) => sum + Invoice.roundPrice(amount), 0));
 
     expect(db.payments.size).toBe(1);
