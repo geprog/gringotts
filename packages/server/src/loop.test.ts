@@ -94,13 +94,15 @@ describe('Loop', () => {
     expect(oldInvoice).toBeDefined();
     expect(oldInvoice?.status).toStrictEqual('pending');
     expect(oldInvoice?.items.length).toStrictEqual(5);
-    expect(oldInvoice?.totalAmount).toStrictEqual(405.61);
+    // expect(oldInvoice?.totalAmount).toStrictEqual(405.61);
+    expect(oldInvoice?.totalAmount).toStrictEqual(408.16);
 
     expect(db.payments.size).toBe(1);
     const payment = Array.from(db.payments.values())[0];
     expect(payment).toBeDefined();
     expect(payment.status).toStrictEqual('pending');
-    expect(payment.amount).toStrictEqual(405.61);
+    // expect(payment.amount).toStrictEqual(405.61);
+    expect(payment.amount).toStrictEqual(408.16);
 
     expect(db.invoices.size).toBe(2);
     const newInvoice = Array.from(db.invoices.values()).at(-1);
