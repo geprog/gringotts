@@ -9,6 +9,8 @@ import {
   invoiceItemSchema,
   invoiceSchema,
   Payment,
+  PaymentMethod,
+  paymentMethodSchema,
   paymentSchema,
   Project,
   projectInvoiceDataSchema,
@@ -42,6 +44,7 @@ export class Database {
           invoiceItemSchema,
           projectSchema,
           projectInvoiceDataSchema,
+          paymentMethodSchema,
         ],
         discovery: { disableDynamicFileAccess: true },
         migrations: {
@@ -97,6 +100,10 @@ export class Database {
 
   get invoices(): EntityRepository<Invoice> {
     return this.em.getRepository(Invoice);
+  }
+
+  get paymentMethods(): EntityRepository<PaymentMethod> {
+    return this.em.getRepository(PaymentMethod);
   }
 }
 

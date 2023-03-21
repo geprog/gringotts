@@ -62,7 +62,7 @@ export class SubscriptionPeriod {
       const priceForPeriod = this.getPriceForInvoiceItem(item);
       const basePrice = item.pricePerUnit * item.units;
       const period = dayjs(item.end).diff(item.start);
-      const percentDays = Invoice.roundPrice(period / periodDays);
+      const percentDays = Math.floor(Invoice.roundPrice(period / periodDays) * 100);
       const currency = 'EUR'; // TODO: use appropriate currency
       let description = `${formatDate(item.start)} - ${formatDate(item.end)}:`;
       description += `\n\t${diffMsToDates(period)} days of ${diffMsToDates(periodDays)} = ${percentDays}%`;
