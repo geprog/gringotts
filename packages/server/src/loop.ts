@@ -2,15 +2,17 @@ import { database } from '~/database';
 import { Invoice, InvoiceItem, Payment, Subscription, SubscriptionPeriod } from '~/entities';
 import dayjs from '~/lib/dayjs';
 import { getPaymentProvider } from '~/payment_providers';
-import { getNextPeriodFromDate, getPeriodFromAnchorDate } from '~/utils';
+import { getPeriodFromAnchorDate } from '~/utils';
 
 const pageSize = 10;
 
-export function addSubscriptionChangesToInvoice<T extends Invoice>(subscription: Subscription, invoice: T): T {
-  const currentPeriod = getPeriodFromAnchorDate(invoice.date, subscription.anchorDate);
-  console.log(currentPeriod);
+function getBillingPeriod(subscription: Subscription, invoice: Invoice) {
+  return getPeriodFromAnchorDate(dayjs(invoice.date).subtract(1, 'month').toDate(), subscription.anchorDate);
+}
+function addSubscriptionChangesToInvoice<T extends Invoice>(subscription: Subscription, invoice: T): T {
+  const billingPeriod = getBillingPeriod(subscription, invoice);
 
-  const period = new SubscriptionPeriod(subscription, currentPeriod.start, currentPeriod.end);
+  const period = new SubscriptionPeriod(subscription, billingPeriod.start, billingPeriod.end);
 
   const newInvoiceItems = period.getInvoiceItems();
 
@@ -60,8 +62,6 @@ export async function chargeInvoices(): Promise<void> {
 
         invoice = addSubscriptionChangesToInvoice(subscription, invoice);
 
-        const currentPeriod = getPeriodFromAnchorDate(invoice.date, subscription.anchorDate);
-
         const { customer } = subscription;
         await database.em.populate(customer, ['activePaymentMethod']);
         if (!customer.activePaymentMethod) {
@@ -85,8 +85,9 @@ export async function chargeInvoices(): Promise<void> {
         // skip negative amounts (credits) and zero amounts
         if (amount > 0) {
           const formatDate = (d: Date) => dayjs(d).format('DD.MM.YYYY');
-          const paymentDescription = `Subscription for period ${formatDate(currentPeriod.start)} - ${formatDate(
-            currentPeriod.end,
+          const billingPeriod = getBillingPeriod(subscription, invoice);
+          const paymentDescription = `Subscription for period ${formatDate(billingPeriod.start)} - ${formatDate(
+            billingPeriod.end,
           )}`; // TODO: think about text
 
           const payment = new Payment({
@@ -113,7 +114,7 @@ export async function chargeInvoices(): Promise<void> {
         customer.invoiceCounter += 1;
         await database.em.persistAndFlush([customer]);
 
-        const nextPeriod = getNextPeriodFromDate(invoice.date, subscription.anchorDate);
+        const nextPeriod = getPeriodFromAnchorDate(invoice.date, subscription.anchorDate);
         const newInvoice = new Invoice({
           date: nextPeriod.end,
           sequentialId: customer.invoiceCounter,
