@@ -43,6 +43,8 @@ describe('Loop', () => {
       customers: new Map<string, Customer>(),
     };
 
+
+    testData.invoice.items.removeAll();
     db.invoices.set(testData.invoice._id, testData.invoice);
 
     vi.spyOn(databaseExports, 'database', 'get').mockReturnValue({
@@ -80,7 +82,7 @@ describe('Loop', () => {
     // before when
     let oldInvoice = db.invoices.get(testData.invoice._id);
     expect(oldInvoice?.status).toStrictEqual('draft');
-    expect(oldInvoice?.items.length).toStrictEqual(2);
+    expect(oldInvoice?.items.length).toStrictEqual(0);
     expect(oldInvoice?.date).toStrictEqual(invoiceDate.toDate());
     console.log(oldInvoice?.date);
 
@@ -93,16 +95,15 @@ describe('Loop', () => {
     oldInvoice = db.invoices.get(testData.invoice._id);
     expect(oldInvoice).toBeDefined();
     expect(oldInvoice?.status).toStrictEqual('pending');
-    expect(oldInvoice?.items.length).toStrictEqual(5);
-    // expect(oldInvoice?.totalAmount).toStrictEqual(405.61);
-    expect(oldInvoice?.totalAmount).toStrictEqual(408.16);
+    expect(oldInvoice?.items.length).toStrictEqual(3);
+    const itemAmounts = [14/31 * 12 * 12.34, 5/31 * 15 * 12.34, 12/31 * 15 * 5.43];
+    expect(oldInvoice?.amount).toStrictEqual(itemAmounts.reduce((sum, amount) => sum + Invoice.roundPrice(amount), 0));
 
     expect(db.payments.size).toBe(1);
     const payment = Array.from(db.payments.values())[0];
     expect(payment).toBeDefined();
     expect(payment.status).toStrictEqual('pending');
-    // expect(payment.amount).toStrictEqual(405.61);
-    expect(payment.amount).toStrictEqual(408.16);
+    expect(payment.amount).toStrictEqual(oldInvoice?.totalAmount);
 
     expect(db.invoices.size).toBe(2);
     const newInvoice = Array.from(db.invoices.values()).at(-1);

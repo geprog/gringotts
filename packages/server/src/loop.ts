@@ -7,8 +7,9 @@ import { getPeriodFromAnchorDate } from '~/utils';
 const pageSize = 10;
 
 function getBillingPeriod(subscription: Subscription, invoice: Invoice) {
-  return getPeriodFromAnchorDate(dayjs(invoice.date).subtract(1, 'month').toDate(), subscription.anchorDate);
+  return getPeriodFromAnchorDate(dayjs(invoice.date).subtract(1, 'day').toDate(), subscription.anchorDate);
 }
+
 function addSubscriptionChangesToInvoice<T extends Invoice>(subscription: Subscription, invoice: T): T {
   const billingPeriod = getBillingPeriod(subscription, invoice);
 
