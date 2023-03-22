@@ -54,7 +54,11 @@ export class Mollie implements PaymentProvider {
   }
 
   async chargeBackgroundPayment({ payment, project }: { payment: Payment; project: Project }): Promise<void> {
-    const paymentMethod = payment?.customer?.activePaymentMethod;
+    if (!payment.customer) {
+      throw new Error('No customer configured for this payment');
+    }
+
+    const paymentMethod = payment.customer.activePaymentMethod;
     if (!paymentMethod) {
       throw new Error('No payment method configured for this customer');
     }
@@ -66,6 +70,7 @@ export class Mollie implements PaymentProvider {
       },
       description: payment.description,
       sequenceType: SequenceType.recurring,
+      customerId: payment.customer.paymentProviderId,
       mandateId: paymentMethod.paymentProviderId,
       webhookUrl: `${config.publicUrl}/payment/webhook/${project._id}`,
       metadata: <Metadata>{
