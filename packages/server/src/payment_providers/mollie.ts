@@ -94,9 +94,12 @@ export class Mollie implements PaymentProvider {
   async parsePaymentWebhook(
     payload: unknown,
   ): Promise<{ paymentId: string; paidAt: Date | undefined; paymentStatus: 'pending' | 'paid' | 'failed' }> {
-    const _payload = payload as { id: string };
+    const _payload = payload as { id?: string };
+    if (!_payload.id) {
+      throw new Error('No id defined in payload');
+    }
 
-    const payment = await this.api.payments.get(_payload?.id);
+    const payment = await this.api.payments.get(_payload.id);
 
     const metadata = payment.metadata as Metadata;
 
@@ -133,8 +136,13 @@ export class Mollie implements PaymentProvider {
     await this.api.customers.delete(customer.paymentProviderId);
   }
 
-  async getPaymentMethod(paymentId: string): Promise<PaymentMethod> {
-    const payment = await this.api.payments.get(paymentId);
+  async getPaymentMethod(payload: unknown): Promise<PaymentMethod> {
+    const _payload = payload as { id?: string };
+    if (!_payload.id) {
+      throw new Error('No id defined in payload');
+    }
+
+    const payment = await this.api.payments.get(_payload.id);
 
     if (!payment.mandateId) {
       throw new Error('No mandate id set');
@@ -157,16 +165,18 @@ export class Mollie implements PaymentProvider {
 
   private getPaymentMethodDetails(mandate: Mandate): { type: string; name: string } {
     if ((mandate.details as MandateDetailsCreditCard).cardNumber) {
+      const details = mandate.details as MandateDetailsCreditCard;
       return {
         type: 'credit_card',
-        name: `**** ${(mandate.details as MandateDetailsCreditCard).cardNumber}`,
+        name: `**** ${details.cardNumber.substring(details.cardNumber.length - 4)}`,
       };
     }
 
     if ((mandate.details as MandateDetailsDirectDebit).consumerName) {
+      const details = mandate.details as MandateDetailsDirectDebit;
       return {
         type: 'direct_debit',
-        name: `**** ${(mandate.details as MandateDetailsDirectDebit).consumerAccount.substring(-4)}`,
+        name: `**** ${details.consumerAccount.substring(details.consumerAccount.length - 4)}`,
       };
     }
 

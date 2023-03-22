@@ -44,7 +44,7 @@ export function paymentEndpoints(server: FastifyInstance): void {
       }
 
       if (payment.type === 'verification' && payload.paymentStatus === 'paid') {
-        const paymentMethod = await paymentProvider.getPaymentMethod(payload.paymentId);
+        const paymentMethod = await paymentProvider.getPaymentMethod(request.body);
         if (!paymentMethod) {
           return reply.code(500).send({ error: 'Payment method not found' });
         }
