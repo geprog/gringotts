@@ -11,55 +11,12 @@
 <div class="tsd-page-title">
 <h2>@geprog/gringotts-client</h2></div>
 <div class="tsd-panel tsd-typography">
-<a href="#gringotts-warning-alpha-state-warning" id="gringotts-warning-alpha-state-warning" style="color: inherit; text-decoration: none;">
-  <h1>Gringotts (:warning: ALPHA STATE :warning:)</h1>
+<a href="#gringotts-warning-beta-state-warning" id="gringotts-warning-beta-state-warning" style="color: inherit; text-decoration: none;">
+  <h1>Gringotts (:warning: BETA STATE :warning:)</h1>
 </a>
 <p><a href="https://www.npmjs.com/package/@geprog/gringotts-client"><img src="https://img.shields.io/npm/v/@geprog/gringotts-client" alt="npm version"></a>
 <a href="https://github.com/geprog/gringotts-payments/pkgs/container/gringotts"><img src="https://img.shields.io/docker/v/geprog/gringotts?label=docker" alt="docker image Version (latest by date)"></a></p>
-<p>Gringotts is an api service (maybe a frontend will follow at some point) which can be used as gateway between your payment provider and for example your SAAS application. It allows you to easily handle subscriptions for your users.</p>
-
-<a href="#features-amp-todo" id="features-amp-todo" style="color: inherit; text-decoration: none;">
-  <h2>Features &amp; TODO</h2>
-</a>
-<ul>
-<li><input checked="" disabled="" type="checkbox"> start subscription</li>
-<li><input checked="" disabled="" type="checkbox"> change subscription in middle of period (prorations)</li>
-<li><input disabled="" type="checkbox"> end / pause subscription</li>
-<li><input checked="" disabled="" type="checkbox"> charge customer at end of subscription period</li>
-<li><input disabled="" type="checkbox"> charge customer at start of subscription period</li>
-<li><input disabled="" type="checkbox"> charge customer one-time fee</li>
-<li><input disabled="" type="checkbox"> allow customers to charge other customers</li>
-<li><input checked="" disabled="" type="checkbox"> manage customers</li>
-<li><input checked="" disabled="" type="checkbox"> notify SAAS backend about subscription updates</li>
-<li><input disabled="" type="checkbox"> payment providers<ul>
-<li><input checked="" disabled="" type="checkbox"> mollie</li>
-<li><input disabled="" type="checkbox"> stripe</li>
-</ul>
-</li>
-<li><input checked="" disabled="" type="checkbox"> authentication for SAAS backends</li>
-<li><input disabled="" type="checkbox"> invoices<ul>
-<li><input checked="" disabled="" type="checkbox"> for subscriptions</li>
-<li><input disabled="" type="checkbox"> themes for invoices</li>
-</ul>
-</li>
-<li><input disabled="" type="checkbox"> notify customer about<ul>
-<li><input disabled="" type="checkbox"> new invoices</li>
-<li><input disabled="" type="checkbox"> upcoming payment</li>
-</ul>
-</li>
-<li><input disabled="" type="checkbox"> get subscription costs forecast</li>
-<li><input checked="" disabled="" type="checkbox"> typescript api client =&gt; <code>@geprog/gringotts-client</code></li>
-<li><input disabled="" type="checkbox"> support name for subscription changes &amp; invoice positions</li>
-<li><input disabled="" type="checkbox"> configurable payment interval (currently 1 month)</li>
-<li><input disabled="" type="checkbox"> add logic to definitely prevent duplicate payments</li>
-<li><input checked="" disabled="" type="checkbox"> save payments and their status to the database</li>
-<li><input disabled="" type="checkbox"> skip subscription change if equal to currently active</li>
-<li><input disabled="" type="checkbox"> customer payment methods<ul>
-<li><input disabled="" type="checkbox"> add payment method</li>
-<li><input disabled="" type="checkbox"> verify payment method</li>
-</ul>
-</li>
-</ul>
+<p>Gringotts is an api service (maybe a frontend will follow at some point) which can be used as gateway between your payment provider and for example your SAAS application. It allows you to easily handle subscriptions, subscription changes and invoice generation for your users.</p>
 
 <a href="#usage" id="usage" style="color: inherit; text-decoration: none;">
   <h2>Usage</h2>
@@ -123,7 +80,7 @@
 </tr>
 </tbody></table>
 <p>To create a project on start you can set the <code>CREATE_PROJECT_DATA</code> environment variable to a json string like this:</p>
-<p><code>CREATE_PROJECT_DATA=&#39;{ &quot;name&quot;: &quot;TestProject&quot;, &quot;mollieApiKey&quot;: &quot;123&quot;, &quot;paymentProvider&quot;: &quot;mollie&quot;, &quot;webhookUrl&quot;: &quot;http://localhost:4000/payments/webhook&quot;, &quot;invoiceData&quot;: { &quot;email&quot;: &quot;test@example.com&quot;, &quot;name&quot;: &quot;Company ABC&quot;, &quot;addressLine1&quot;: &quot;Diagon Alley 1337&quot;, &quot;addressLine2&quot;: &quot;string&quot;, &quot;zipCode&quot;: &quot;12345&quot;, &quot;city&quot;: &quot;London&quot;, &quot;country&quot;: &quot;Germany&quot;, &quot;logo&quot;: &quot;https://geprog.com/logo.svg&quot; } }&#39;</code></p>
+<p><code>CREATE_PROJECT_DATA=&#39;{ &quot;name&quot;: &quot;TestProject&quot;, &quot;mollieApiKey&quot;: &quot;123&quot;, &quot;paymentProvider&quot;: &quot;mollie&quot;, &quot;webhookUrl&quot;: &quot;http://localhost:4000/payments/webhook&quot;, &quot;invoiceData&quot;: { &quot;email&quot;: &quot;test@example.com&quot;, &quot;name&quot;: &quot;Company ABC&quot;, &quot;addressLine1&quot;: &quot;Diagon Alley 1337&quot;, &quot;addressLine2&quot;: &quot;string&quot;, &quot;zipCode&quot;: &quot;12345&quot;, &quot;city&quot;: &quot;London&quot;, &quot;country&quot;: &quot;Germany&quot;, &quot;logo&quot;: &quot;data:image/svg+xml;base64,....&quot; } }&#39;</code></p>
 <blockquote>
 <p>Keep in mind that this wont be updated later if you change the environment variables after the first start.</p>
 </blockquote>
