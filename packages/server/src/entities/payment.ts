@@ -46,6 +46,7 @@ export const paymentSchema = new EntitySchema<Payment>({
     invoice: {
       reference: ReferenceType.ONE_TO_ONE,
       entity: () => Invoice,
+      mappedBy: (invoice: Invoice) => invoice.payment,
       nullable: true,
     },
   },
