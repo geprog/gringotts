@@ -78,12 +78,12 @@ exports[`Invoice endpoints > should get an html invoice 1`] = `
       <tr class=\\"item\\">
         <td style=\\"white-space: pre-wrap;\\">Test item</td>
         <td>13</td>
-        <td>12.34€</td>
+        <td>12.34 €</td>
       </tr>
       <tr class=\\"item last\\">
         <td style=\\"white-space: pre-wrap;\\">Second test item</td>
         <td>1</td>
-        <td>54.32€</td>
+        <td>54.32 €</td>
       </tr>
 
       <tr class=\\"sum\\">
@@ -93,15 +93,15 @@ exports[`Invoice endpoints > should get an html invoice 1`] = `
           <table>
             <tr>
               <td>Amount</td>
-              <td>214.74€</td>
+              <td>214.74 €</td>
             </tr>
             <tr>
               <td>Vat (19%)</td>
-              <td>40.8€</td>
+              <td>40.80 €</td>
             </tr>
             <tr class=\\"total\\">
               <td>Total</td>
-              <td>255.54€</td>
+              <td>255.54 €</td>
             </tr>
           </table>
         </td>
