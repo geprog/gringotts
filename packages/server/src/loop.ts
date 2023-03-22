@@ -79,9 +79,7 @@ export async function chargeCustomerInvoice({
 
 function addSubscriptionChangesToInvoice<T extends Invoice>(subscription: Subscription, invoice: T): T {
   const billingPeriod = getBillingPeriod(subscription, invoice);
-
   const period = new SubscriptionPeriod(subscription, billingPeriod.start, billingPeriod.end);
-
   const newInvoiceItems = period.getInvoiceItems();
 
   // TODO: check if invoice items are already in the invoice
