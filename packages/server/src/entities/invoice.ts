@@ -52,7 +52,7 @@ export class Invoice {
   static amountToPrice(amount: number, currency: Currency): string {
     switch (currency) {
       case 'EUR':
-        return `${Invoice.roundPrice(amount)}€`;
+        return `${Invoice.roundPrice(amount).toFixed(2)} €`;
       default:
         throw new Error('Currency not supported');
     }
