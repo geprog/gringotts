@@ -31,7 +31,7 @@ export class Customer {
   }
 
   createInvoicePrefix(): void {
-    const appId = 'INV'; // TODO: allow to configure prefix?
+    const appId = 'INV';
     const randomId = (Math.random() + 1).toString(36).substring(2, 6); // 4 letter
     const customerId = this._id.substring(this._id.length - 3);
     this.invoicePrefix = [appId, customerId, randomId].map((s) => s.toUpperCase()).join('-');

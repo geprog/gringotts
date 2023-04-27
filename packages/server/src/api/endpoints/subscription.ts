@@ -90,8 +90,8 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
         sequentialId: customer.invoiceCounter,
         status: 'draft',
         subscription,
-        currency: 'EUR', // TODO: allow to configure currency
-        vatRate: 19.0, // TODO: german vat rate => allow to configure
+        currency: project.currency,
+        vatRate: project.vatRate,
         project,
       });
 

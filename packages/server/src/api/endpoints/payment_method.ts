@@ -75,7 +75,7 @@ export function paymentMethodEndpoints(server: FastifyInstance): void {
 
       const payment = new Payment({
         amount: 1, // TODO: Use the smallest amount possible
-        currency: 'EUR', // TODO: Allow to configure this
+        currency: project.currency,
         description: 'Payment method verification',
         type: 'verification',
         customer,
