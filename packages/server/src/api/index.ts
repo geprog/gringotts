@@ -13,6 +13,7 @@ import { database } from '~/database';
 import { Invoice } from '~/entities';
 import { Currency } from '~/entities/payment';
 import { formatDate } from '~/lib/dayjs';
+import { log } from '~/log';
 
 import { customerEndpoints } from './endpoints/customer';
 import { invoiceEndpoints } from './endpoints/invoice';
@@ -34,15 +35,7 @@ export async function init(): Promise<FastifyInstance> {
         )
       : process.env.NODE_ENV === 'production'
       ? true
-      : pino({
-          transport: {
-            target: 'pino-pretty',
-            options: {
-              translateTime: 'HH:MM:ss Z',
-              ignore: 'pid,hostname',
-            },
-          },
-        });
+      : log;
 
   const server = fastify({
     logger,
