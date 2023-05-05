@@ -22,6 +22,7 @@ import {
 import { addExitHook } from '~/lib/exit_hooks';
 import { MigrationAlterColumnLogo } from '~/migrations/alter_column_logo_to_text';
 import { MigrationReplaceStartAndEndWithDate } from '~/migrations/replace_start_and_end_with_date_invoice';
+import { MigrationSetVatRatesAndCurrencies } from '~/migrations/set_vat_rates_and_currencies';
 
 export class Database {
   orm!: MikroORM;
@@ -56,6 +57,10 @@ export class Database {
             {
               name: 'MigrationAlterColumnLogo',
               class: MigrationAlterColumnLogo,
+            },
+            {
+              name: 'MigrationSetVatRatesAndCurrencies',
+              class: MigrationSetVatRatesAndCurrencies,
             },
           ],
           disableForeignKeys: false,
