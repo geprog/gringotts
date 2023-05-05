@@ -51,7 +51,7 @@ export const projectSchema = new EntitySchema<Project>({
     webhookUrl: { type: 'string' },
     paymentProvider: { type: 'string' },
     mollieApiKey: { type: 'string' },
-    currency: { type: 'string' },
-    vatRate: { type: 'number' },
+    currency: { type: 'string', default: 'EUR' },
+    vatRate: { type: 'number', default: 19.0 },
   },
 });
