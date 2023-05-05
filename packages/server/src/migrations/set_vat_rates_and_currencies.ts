@@ -2,16 +2,9 @@ import { Migration } from '@mikro-orm/migrations';
 
 export class MigrationSetVatRatesAndCurrencies extends Migration {
   async up(): Promise<void> {
-    if (
-      !(await this.ctx?.schema.hasColumn('project', 'vatRate')) ||
-      !(await this.ctx?.schema.hasColumn('project', 'currency'))
-    ) {
-      return;
-    }
-
     await this.ctx?.schema.alterTable('project', (table) => {
       table.string('currency').notNullable().defaultTo('EUR').alter();
-      table.double('vatRate').notNullable().defaultTo(19).alter();
+      table.double('vatRate').notNullable().defaultTo(19.0).alter();
     });
 
     await this.ctx?.schema.alterTable('project', (table) => {
