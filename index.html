@@ -80,7 +80,7 @@
 </tr>
 </tbody></table>
 <p>To create a project on start you can set the <code>CREATE_PROJECT_DATA</code> environment variable to a json string like this:</p>
-<p><code>CREATE_PROJECT_DATA=&#39;{ &quot;name&quot;: &quot;TestProject&quot;, &quot;mollieApiKey&quot;: &quot;123&quot;, &quot;paymentProvider&quot;: &quot;mollie&quot;, &quot;webhookUrl&quot;: &quot;http://localhost:4000/payments/webhook&quot;, &quot;invoiceData&quot;: { &quot;email&quot;: &quot;test@example.com&quot;, &quot;name&quot;: &quot;Company ABC&quot;, &quot;addressLine1&quot;: &quot;Diagon Alley 1337&quot;, &quot;addressLine2&quot;: &quot;string&quot;, &quot;zipCode&quot;: &quot;12345&quot;, &quot;city&quot;: &quot;London&quot;, &quot;country&quot;: &quot;Germany&quot;, &quot;logo&quot;: &quot;data:image/svg+xml;base64,....&quot; } }&#39;</code></p>
+<p><code>CREATE_PROJECT_DATA=&#39;{ &quot;name&quot;: &quot;TestProject&quot;, &quot;mollieApiKey&quot;: &quot;123&quot;, &quot;paymentProvider&quot;: &quot;mollie&quot;, &quot;webhookUrl&quot;: &quot;http://localhost:4000/payments/webhook&quot;, &quot;currency&quot;: &quot;EUR&quot;, &quot;vatRate&quot;: 19.0, &quot;invoiceData&quot;: { &quot;email&quot;: &quot;test@example.com&quot;, &quot;name&quot;: &quot;Company ABC&quot;, &quot;addressLine1&quot;: &quot;Diagon Alley 1337&quot;, &quot;addressLine2&quot;: &quot;string&quot;, &quot;zipCode&quot;: &quot;12345&quot;, &quot;city&quot;: &quot;London&quot;, &quot;country&quot;: &quot;Germany&quot;, &quot;logo&quot;: &quot;data:image/svg+xml;base64,....&quot; } }&#39;</code></p>
 <blockquote>
 <p>Keep in mind that this wont be updated later if you change the environment variables after the first start.</p>
 </blockquote>
