@@ -45,6 +45,8 @@ export function addSchemas(server: FastifyInstance): void {
       paymentProvider: { type: 'string' },
       webhookUrl: { type: 'string' },
       invoiceData: { $ref: 'ProjectInvoiceData' },
+      currency: { type: 'string' },
+      vatRate: { type: 'number' },
     },
   });
 

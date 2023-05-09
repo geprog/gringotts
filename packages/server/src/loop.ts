@@ -47,9 +47,15 @@ export async function chargeCustomerInvoice({
       log.debug({ subscriptionId: subscription._id, paymentDescription }, 'Subscription payment');
     }
 
+    const { project } = customer;
+    if (!project) {
+      log.error({ subscriptionId: subscription._id, paymentDescription }, 'Subscription payment');
+      throw new Error(`Project for '${customer._id}' not configured`);
+    }
+
     const payment = new Payment({
       amount,
-      currency: 'EUR', // TODO: allow to configure currency
+      currency: project.currency,
       customer,
       type: 'recurring',
       status: 'pending',
@@ -58,12 +64,6 @@ export async function chargeCustomerInvoice({
     });
 
     invoice.payment = payment;
-
-    const { project } = customer;
-    if (!project) {
-      log.error({ subscriptionId: subscription._id, paymentDescription }, 'Subscription payment');
-      throw new Error(`Project for '${customer._id}' not configured`);
-    }
 
     const paymentProvider = getPaymentProvider(project);
     if (!paymentProvider) {
@@ -155,8 +155,8 @@ export async function chargeInvoices(): Promise<void> {
           sequentialId: customer.invoiceCounter,
           status: 'draft',
           subscription,
-          currency: 'EUR', // TODO: allow to configure currency
-          vatRate: 19.0, // TODO: german vat rate => allow to configure
+          currency: project.currency,
+          vatRate: project.vatRate,
           project,
         });
 

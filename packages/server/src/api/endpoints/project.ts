@@ -22,7 +22,10 @@ export function projectEndpoints(server: FastifyInstance): void {
     'addressLine1' | 'addressLine2' | 'city' | 'country' | 'email' | 'name' | 'zipCode' | 'logo'
   >;
 
-  type ProjectUpdateBody = Pick<Project, 'name' | 'mollieApiKey' | 'paymentProvider' | 'webhookUrl' | 'apiToken'> & {
+  type ProjectUpdateBody = Pick<
+    Project,
+    'name' | 'mollieApiKey' | 'paymentProvider' | 'webhookUrl' | 'apiToken' | 'currency' | 'vatRate'
+  > & {
     invoiceData?: ProjectInvoiceDataUpdateBody;
   };
 
@@ -55,6 +58,8 @@ export function projectEndpoints(server: FastifyInstance): void {
       webhookUrl: { type: 'string' },
       invoiceData: { $ref: 'ProjectInvoiceDataUpdateBody' },
       apiToken: { type: 'string' },
+      currency: { type: 'string' },
+      vatRate: { type: 'number' },
     },
   });
 
@@ -103,6 +108,8 @@ export function projectEndpoints(server: FastifyInstance): void {
         paymentProvider: body.paymentProvider || 'mollie',
         webhookUrl: body.webhookUrl,
         apiToken,
+        currency: body.currency,
+        vatRate: body.vatRate,
       });
 
       await database.em.persistAndFlush(project);
@@ -172,6 +179,8 @@ export function projectEndpoints(server: FastifyInstance): void {
       project.mollieApiKey = body.mollieApiKey || project.mollieApiKey;
       project.paymentProvider = body.paymentProvider || project.paymentProvider;
       project.webhookUrl = body.webhookUrl || project.webhookUrl;
+      project.currency = body.currency || project.currency;
+      project.vatRate = body.vatRate || project.vatRate;
 
       if (body.apiToken) {
         project.apiToken = await generateApiToken();

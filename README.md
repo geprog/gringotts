@@ -26,7 +26,7 @@ The container image can be found at `ghcr.io/geprog/gringotts`.
 
 To create a project on start you can set the `CREATE_PROJECT_DATA` environment variable to a json string like this:
 
-`CREATE_PROJECT_DATA='{ "name": "TestProject", "mollieApiKey": "123", "paymentProvider": "mollie", "webhookUrl": "http://localhost:4000/payments/webhook", "invoiceData": { "email": "test@example.com", "name": "Company ABC", "addressLine1": "Diagon Alley 1337", "addressLine2": "string", "zipCode": "12345", "city": "London", "country": "Germany", "logo": "data:image/svg+xml;base64,...." } }'`
+`CREATE_PROJECT_DATA='{ "name": "TestProject", "mollieApiKey": "123", "paymentProvider": "mollie", "webhookUrl": "http://localhost:4000/payments/webhook", "currency": "EUR", "vatRate": 19.0, "invoiceData": { "email": "test@example.com", "name": "Company ABC", "addressLine1": "Diagon Alley 1337", "addressLine2": "string", "zipCode": "12345", "city": "London", "country": "Germany", "logo": "data:image/svg+xml;base64,...." } }'`
 
 > Keep in mind that this wont be updated later if you change the environment variables after the first start.
 
