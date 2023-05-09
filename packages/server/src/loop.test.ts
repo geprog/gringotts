@@ -140,16 +140,13 @@ describe('Loop', () => {
 
     // then
     expect(persistAndFlush).toBeCalledTimes(3);
-    const [[updatedCustomer, updatedInvoice]] = persistAndFlush.mock.calls[2] as [[Customer, Invoice]];
+    const [[updatedInvoice]] = persistAndFlush.mock.calls[2] as [[Invoice]];
     expect(updatedInvoice).toBeDefined();
     expect(updatedInvoice.items.getItems().find((i) => i.description === 'Credit')).toBeDefined();
     expect(updatedInvoice.amount).toStrictEqual(Invoice.roundPrice(invoiceAmount - balance));
     expect(updatedInvoice.totalAmount).toStrictEqual(
       Invoice.roundPrice((invoiceAmount - balance) * (1 + invoice.vatRate / 100)),
     );
-
-    expect(updatedCustomer).toBeDefined();
-    expect(updatedCustomer.balance).toStrictEqual(0);
   });
 
   it('should apply customer balance to invoice and keep remaining balance', async () => {
@@ -184,13 +181,15 @@ describe('Loop', () => {
 
     // then
     expect(persistAndFlush).toBeCalledTimes(2);
-    const [[updatedCustomer, updatedInvoice]] = persistAndFlush.mock.calls[1] as [[Customer, Invoice]];
+
+    const [[updatedCustomer]] = persistAndFlush.mock.calls[0] as [[Customer]];
+    expect(updatedCustomer).toBeDefined();
+    expect(updatedCustomer.balance).toStrictEqual(balance - invoiceAmount);
+
+    const [[updatedInvoice]] = persistAndFlush.mock.calls[1] as [[Invoice]];
     expect(updatedInvoice).toBeDefined();
     expect(updatedInvoice.items.getItems().find((i) => i.description === 'Credit')).toBeDefined();
     expect(updatedInvoice.amount).toStrictEqual(0);
     expect(updatedInvoice.totalAmount).toStrictEqual(0);
-
-    expect(updatedCustomer).toBeDefined();
-    expect(updatedCustomer.balance).toStrictEqual(balance - invoiceAmount);
   });
 });
