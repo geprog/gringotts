@@ -45,6 +45,8 @@ export function addSchemas(server: FastifyInstance): void {
       paymentProvider: { type: 'string' },
       webhookUrl: { type: 'string' },
       invoiceData: { $ref: 'ProjectInvoiceData' },
+      currency: { type: 'string' },
+      vatRate: { type: 'number' },
     },
   });
 
@@ -53,11 +55,11 @@ export function addSchemas(server: FastifyInstance): void {
     type: 'object',
     properties: {
       _id: { type: 'string' },
+      type: { type: 'string' },
       status: { type: 'string' },
       currency: { type: 'string' },
       amount: { type: 'number' },
       description: { type: 'number' },
-      isRecurring: { type: 'boolean' },
     },
   });
 
@@ -77,17 +79,15 @@ export function addSchemas(server: FastifyInstance): void {
     type: 'object',
     properties: {
       _id: { type: 'string' },
-      start: { type: 'string' },
-      end: { type: 'string' },
+      date: { type: 'string' },
       sequentialId: { type: 'number' },
       items: {
-        // TODO: items.items is throwing: The value '[object Object]' does not match schema definition.
-        // type: 'array',
-        // items: {
-        //   $ref: 'InvoiceItem',
-        // },
+        type: 'array',
+        items: {
+          $ref: 'InvoiceItem',
+        },
       },
-      subscription: { $ref: 'Subscription' },
+      // subscription: { $ref: 'Subscription' },
       status: { type: 'string' },
       currency: { type: 'string' },
       vatRate: { type: 'number' },
@@ -112,6 +112,8 @@ export function addSchemas(server: FastifyInstance): void {
       country: { type: 'string' },
       invoicePrefix: { type: 'string' },
       invoiceCounter: { type: 'string' },
+      balance: { type: 'number' },
+      activePaymentMethod: { $ref: 'PaymentMethod' },
     },
   });
 
@@ -140,10 +142,21 @@ export function addSchemas(server: FastifyInstance): void {
         type: 'array',
         items: { $ref: 'SubscriptionChange' },
       },
-      invoices: {
-        type: 'array',
-        items: { $ref: 'Invoice' },
-      },
+      // invoices: {
+      //   type: 'array',
+      //   items: { $ref: 'Invoice' },
+      // },
+    },
+  });
+
+  server.addSchema({
+    $id: 'PaymentMethod',
+    type: 'object',
+    properties: {
+      _id: { type: 'string' },
+      customer: { $ref: 'Customer' },
+      type: { type: 'string' },
+      name: { type: 'string' },
     },
   });
 }

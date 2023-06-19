@@ -11,8 +11,7 @@ export type InvoiceStatus = 'draft' | 'pending' | 'paid' | 'failed';
 
 export class Invoice {
   _id: string = v4();
-  start!: Date; // TODO: should this really be part of an invoice?
-  end!: Date; // TODO: should this really be part of an invoice?
+  date!: Date;
   sequentialId!: number;
   items = new Collection<InvoiceItem>(this);
   status: InvoiceStatus = 'draft';
@@ -21,6 +20,7 @@ export class Invoice {
   vatRate!: number;
   payment?: Payment;
   project!: Project;
+  file?: string;
 
   constructor(data?: Partial<Invoice>) {
     Object.assign(this, data);
@@ -44,14 +44,15 @@ export class Invoice {
     return [invoicePrefix, sequentialId].join('-');
   }
 
-  static roundPrice(price: number): number {
-    return Math.round((price + Number.EPSILON) * 100) / 100;
+  static roundPrice(_price: number): number {
+    const price = Math.round((_price + Number.EPSILON) * 100) / 100;
+    return price === 0 ? 0 : price; // convert -0 to 0
   }
 
   static amountToPrice(amount: number, currency: Currency): string {
     switch (currency) {
       case 'EUR':
-        return `${Invoice.roundPrice(amount)}€`;
+        return `${Invoice.roundPrice(amount).toFixed(2)} €`;
       default:
         throw new Error('Currency not supported');
     }
@@ -59,7 +60,7 @@ export class Invoice {
 
   toString(): string {
     const formatDate = (date: Date) => dayjs(date).format('DD.MM.YYYY HH:mm');
-    return `Invoice from ${formatDate(this.start)} to ${formatDate(this.end)}\n${this.items
+    return `Invoice from ${formatDate(this.date)}\n${this.items
       .getItems()
       .map((item) => {
         const basePrice = Invoice.roundPrice(item.pricePerUnit * item.units);
@@ -78,6 +79,7 @@ export class Invoice {
       amount: this.amount,
       totalAmount: this.totalAmount,
       number: this.number,
+      items: this.items.getItems(),
     };
   }
 }
@@ -87,13 +89,12 @@ export const invoiceSchema = new EntitySchema<Invoice>({
   properties: {
     _id: { type: 'uuid', onCreate: () => v4(), primary: true },
     number: { type: 'string' },
-    start: { type: 'date' },
-    end: { type: 'date' },
+    date: { type: 'date' },
     status: { type: String },
     items: {
       reference: ReferenceType.ONE_TO_MANY,
       entity: () => InvoiceItem,
-      mappedBy: (item) => item.invoice,
+      mappedBy: (item: InvoiceItem) => item.invoice,
     },
     subscription: {
       reference: ReferenceType.MANY_TO_ONE,
@@ -106,13 +107,11 @@ export const invoiceSchema = new EntitySchema<Invoice>({
     },
     vatRate: { type: 'float' },
     currency: { type: String },
-    amount: { type: 'float' },
-    vatAmount: { type: 'float' },
-    totalAmount: { type: 'float' },
     sequentialId: { type: Number },
     project: {
       reference: ReferenceType.MANY_TO_ONE,
       entity: () => Project,
     },
+    file: { type: 'string', nullable: true },
   },
 });

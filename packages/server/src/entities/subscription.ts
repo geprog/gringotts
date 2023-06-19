@@ -50,6 +50,13 @@ export class Subscription {
   getPeriod(start: Date, end: Date): SubscriptionPeriod {
     return new SubscriptionPeriod(this, start, end);
   }
+
+  toJSON(): Subscription {
+    return {
+      ...this,
+      changes: this.changes.getItems().map((change) => ({ ...change, subscription: undefined })),
+    };
+  }
 }
 
 export const subscriptionSchema = new EntitySchema<Subscription>({
@@ -65,14 +72,14 @@ export const subscriptionSchema = new EntitySchema<Subscription>({
     changes: {
       reference: ReferenceType.ONE_TO_MANY,
       entity: () => SubscriptionChange,
-      mappedBy: (change) => change.subscription,
+      mappedBy: (change: SubscriptionChange) => change.subscription,
     },
     createdAt: { type: Date, onCreate: () => new Date() },
     updatedAt: { type: Date, onUpdate: () => new Date() },
     invoices: {
       reference: ReferenceType.ONE_TO_MANY,
       entity: () => Invoice,
-      mappedBy: (invoice) => invoice.subscription,
+      mappedBy: (invoice: Invoice) => invoice.subscription,
     },
     project: {
       reference: ReferenceType.MANY_TO_ONE,

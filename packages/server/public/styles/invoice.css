@@ -2,8 +2,6 @@
   max-width: 800px;
   margin: auto;
   padding: 30px;
-  border: 1px solid #eee;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
   font-size: 16px;
   line-height: 24px;
   font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif;
@@ -95,4 +93,18 @@
 .invoice-box.rtl table tr td:nth-child(2),
 .invoice-box.rtl table tr td:nth-child(3) {
   text-align: left;
+}
+
+.invoice-box .sum > td {
+  padding: 0;
+}
+
+.invoice-box .sum table {
+  border-collapse: collapse;
+  width: min-content;
+  margin-left: auto;
+}
+
+.invoice-box .sum table td {
+  white-space: nowrap;
 }

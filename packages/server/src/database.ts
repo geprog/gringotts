@@ -9,6 +9,8 @@ import {
   invoiceItemSchema,
   invoiceSchema,
   Payment,
+  PaymentMethod,
+  paymentMethodSchema,
   paymentSchema,
   Project,
   projectInvoiceDataSchema,
@@ -18,6 +20,8 @@ import {
   subscriptionSchema,
 } from '~/entities';
 import { addExitHook } from '~/lib/exit_hooks';
+import { MigrationAlterColumnLogo } from '~/migrations/alter_column_logo_to_text';
+import { MigrationReplaceStartAndEndWithDate } from '~/migrations/replace_start_and_end_with_date_invoice';
 
 export class Database {
   orm!: MikroORM;
@@ -40,9 +44,20 @@ export class Database {
           invoiceItemSchema,
           projectSchema,
           projectInvoiceDataSchema,
+          paymentMethodSchema,
         ],
         discovery: { disableDynamicFileAccess: true },
         migrations: {
+          migrationsList: [
+            {
+              name: 'MigrationReplaceStartAndEndWithDate',
+              class: MigrationReplaceStartAndEndWithDate,
+            },
+            {
+              name: 'MigrationAlterColumnLogo',
+              class: MigrationAlterColumnLogo,
+            },
+          ],
           disableForeignKeys: false,
         },
         schemaGenerator: {
@@ -56,6 +71,7 @@ export class Database {
   async connect(): Promise<void> {
     await this.orm.connect();
 
+    await this.orm.getMigrator().up();
     const generator = this.orm.getSchemaGenerator();
     await generator.updateSchema();
 
@@ -84,6 +100,10 @@ export class Database {
 
   get invoices(): EntityRepository<Invoice> {
     return this.em.getRepository(Invoice);
+  }
+
+  get paymentMethods(): EntityRepository<PaymentMethod> {
+    return this.em.getRepository(PaymentMethod);
   }
 }
 

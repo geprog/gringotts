@@ -17,7 +17,7 @@ esbuild
       '@mikro-orm/better-sqlite',
       '@mikro-orm/sqlite',
       '@mikro-orm/entity-generator',
-      '@mikro-orm/migrations',
+      // '@mikro-orm/migrations',
       'sqlite3',
       'mysql',
       'mysql2',

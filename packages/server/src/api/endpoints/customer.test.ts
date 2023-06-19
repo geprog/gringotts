@@ -13,6 +13,9 @@ describe('Customer endpoints', () => {
       adminToken: '',
       postgresUrl: 'postgres://postgres:postgres@localhost:5432/postgres',
       publicUrl: '',
+      dataPath: '',
+      gotenbergUrl: '',
+      jwtSecret: '',
     });
 
     await database.database.init();
@@ -110,7 +113,6 @@ describe('Customer endpoints', () => {
       query: {
         email: customerData.email,
       },
-      payload: customerData,
     });
 
     // then

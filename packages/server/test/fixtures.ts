@@ -1,4 +1,4 @@
-import { Customer, Invoice, Project, ProjectInvoiceData, Subscription } from '~/entities';
+import { Customer, Invoice, InvoiceItem, PaymentMethod, Project, ProjectInvoiceData, Subscription } from '~/entities';
 import dayjs from '~/lib/dayjs';
 import { getPeriodFromAnchorDate } from '~/utils';
 
@@ -39,7 +39,7 @@ export function getFixtures() {
   });
 
   const subscription = new Subscription({
-    anchorDate: dayjs('2020-01-01').toDate(),
+    anchorDate: dayjs('2020-01-01 07:23').toDate(),
     customer,
     project,
   });
@@ -47,24 +47,45 @@ export function getFixtures() {
   subscription.changePlan({ pricePerUnit: 12.34, units: 15, changeDate: dayjs('2020-01-15').toDate() });
   subscription.changePlan({ pricePerUnit: 5.43, units: 15, changeDate: dayjs('2020-01-20').toDate() });
 
-  const { start, end } = getPeriodFromAnchorDate(dayjs('2020-01-15').toDate(), subscription.anchorDate);
-  const period = subscription.getPeriod(start, end);
+  const { end } = getPeriodFromAnchorDate(dayjs('2020-01-15').toDate(), subscription.anchorDate);
 
   const invoice = new Invoice({
     _id: '123',
     vatRate: 19.0,
     currency: 'EUR',
-    end,
-    start,
+    date: end,
     sequentialId: 2,
-    status: 'paid',
+    status: 'draft',
     subscription,
     project,
   });
 
-  period.getInvoiceItems().forEach((item) => {
-    invoice.items.add(item);
-  });
+  invoice.items.add(
+    new InvoiceItem({
+      description: 'Test item',
+      pricePerUnit: 12.34,
+      units: 13,
+    }),
+  );
 
-  return { customer, subscription, invoice, project };
+  invoice.items.add(
+    new InvoiceItem({
+      description: 'Second test item',
+      pricePerUnit: 54.32,
+      units: 1,
+    }),
+  );
+
+  const paymentMethod = new PaymentMethod({
+    _id: '123',
+    customer,
+    paymentProviderId: 'mock-123',
+    name: 'Visa',
+    type: 'credit-card',
+    project,
+  });
+  customer.paymentMethods.add(paymentMethod);
+  customer.activePaymentMethod = paymentMethod;
+
+  return { customer, subscription, invoice, project, paymentMethod };
 }

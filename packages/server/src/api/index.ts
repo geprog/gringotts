@@ -6,34 +6,39 @@ import fastifyView from '@fastify/view';
 import fastify, { FastifyInstance } from 'fastify';
 import Handlebars from 'handlebars';
 import path from 'path';
+import pino from 'pino';
 
 import { config } from '~/config';
 import { database } from '~/database';
 import { Invoice } from '~/entities';
 import { Currency } from '~/entities/payment';
 import { formatDate } from '~/lib/dayjs';
+import { log } from '~/log';
 
 import { customerEndpoints } from './endpoints/customer';
 import { invoiceEndpoints } from './endpoints/invoice';
 import { paymentEndpoints } from './endpoints/payment';
+import { paymentMethodEndpoints } from './endpoints/payment_method';
 import { projectEndpoints } from './endpoints/project';
 import { subscriptionEndpoints } from './endpoints/subscription';
 import { addSchemas } from './schema';
 
 export async function init(): Promise<FastifyInstance> {
+  const logger =
+    process.env.NODE_ENV === 'test'
+      ? pino(
+          {},
+          {
+            // eslint-disable-next-line no-console
+            write: (data: string) => console.log(data),
+          },
+        )
+      : process.env.NODE_ENV === 'production'
+      ? true
+      : log;
+
   const server = fastify({
-    logger: {
-      transport:
-        process.env.NODE_ENV === 'production'
-          ? undefined
-          : {
-              target: 'pino-pretty',
-              options: {
-                translateTime: 'HH:MM:ss Z',
-                ignore: 'pid,hostname',
-              },
-            },
-    },
+    logger,
   });
 
   server.addHook('onRequest', async (request, reply) => {
@@ -45,11 +50,15 @@ export async function init(): Promise<FastifyInstance> {
     }
 
     // skip requests to our docs
-    if (request.routerPath?.startsWith('/documentation')) {
+    if (request.routerPath?.startsWith('/docs')) {
       return;
     }
 
     if (request.routerPath?.startsWith('/static')) {
+      return;
+    }
+
+    if (request.routerPath === '/invoice/download') {
       return;
     }
 
@@ -85,7 +94,13 @@ export async function init(): Promise<FastifyInstance> {
 
   await server.register(fastifyFormBody);
 
-  await server.register(fastifyHelmet);
+  await server.register(fastifyHelmet, {
+    contentSecurityPolicy: {
+      directives: {
+        imgSrc: ["'self'", 'data:', 'https:'],
+      },
+    },
+  });
 
   await server.register(fastifyView, {
     engine: {
@@ -107,14 +122,14 @@ export async function init(): Promise<FastifyInstance> {
   );
 
   await server.register(fastifySwagger, {
-    routePrefix: '/documentation',
+    routePrefix: '/docs',
     swagger: {
       info: {
         title: 'Gringotts api',
         description: 'Documentation for the Gringotts api',
         version: '0.1.0',
       },
-      host: 'localhost:3000',
+      host: `localhost:${config.port}`,
       schemes: ['http', 'https'],
       consumes: ['application/json'],
       produces: ['application/json'],
@@ -145,6 +160,7 @@ export async function init(): Promise<FastifyInstance> {
   invoiceEndpoints(server);
   paymentEndpoints(server);
   projectEndpoints(server);
+  paymentMethodEndpoints(server);
 
   return server;
 }

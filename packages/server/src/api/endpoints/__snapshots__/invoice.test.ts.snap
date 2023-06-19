@@ -1,4 +1,4 @@
-// Vitest Snapshot v1
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
 exports[`Invoice endpoints > should get an html invoice 1`] = `
 "<html>
@@ -31,11 +31,7 @@ exports[`Invoice endpoints > should get an html invoice 1`] = `
                       <td>INV-F1B-0B6H-002</td>
                     </tr>
                     <tr>
-                      <td>Period end:</td>
-                      <td>01.01.2020</td>
-                    </tr>
-                    <tr>
-                      <td>Period start:</td>
+                      <td>Date:</td>
                       <td>01.02.2020</td>
                     </tr>
                   </table>
@@ -64,7 +60,7 @@ exports[`Invoice endpoints > should get an html invoice 1`] = `
                   My Street 123<br />
                   Postbox 321<br />
                   GB-12345 London<br />
-                  GB
+                  GB<br />
                   test@example.tld
                 </div>
               </td>
@@ -80,51 +76,39 @@ exports[`Invoice endpoints > should get an html invoice 1`] = `
       </tr>
 
       <tr class=\\"item\\">
-        <td style=\\"white-space: pre-wrap;\\">01.01.2020 00:00 - 15.01.2020 00:00:
-	14 days of 31 &#x3D; 0.45%
-	12.34€ * 12 units &#x3D; 148.08€
-	0.45% * 148.08€ &#x3D; 66.87€</td>
-        <td>1</td>
-        <td>66.87€</td>
-      </tr>
-      <tr class=\\"item\\">
-        <td style=\\"white-space: pre-wrap;\\">15.01.2020 00:00 - 20.01.2020 00:00:
-	5 days of 31 &#x3D; 0.16%
-	12.34€ * 15 units &#x3D; 185.1€
-	0.16% * 185.1€ &#x3D; 29.85€</td>
-        <td>1</td>
-        <td>29.85€</td>
+        <td style=\\"white-space: pre-wrap;\\">Test item</td>
+        <td>13</td>
+        <td>12.34 €</td>
       </tr>
       <tr class=\\"item last\\">
-        <td style=\\"white-space: pre-wrap;\\">20.01.2020 00:00 - 01.02.2020 00:00:
-	12 days of 31 &#x3D; 0.39%
-	5.43€ * 15 units &#x3D; 81.45€
-	0.39% * 81.45€ &#x3D; 31.53€</td>
+        <td style=\\"white-space: pre-wrap;\\">Second test item</td>
         <td>1</td>
-        <td>31.53€</td>
+        <td>54.32 €</td>
       </tr>
 
-      <tr>
+      <tr class=\\"sum\\">
         <td></td>
 
         <td colspan=\\"2\\">
           <table>
             <tr>
               <td>Amount</td>
-              <td>128.25€</td>
+              <td>214.74 €</td>
             </tr>
             <tr>
               <td>Vat (19%)</td>
-              <td>24.37€</td>
+              <td>40.80 €</td>
             </tr>
             <tr class=\\"total\\">
               <td>Total</td>
-              <td>152.62€</td>
+              <td>255.54 €</td>
             </tr>
           </table>
         </td>
       </tr>
     </table>
+
+    <p>The total amount will be debited from your bank account soon.</p>
   </div>
 </body>
 

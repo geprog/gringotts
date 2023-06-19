@@ -1,7 +1,7 @@
-import { createMollieClient, MollieClient, PaymentStatus, SequenceType } from '@mollie/api-client';
+import { createMollieClient, Mandate, MollieClient, PaymentStatus, SequenceType } from '@mollie/api-client';
 
 import { config } from '~/config';
-import { Customer, Payment, Project, Subscription } from '~/entities';
+import { Customer, Payment, PaymentMethod, Project } from '~/entities';
 import { PaymentProvider } from '~/payment_providers/types';
 
 type Metadata = {
@@ -19,15 +19,14 @@ export class Mollie implements PaymentProvider {
     this.api = createMollieClient({ apiKey });
   }
 
-  async startSubscription({
+  async chargeForegroundPayment({
     project,
-    redirectUrl,
     payment,
+    redirectUrl,
   }: {
     project: Project;
-    subscription: Subscription;
-    redirectUrl: string;
     payment: Payment;
+    redirectUrl: string;
   }): Promise<{ checkoutUrl: string }> {
     const customer = await this.api.customers.get(payment.customer.paymentProviderId);
 
@@ -54,20 +53,25 @@ export class Mollie implements PaymentProvider {
     return { checkoutUrl };
   }
 
-  async chargePayment({ payment, project }: { payment: Payment; project: Project }): Promise<void> {
-    if (!payment.customer.paymentProviderId) {
-      throw new Error('No customer id');
+  async chargeBackgroundPayment({ payment, project }: { payment: Payment; project: Project }): Promise<void> {
+    if (!payment.customer) {
+      throw new Error('No customer configured for this payment');
     }
-    const customer = await this.api.customers.get(payment.customer.paymentProviderId);
+
+    const paymentMethod = payment.customer.activePaymentMethod;
+    if (!paymentMethod) {
+      throw new Error('No payment method configured for this customer');
+    }
 
     await this.api.payments.create({
       amount: {
         value: this.priceToMolliePrice(payment.amount),
         currency: payment.currency,
       },
-      customerId: customer.id,
       description: payment.description,
       sequenceType: SequenceType.recurring,
+      customerId: payment.customer.paymentProviderId,
+      mandateId: paymentMethod.paymentProviderId,
       webhookUrl: `${config.publicUrl}/payment/webhook/${project._id}`,
       metadata: <Metadata>{
         paymentId: payment._id,
@@ -95,9 +99,12 @@ export class Mollie implements PaymentProvider {
   async parsePaymentWebhook(
     payload: unknown,
   ): Promise<{ paymentId: string; paidAt: Date | undefined; paymentStatus: 'pending' | 'paid' | 'failed' }> {
-    const _payload = payload as { id: string };
+    const _payload = payload as { id?: string };
+    if (!_payload.id) {
+      throw new Error('No id defined in payload');
+    }
 
-    const payment = await this.api.payments.get(_payload?.id);
+    const payment = await this.api.payments.get(_payload.id);
 
     const metadata = payment.metadata as Metadata;
 
@@ -134,7 +141,68 @@ export class Mollie implements PaymentProvider {
     await this.api.customers.delete(customer.paymentProviderId);
   }
 
+  async getPaymentMethod(payload: unknown): Promise<PaymentMethod> {
+    const _payload = payload as { id?: string };
+    if (!_payload.id) {
+      throw new Error('No id defined in payload');
+    }
+
+    const payment = await this.api.payments.get(_payload.id);
+
+    if (!payment.mandateId) {
+      throw new Error('No mandate id set');
+    }
+
+    if (!payment.customerId) {
+      throw new Error('No customer id set');
+    }
+
+    const mandate = await this.api.customerMandates.get(payment.mandateId, { customerId: payment.customerId });
+
+    const details = this.getPaymentMethodDetails(mandate);
+
+    return new PaymentMethod({
+      paymentProviderId: mandate.id,
+      name: details.name,
+      type: details.type,
+    });
+  }
+
+  private getPaymentMethodDetails(mandate: Mandate): { type: string; name: string } {
+    if ((mandate.details as MandateDetailsCreditCard).cardNumber) {
+      const details = mandate.details as MandateDetailsCreditCard;
+      return {
+        type: 'credit_card',
+        name: `**** ${details.cardNumber.substring(details.cardNumber.length - 4)}`,
+      };
+    }
+
+    if ((mandate.details as MandateDetailsDirectDebit).consumerName) {
+      const details = mandate.details as MandateDetailsDirectDebit;
+      return {
+        type: 'direct_debit',
+        name: `**** ${details.consumerAccount.substring(details.consumerAccount.length - 4)}`,
+      };
+    }
+
+    return {
+      type: 'unknown',
+      name: '',
+    };
+  }
+
   private priceToMolliePrice(price: number): string {
     return `${(Math.round(price * 100) / 100).toFixed(2)}`;
   }
 }
+
+type MandateDetailsDirectDebit = {
+  consumerName: string;
+  consumerAccount: string;
+  consumerBic: string;
+};
+
+type MandateDetailsCreditCard = {
+  cardHolder: string;
+  cardNumber: string;
+};

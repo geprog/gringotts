@@ -13,6 +13,9 @@ describe('Invoice endpoints', () => {
       adminToken: '',
       postgresUrl: 'postgres://postgres:postgres@localhost:5432/postgres',
       publicUrl: '',
+      dataPath: '',
+      gotenbergUrl: '',
+      jwtSecret: '',
     });
 
     await database.database.init();
@@ -61,7 +64,8 @@ describe('Invoice endpoints', () => {
 
     const responseData: Invoice = response.json();
     expect(responseData._id).toBe(testData.invoice._id);
-    expect(responseData.amount).toBe(128.25);
+    expect(responseData.amount).toBe(214.74);
+    expect(responseData.totalAmount).toBe(Invoice.roundPrice(214.74 * 1.19));
   });
 
   it('should get an html invoice', async () => {

@@ -8,7 +8,7 @@ import { getPaymentProvider } from '~/payment_providers';
 export function customerEndpoints(server: FastifyInstance): void {
   type CustomerUpdateBody = Pick<
     Customer,
-    'addressLine1' | 'addressLine2' | 'city' | 'country' | 'email' | 'name' | 'zipCode'
+    'addressLine1' | 'addressLine2' | 'city' | 'country' | 'email' | 'name' | 'zipCode' | 'activePaymentMethod'
   >;
 
   server.addSchema({
@@ -24,6 +24,7 @@ export function customerEndpoints(server: FastifyInstance): void {
       zipCode: { type: 'string' },
       city: { type: 'string' },
       country: { type: 'string' },
+      activePaymentMethod: { $ref: 'PaymentMethod' },
     },
   });
 
@@ -141,7 +142,10 @@ export function customerEndpoints(server: FastifyInstance): void {
 
       const { customerId } = request.params as { customerId: string };
 
-      const customer = await database.customers.findOne({ _id: customerId, project });
+      const customer = await database.customers.findOne(
+        { _id: customerId, project },
+        { populate: ['activePaymentMethod'] },
+      );
       if (!customer) {
         return reply.code(404).send({ error: 'Customer not found' });
       }
@@ -192,6 +196,17 @@ export function customerEndpoints(server: FastifyInstance): void {
       customer.city = body.city;
       customer.country = body.country;
       customer.zipCode = body.zipCode;
+
+      if (body.activePaymentMethod?._id) {
+        const paymentMethod = await database.paymentMethods.findOne({
+          _id: body.activePaymentMethod._id,
+          customer,
+        });
+        if (!paymentMethod) {
+          return reply.code(404).send({ error: 'Payment method not found' });
+        }
+        customer.activePaymentMethod = paymentMethod;
+      }
 
       const paymentProvider = getPaymentProvider(project);
       if (!paymentProvider) {

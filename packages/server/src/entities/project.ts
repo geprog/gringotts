@@ -3,6 +3,7 @@ import { v4 } from 'uuid';
 
 import { Customer } from '~/entities/customer';
 import { Invoice } from '~/entities/invoice';
+import { Currency } from '~/entities/payment';
 import { ProjectInvoiceData } from '~/entities/project_invoice_data';
 import { Subscription } from '~/entities/subscription';
 
@@ -17,6 +18,8 @@ export class Project {
   webhookUrl!: string;
   paymentProvider!: 'mock' | 'mollie';
   mollieApiKey?: string;
+  currency!: Currency;
+  vatRate!: number;
 
   constructor(data?: Partial<Project>) {
     Object.assign(this, data);
@@ -48,5 +51,7 @@ export const projectSchema = new EntitySchema<Project>({
     webhookUrl: { type: 'string' },
     paymentProvider: { type: 'string' },
     mollieApiKey: { type: 'string' },
+    currency: { type: 'string', default: 'EUR' },
+    vatRate: { type: 'number', default: 19.0 },
   },
 });

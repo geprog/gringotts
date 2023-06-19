@@ -2,10 +2,8 @@ import { FastifyInstance } from 'fastify';
 
 import { getProjectFromRequest } from '~/api/helpers';
 import { database } from '~/database';
-import { Payment, Subscription } from '~/entities';
+import { Subscription } from '~/entities';
 import { Invoice } from '~/entities/invoice';
-import { InvoiceItem } from '~/entities/invoice_item';
-import { getPaymentProvider } from '~/payment_providers';
 import { getActiveUntilDate, getPeriodFromAnchorDate } from '~/utils';
 
 export function subscriptionEndpoints(server: FastifyInstance): void {
@@ -15,22 +13,17 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
       tags: ['subscription'],
       body: {
         type: 'object',
-        required: ['pricePerUnit', 'units', 'redirectUrl', 'customerId'],
+        required: ['pricePerUnit', 'units', 'customerId'],
         additionalProperties: false,
         properties: {
           pricePerUnit: { type: 'number' },
           units: { type: 'number' },
-          redirectUrl: { type: 'string' },
           customerId: { type: 'string' },
         },
       },
       response: {
         200: {
-          type: 'object',
-          properties: {
-            subscriptionId: { type: 'string' },
-            checkoutUrl: { type: 'string' },
-          },
+          $ref: 'Subscription',
         },
         400: {
           $ref: 'ErrorResponse',
@@ -67,11 +60,17 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
 
       const customer = await database.customers.findOne(
         { _id: body.customerId, project },
-        { populate: ['subscriptions'] },
+        { populate: ['subscriptions', 'activePaymentMethod'] },
       );
       if (!customer) {
         return reply.code(404).send({
           error: 'Customer not found',
+        });
+      }
+
+      if (!customer.activePaymentMethod) {
+        return reply.code(400).send({
+          error: 'Customer has no active payment method',
         });
       }
 
@@ -83,65 +82,22 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
         project,
       });
 
-      const period = getPeriodFromAnchorDate(now, subscription.anchorDate);
-
       subscription.changePlan({ units: body.units, pricePerUnit: body.pricePerUnit });
 
-      const paymentProvider = getPaymentProvider(project);
-      if (!paymentProvider) {
-        return reply.code(500).send({
-          error: 'Payment provider not configured',
-        });
-      }
-
-      const payment = new Payment({
-        amount: 1.0, // TODO: change first payment price based on currency
-        currency: 'EUR', // TODO: allow to change currency
-        status: 'pending',
-        customer,
-        description: 'Subscription start', // TODO: allow to set description
-        subscription,
-      });
-
-      customer.invoiceCounter += 1;
-
-      const invoice = new Invoice({
-        start: period.start,
-        end: period.end,
+      const period = getPeriodFromAnchorDate(now, subscription.anchorDate);
+      const newInvoice = new Invoice({
+        date: period.end,
         sequentialId: customer.invoiceCounter,
         status: 'draft',
         subscription,
-        currency: payment.currency,
-        vatRate: 19.0, // TODO: german vat rate => allow to configure
-        payment,
+        currency: project.currency,
+        vatRate: project.vatRate,
         project,
       });
 
-      invoice.items.add(
-        new InvoiceItem({
-          description: 'Subscription start (Payment verification)', // TODO: allow to configure text
-          pricePerUnit: payment.amount,
-          units: 1,
-          invoice,
-        }),
-      );
+      await database.em.persistAndFlush([customer, subscription, newInvoice]);
 
-      const { checkoutUrl } = await paymentProvider.startSubscription({
-        project,
-        subscription,
-        payment,
-        redirectUrl: body.redirectUrl,
-      });
-
-      // TODO: do we need this?
-      // customer.subscriptions.add(subscription);
-
-      await database.em.persistAndFlush([customer, subscription, invoice, payment]);
-
-      await reply.send({
-        subscriptionId: subscription._id,
-        checkoutUrl,
-      });
+      await reply.send(subscription.toJSON());
     },
   });
 
@@ -240,7 +196,7 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
 
       const subscription = await database.subscriptions.findOne(
         { _id: subscriptionId, project },
-        { populate: ['customer', 'changes', 'invoices'] },
+        { populate: ['customer', 'changes'] },
       );
       if (!subscription) {
         return reply.code(404).send({ error: 'Subscription not found' });
@@ -250,7 +206,52 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
         ? getActiveUntilDate(subscription.lastPayment, subscription.anchorDate)
         : undefined;
 
-      await reply.send({ ...subscription, activeUntil });
+      const _subscription = {
+        ...subscription.toJSON(),
+        activeUntil,
+      };
+
+      await reply.send(_subscription);
+    },
+  });
+
+  server.get('/subscription/:subscriptionId/invoice', {
+    schema: {
+      summary: 'List all invoices of a subscription',
+      tags: ['subscription', 'invoice'],
+      params: {
+        type: 'object',
+        required: ['subscriptionId'],
+        additionalProperties: false,
+        properties: {
+          subscriptionId: { type: 'string' },
+        },
+      },
+      response: {
+        200: {
+          type: 'array',
+          items: {
+            $ref: 'Invoice',
+          },
+        },
+        404: {
+          $ref: 'ErrorResponse',
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      const project = await getProjectFromRequest(request);
+
+      const { subscriptionId } = request.params as { subscriptionId: string };
+
+      const subscription = await database.subscriptions.findOne({ _id: subscriptionId, project });
+      if (!subscription) {
+        return reply.code(404).send({ error: 'Subscription not found' });
+      }
+
+      const invoices = await database.invoices.find({ subscription, project }, { populate: ['items'] });
+
+      await reply.send(invoices.map((invoice) => invoice.toJSON()));
     },
   });
 }
