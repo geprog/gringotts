@@ -32,7 +32,7 @@ jobs:
 
       - uses: pnpm/action-setup@v2.0.1
         with:
-          version: 7
+          version: 8
           run_install: true
 
       - name: Unit test
@@ -62,7 +62,7 @@ jobs:
 
       - uses: pnpm/action-setup@v2.0.1
         with:
-          version: 7
+          version: 8
           run_install: true
 
       - name: Build
@@ -95,7 +95,7 @@ jobs:
 
       - uses: pnpm/action-setup@v2.0.1
         with:
-          version: 7
+          version: 8
           run_install: true
 
       # needed to prepare the auto-generated files for the client package
@@ -129,7 +129,7 @@ jobs:
 
       - uses: pnpm/action-setup@v2.0.1
         with:
-          version: 7
+          version: 8
           run_install: true
 
       - name: Check format
