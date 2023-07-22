@@ -8,7 +8,7 @@
   "repository": "github:geprog/gringotts",
   "scripts": {
     "lint:format": "prettier --check .",
-    "start": "pnpm --filter @geprog/gringotts-server start"
+    "start": "pnpm --parallel start"
   },
   "devDependencies": {
     "prettier": "^2.5.1"
