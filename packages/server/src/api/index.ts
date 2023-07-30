@@ -16,6 +16,7 @@ import { formatDate } from '~/lib/dayjs';
 import { log } from '~/log';
 
 import { customerEndpoints } from './endpoints/customer';
+import { devEndpoints } from './endpoints/dev';
 import { invoiceEndpoints } from './endpoints/invoice';
 import { paymentEndpoints } from './endpoints/payment';
 import { paymentMethodEndpoints } from './endpoints/payment_method';
@@ -66,6 +67,10 @@ export async function init(): Promise<FastifyInstance> {
       return;
     }
 
+    if (request.routerPath === '/dev/checkout/:paymentId') {
+      return;
+    }
+
     const apiToken =
       (request.headers?.authorization || '').replace('Bearer ', '') || (request.query as { token: string }).token;
     if (!apiToken) {
@@ -98,6 +103,7 @@ export async function init(): Promise<FastifyInstance> {
     contentSecurityPolicy: {
       directives: {
         imgSrc: ["'self'", 'data:', 'https:'],
+        formAction: ['https:', 'http:'],
       },
     },
   });
@@ -161,6 +167,7 @@ export async function init(): Promise<FastifyInstance> {
   paymentEndpoints(server);
   projectEndpoints(server);
   paymentMethodEndpoints(server);
+  devEndpoints(server);
 
   return server;
 }

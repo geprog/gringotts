@@ -16,7 +16,7 @@ export class Project {
   invoiceData?: ProjectInvoiceData;
   apiToken!: string;
   webhookUrl!: string;
-  paymentProvider!: 'mock' | 'mollie';
+  paymentProvider!: 'mocked' | 'mollie';
   mollieApiKey?: string;
   currency!: Currency;
   vatRate!: number;

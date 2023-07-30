@@ -8,7 +8,7 @@ import { getPaymentProvider } from '~/payment_providers';
 export function paymentMethodEndpoints(server: FastifyInstance): void {
   server.post('/customer/:customerId/payment-method', {
     schema: {
-      summary: 'Create payment and by accepting it a new payment-method',
+      summary: 'Create payment and by accepting it add a new payment-method',
       tags: ['payment-method'],
       params: {
         type: 'object',
@@ -76,7 +76,7 @@ export function paymentMethodEndpoints(server: FastifyInstance): void {
       const payment = new Payment({
         amount: 1, // TODO: Use the smallest amount possible
         currency: project.currency,
-        description: 'Payment method verification',
+        description: 'Payment method verification', // TODO: use customer language
         type: 'verification',
         customer,
         status: 'pending',

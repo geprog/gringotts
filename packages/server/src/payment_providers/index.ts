@@ -4,7 +4,7 @@ import { Mollie } from '~/payment_providers/mollie';
 import { PaymentProvider } from '~/payment_providers/types';
 
 export function getPaymentProvider(project: Project): PaymentProvider | undefined {
-  if (project.paymentProvider === 'mock') {
+  if (project.paymentProvider === 'mocked') {
     return new Mocked();
   }
 
