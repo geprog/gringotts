@@ -44,7 +44,7 @@ describe('Subscription endpoints', () => {
       },
     } as unknown as database.Database);
 
-    const paymentProvider = getPaymentProvider({ paymentProvider: 'mock' } as Project);
+    const paymentProvider = getPaymentProvider({ paymentProvider: 'mocked' } as Project);
     await paymentProvider?.createCustomer(testData.customer);
 
     const server = await apiInit();
@@ -123,7 +123,7 @@ describe('Subscription endpoints', () => {
       },
     } as unknown as database.Database);
 
-    const paymentProvider = getPaymentProvider({ paymentProvider: 'mock' } as Project);
+    const paymentProvider = getPaymentProvider({ paymentProvider: 'mocked' } as Project);
     await paymentProvider?.createCustomer(customer);
 
     const subscriptionPayload = {

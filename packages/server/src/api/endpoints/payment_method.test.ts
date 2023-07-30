@@ -55,7 +55,7 @@ describe('Payment-method endpoints', () => {
       },
     } as unknown as database.Database);
 
-    const paymentProvider = getPaymentProvider({ paymentProvider: 'mock' } as Project);
+    const paymentProvider = getPaymentProvider({ paymentProvider: 'mocked' } as Project);
     await paymentProvider?.createCustomer(customer);
 
     const server = await apiInit();
