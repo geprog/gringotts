@@ -1,9 +1,9 @@
-import { gringottsPaymentsClient } from '@geprog/gringotts-client';
+import { gringottsClient } from '@geprog/gringotts-client';
 import fetch from 'cross-fetch';
 
 function useGringottsClient(token: string) {
   const baseUrl = 'http://localhost:7171';
-  return gringottsPaymentsClient(baseUrl, {
+  return gringottsClient(baseUrl, {
     customFetch: fetch,
     token,
   });

@@ -1,4 +1,4 @@
-import { gringottsPaymentsClient } from '@geprog/gringotts-client';
+import { gringottsClient } from '@geprog/gringotts-client';
 
 export function useGringottsClient() {
   const baseURL = 'http://localhost:7171';
@@ -8,7 +8,7 @@ export function useGringottsClient() {
     throw new Error('project-token is required');
   }
 
-  return gringottsPaymentsClient(baseURL, {
+  return gringottsClient(baseURL, {
     token: token,
   });
 }
