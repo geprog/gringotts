@@ -40,7 +40,7 @@ export function mockedCheckoutEndpoints(server: FastifyInstance): void {
         });
       }
 
-      await reply.view(path.join('templates', 'dev-checkout.hbs'), { payment, redirect_url: query.redirect_url });
+      await reply.view(path.join('templates', 'mocked-checkout.hbs'), { payment, redirect_url: query.redirect_url });
     },
   );
 
@@ -131,7 +131,7 @@ export function mockedCheckoutEndpoints(server: FastifyInstance): void {
       });
 
       if (response.statusCode !== 200) {
-        return reply.view(path.join('templates', 'dev-checkout.hbs'), {
+        return reply.view(path.join('templates', 'mocked-checkout.hbs'), {
           payment,
           redirect_url: body.redirect_url,
           error: 'Payment webhook failed',
