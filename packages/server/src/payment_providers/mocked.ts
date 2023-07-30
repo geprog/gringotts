@@ -1,3 +1,4 @@
+import { config } from '~/config';
 import { Customer, Payment, PaymentMethod, Project } from '~/entities';
 import { PaymentProvider } from '~/payment_providers/types';
 
@@ -11,8 +12,7 @@ export class Mocked implements PaymentProvider {
     payment: Payment;
     redirectUrl: string;
   }): Promise<{ checkoutUrl: string }> {
-    const baseUrl = 'http://localhost:7171';
-    const checkoutUrl = `${baseUrl}/dev/checkout/${payment._id}?redirect_url=${redirectUrl}`;
+    const checkoutUrl = `${config.publicUrl}/mocked/checkout/${payment._id}?redirect_url=${redirectUrl}`;
 
     return { checkoutUrl };
   }

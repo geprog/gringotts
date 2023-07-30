@@ -3,9 +3,9 @@ import path from 'path';
 
 import { database } from '~/database';
 
-export function devEndpoints(server: FastifyInstance): void {
+export function mockedCheckoutEndpoints(server: FastifyInstance): void {
   server.get(
-    '/dev/checkout/:paymentId',
+    '/mocked/checkout/:paymentId',
     {
       schema: { hide: true },
     },
@@ -44,7 +44,7 @@ export function devEndpoints(server: FastifyInstance): void {
     },
   );
 
-  server.post('/dev/checkout/:paymentId', {
+  server.post('/mocked/checkout/:paymentId', {
     schema: {
       hide: true,
       summary: 'Do a checkout for a payment in development mode',
@@ -131,7 +131,6 @@ export function devEndpoints(server: FastifyInstance): void {
       });
 
       if (response.statusCode !== 200) {
-        console.error(response.payload);
         return reply.view(path.join('templates', 'dev-checkout.hbs'), {
           payment,
           redirect_url: body.redirect_url,

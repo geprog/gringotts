@@ -16,8 +16,8 @@ import { formatDate } from '~/lib/dayjs';
 import { log } from '~/log';
 
 import { customerEndpoints } from './endpoints/customer';
-import { devEndpoints } from './endpoints/dev';
 import { invoiceEndpoints } from './endpoints/invoice';
+import { mockedCheckoutEndpoints } from './endpoints/mocked_checkout';
 import { paymentEndpoints } from './endpoints/payment';
 import { paymentMethodEndpoints } from './endpoints/payment_method';
 import { projectEndpoints } from './endpoints/project';
@@ -67,7 +67,7 @@ export async function init(): Promise<FastifyInstance> {
       return;
     }
 
-    if (request.routerPath === '/dev/checkout/:paymentId') {
+    if (request.routerPath === '/mocked/checkout/:paymentId') {
       return;
     }
 
@@ -167,7 +167,7 @@ export async function init(): Promise<FastifyInstance> {
   paymentEndpoints(server);
   projectEndpoints(server);
   paymentMethodEndpoints(server);
-  devEndpoints(server);
+  mockedCheckoutEndpoints(server);
 
   return server;
 }
