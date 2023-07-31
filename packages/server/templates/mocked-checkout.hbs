@@ -1,0 +1,38 @@
+<html>
+
+  <head>
+    <meta charset='utf-8' />
+    <title>Test payment checkout</title>
+    <meta http-equiv='Content-Type' content='text/html; charset=utf-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1' />
+    <meta name='robots' content='noindex, nofollow' />
+
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; } body { display: flex; width: 100vw; height: 100vh;
+      background: #bbb; } .card { display: flex; flex-direction: column; align-items: center; max-width: 32rem; margin:
+      auto; padding: 2rem; background: #fff; border-radius: 0.5rem; } form { display: flex; flex-direction: column; gap:
+      1rem; width: 100%; margin-top: 2rem; } h1 { margin-bottom: 1rem; } p { text-align: center; } .radio { display:
+      flex; align-items: center; gap: .5rem; cursor: pointer; } .status { display: flex; gap: 1rem; justify-content:
+      center; } input[type=submit] { flex-shrink: 0; padding: 0.5rem 1rem; border-radius: .25rem; cursor: pointer; }
+      input[type=submit]:hover { background-color: #bbb; }
+    </style>
+  </head>
+
+  <body>
+    <div class='card'>
+      <h1>Test payment checkout</h1>
+      <p>You can now select the final state of your test payment. The payment status will be sent to your website.</p>
+      <form method='post'>
+        <input type='hidden' name='redirect_url' value='{{redirect_url}}' />
+
+        <p>Payment status:</p>
+
+        <div class='status'>
+          <input type='submit' name='status' value='paid' />
+          <input type='submit' name='status' value='failed' />
+        </div>
+      </form>
+    </div>
+  </body>
+
+</html>

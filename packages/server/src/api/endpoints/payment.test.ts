@@ -58,7 +58,9 @@ describe('Payment webhook endpoints', () => {
       } as unknown as database.Database);
 
       const payload = {
-        id: 'payment-123',
+        paymentId: payment._id,
+        paymentStatus: 'paid',
+        paidAt: new Date().toISOString(),
       };
 
       const server = await apiInit();

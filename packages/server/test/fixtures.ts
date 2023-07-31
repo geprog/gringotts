@@ -19,7 +19,7 @@ export function getFixtures() {
     _id: '123',
     apiToken: 'abc-123',
     invoiceData: projectInvoiceData,
-    paymentProvider: 'mock',
+    paymentProvider: 'mocked',
     webhookUrl: 'http://localhost',
     name: 'Test Project',
     mollieApiKey: 'not-used',

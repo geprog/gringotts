@@ -17,6 +17,7 @@ import { log } from '~/log';
 
 import { customerEndpoints } from './endpoints/customer';
 import { invoiceEndpoints } from './endpoints/invoice';
+import { mockedCheckoutEndpoints } from './endpoints/mocked_checkout';
 import { paymentEndpoints } from './endpoints/payment';
 import { paymentMethodEndpoints } from './endpoints/payment_method';
 import { projectEndpoints } from './endpoints/project';
@@ -66,6 +67,10 @@ export async function init(): Promise<FastifyInstance> {
       return;
     }
 
+    if (request.routerPath === '/mocked/checkout/:paymentId') {
+      return;
+    }
+
     const apiToken =
       (request.headers?.authorization || '').replace('Bearer ', '') || (request.query as { token: string }).token;
     if (!apiToken) {
@@ -98,6 +103,7 @@ export async function init(): Promise<FastifyInstance> {
     contentSecurityPolicy: {
       directives: {
         imgSrc: ["'self'", 'data:', 'https:'],
+        formAction: ['https:', 'http:'],
       },
     },
   });
@@ -161,6 +167,7 @@ export async function init(): Promise<FastifyInstance> {
   paymentEndpoints(server);
   projectEndpoints(server);
   paymentMethodEndpoints(server);
+  mockedCheckoutEndpoints(server);
 
   return server;
 }
