@@ -54,7 +54,7 @@ export function projectEndpoints(server: FastifyInstance): void {
     properties: {
       name: { type: 'string' },
       mollieApiKey: { type: 'string' },
-      paymentProvider: { type: 'string', enum: ['mock', 'mollie'] },
+      paymentProvider: { type: 'string', enum: ['mocked', 'mollie'] },
       webhookUrl: { type: 'string' },
       invoiceData: { $ref: 'ProjectInvoiceDataUpdateBody' },
       apiToken: { type: 'string' },
