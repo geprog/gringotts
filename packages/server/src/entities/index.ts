@@ -8,6 +8,7 @@ import { ProjectInvoiceData, projectInvoiceDataSchema } from './project_invoice_
 import { Subscription, subscriptionSchema } from './subscription';
 import { SubscriptionChange, subscriptionChangeSchema } from './subscription_change';
 import { SubscriptionPeriod } from './subscription_period';
+import { Task, taskSchema } from './task';
 
 export {
   Customer,
@@ -29,4 +30,6 @@ export {
   subscriptionChangeSchema,
   SubscriptionPeriod,
   subscriptionSchema,
+  Task,
+  taskSchema,
 };

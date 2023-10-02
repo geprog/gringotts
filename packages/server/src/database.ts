@@ -18,6 +18,8 @@ import {
   Subscription,
   subscriptionChangeSchema,
   subscriptionSchema,
+  Task,
+  taskSchema,
 } from '~/entities';
 import { addExitHook } from '~/lib/exit_hooks';
 import { MigrationAlterColumnLogo } from '~/migrations/alter_column_logo_to_text';
@@ -45,6 +47,7 @@ export class Database {
           projectSchema,
           projectInvoiceDataSchema,
           paymentMethodSchema,
+          taskSchema,
         ],
         discovery: { disableDynamicFileAccess: true },
         migrations: {
@@ -104,6 +107,10 @@ export class Database {
 
   get paymentMethods(): EntityRepository<PaymentMethod> {
     return this.em.getRepository(PaymentMethod);
+  }
+
+  get tasks(): EntityRepository<Task> {
+    return this.em.getRepository(Task);
   }
 }
 
