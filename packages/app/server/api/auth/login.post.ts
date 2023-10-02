@@ -30,7 +30,10 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  setCookie(event, 'project-token', projectToken);
+  const session = await useAuthSession(event);
+  await session.update({
+    project: projectToken,
+  });
 
   return {
     ok: true,

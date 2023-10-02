@@ -1,3 +1,4 @@
+import cors from '@fastify/cors';
 import fastifyFormBody from '@fastify/formbody';
 import fastifyHelmet from '@fastify/helmet';
 import fastifyStatic from '@fastify/static';
@@ -106,6 +107,10 @@ export async function init(): Promise<FastifyInstance> {
         formAction: ['https:', 'http:'],
       },
     },
+  });
+
+  await server.register(cors, {
+    origin: 'http://localhost:*',
   });
 
   await server.register(fastifyView, {
