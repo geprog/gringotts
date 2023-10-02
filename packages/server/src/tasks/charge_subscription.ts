@@ -111,6 +111,7 @@ export async function chargeSubscription(task: Task): Promise<void> {
 
   let invoice = new Invoice({
     date: new Date(),
+    sequentialId: customer.invoiceCounter,
     status: 'pending',
     subscription,
     currency: project.currency,
@@ -136,7 +137,7 @@ export async function chargeSubscription(task: Task): Promise<void> {
   const newTask = new Task({
     type: 'charge_subscription',
     data: {
-      invoiceId: invoice._id,
+      subscriptionId: subscription._id,
     },
     executeAt: nextPeriod.end,
   });
@@ -144,6 +145,8 @@ export async function chargeSubscription(task: Task): Promise<void> {
   await database.em.persistAndFlush([customer, newTask]);
   log.debug(
     {
+      taskId: task._id,
+      newTaskId: newTask._id,
       customerId: customer._id,
       invoiceId: invoice._id,
       invoiceDate: invoice.date,
