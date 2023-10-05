@@ -5,17 +5,19 @@ export function getPeriodFromAnchorDate(someDateInPeriod: Date, _anchorDate: Dat
   let start = dayjs(someDateInPeriod).set('date', startDate);
 
   if (dayjs(start).isAfter(someDateInPeriod)) {
-    const end = start.endOf('day');
+    // select previous period
     console.log(start.format('DD.MM.'));
-    // select previous month
-    console.log('select prev');
     const d = dayjs(start).subtract(1, 'month');
     console.log(d.format('DD.MM.'));
-    const date = Math.max(d.endOf('month').date(), d.date());
+    let date = Math.max(d.date(), dayjs(_anchorDate).date());
+    console.log(date);
+    date = Math.min(date, d.endOf('month').date());
+    console.log(date);
     start = dayjs(d).set('date', date);
     console.log(start.format('DD.MM.'));
 
-    return { start: start.toDate(), end: end.toDate() };
+    // const end = start.endOf('day');
+    // return { start: start.toDate(), end: end.toDate() };
   }
 
   const endDate = Math.min(start.add(1, 'month').endOf('month').date(), dayjs(_anchorDate).date());

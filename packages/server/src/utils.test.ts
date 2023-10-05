@@ -42,10 +42,10 @@ describe('utils', () => {
     ['2022-01-28', '2022-01-15', '2022-01-15', '2022-02-14'],
     ['2022-02-28', '2022-01-15', '2022-02-15', '2022-03-14'],
     ['2022-03-31', '2022-01-15', '2022-03-15', '2022-04-14'],
-    ['2022-02-05', '2022-01-15', '2022-01-15', '2022-02-14'], // randomDate 5th before anchorDate 15th // TODO: fix this
+    ['2022-02-05', '2022-01-15', '2022-01-15', '2022-02-14'], // randomDate 5th before anchorDate 15th
 
     // 30.01, 28.02, 30.03, 30.04
-    ['2022-02-15', '2022-01-30', '2022-01-30', '2022-02-28'], // TODO: fix this
+    ['2022-02-15', '2022-01-30', '2022-01-30', '2022-02-28'],
     ['2022-03-15', '2022-01-30', '2022-02-28', '2022-03-30'],
     ['2022-03-15', '2022-01-30', '2022-02-28', '2022-03-30'], // randomDate before anchorDate
 
@@ -56,20 +56,24 @@ describe('utils', () => {
 
     // 31.01, 29.02, 31.03, 30.04 (leap year)
     ['2020-02-15', '2020-01-31', '2020-01-31', '2020-02-29'], // anchorDate is 31st
-  ])('should return period boundaries of "%s" with anchor: "%s" => "%s - %s"', (randomDate, anchorDate, start, end) => {
-    const d = getPeriodFromAnchorDate(new Date(randomDate), new Date(anchorDate));
-    if (!dayjs(start).isSame(d.start, 'day') || !dayjs(end).isSame(d.end, 'day')) {
-      console.log({
-        anchorDate: dayjs(anchorDate).format('DD.MM.'),
-        randomDate: dayjs(randomDate).format('DD.MM.'),
-        exp: `${dayjs(start).startOf('day').format('DD.MM.')} - ${dayjs(end).endOf('day').format('DD.MM.')}`,
-        got: `${dayjs(d.start).format('DD.MM.')} - ${dayjs(d.end).format('DD.MM.')}`,
-      });
-    }
+  ])(
+    'should return period boundaries of "%s" with anchor: "%s" => "%s - %s"',
+    (randomDate, anchorDate, _start, _end) => {
+      const start = dayjs(_start).startOf('day');
+      const end = dayjs(_end).endOf('day');
+      const d = getPeriodFromAnchorDate(new Date(randomDate), new Date(anchorDate));
+      if (!start.isSame(d.start, 'day') || !end.isSame(d.end, 'day')) {
+        console.log({
+          anchorDate: dayjs(anchorDate).format('DD.MM.'),
+          randomDate: dayjs(randomDate).format('DD.MM.'),
+          exp: `${start.format('DD.MM.')} - ${end.format('DD.MM.')}`,
+          got: `${dayjs(d.start).format('DD.MM.')} - ${dayjs(d.end).format('DD.MM.')}`,
+        });
+      }
 
-    expect(dayjs(d.start).format('DD.MM.YYYY'), 'start date').toStrictEqual(
-      dayjs(start).startOf('day').format('DD.MM.YYYY'),
-    );
-    expect(dayjs(d.end).format('DD.MM.YYYY'), 'end date').toStrictEqual(dayjs(end).endOf('day').format('DD.MM.YYYY'));
-  });
+      expect(dayjs(d.start).format('DD.MM.YYYY'), 'start date').toStrictEqual(start.format('DD.MM.YYYY'));
+      expect(dayjs(d.end).format('DD.MM.YYYY'), 'end date').toStrictEqual(end.format('DD.MM.YYYY'));
+      expect(dayjs(randomDate).isBetween(start, end)).toBe(true);
+    },
+  );
 });
