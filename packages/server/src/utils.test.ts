@@ -10,7 +10,7 @@ describe('utils', () => {
     ['2022-01-15', '2022-01-15', '2022-02-14'],
     ['2022-02-15', '2022-01-15', '2022-03-14'],
     ['2022-01-31', '2022-01-31', '2022-02-27'],
-    ['2022-02-28', '2022-01-31', '2022-03-31'],
+    ['2022-02-28', '2022-01-31', '2022-03-30'],
     ['2022-03-31', '2022-01-31', '2022-04-29'],
   ];
   it.each(getActiveUntilDateTests)(
@@ -20,7 +20,7 @@ describe('utils', () => {
       const activeUntil = getActiveUntilDate(dayjs(oldActiveUntil).toDate(), dayjs(anchorDate).toDate());
 
       // then
-      expect(activeUntil).toStrictEqual(dayjs(expected).endOf('day').toDate());
+      expect(dayjs(activeUntil).format('DD.MM.YYYY')).toStrictEqual(dayjs(expected).endOf('day').format('DD.MM.YYYY'));
     },
   );
 
@@ -31,7 +31,7 @@ describe('utils', () => {
   // For example, a subscription starting on January 31 bills on February 28 (or February 29 in a leap year),
   // then March 31, April 30, and so on.
 
-  it.only.each([
+  it.each([
     // randomDate, anchorDate, start, end
 
     // 01.01, 01.02, 01.03, 01.04
