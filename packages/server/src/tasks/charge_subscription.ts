@@ -109,8 +109,11 @@ export async function chargeSubscription(task: Task): Promise<void> {
   const { customer } = subscription;
   const { project } = task;
 
+  const { end } = getPeriodFromAnchorDate(task.executeAt, subscription.anchorDate);
+  console.log('end', end);
+
   let invoice = new Invoice({
-    date: new Date(),
+    date: end,
     sequentialId: customer.invoiceCounter,
     status: 'pending',
     subscription,
@@ -128,7 +131,8 @@ export async function chargeSubscription(task: Task): Promise<void> {
 
     invoice = addSubscriptionChangesToInvoice(subscription, invoice);
     customer.invoiceCounter += 1;
-    await chargeCustomerInvoice({ customer, invoice });
+    await database.em.persistAndFlush([customer, invoice]);
+    // await chargeCustomerInvoice({ customer, invoice });
   } catch (e) {
     log.error('Error while invoice charging:', e);
   }
@@ -142,7 +146,7 @@ export async function chargeSubscription(task: Task): Promise<void> {
     executeAt: nextPeriod.end,
   });
 
-  await database.em.persistAndFlush([customer, newTask]);
+  await database.em.persistAndFlush([newTask]);
   log.debug(
     {
       taskId: task._id,

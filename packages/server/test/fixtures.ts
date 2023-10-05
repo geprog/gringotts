@@ -1,4 +1,13 @@
-import { Customer, Invoice, InvoiceItem, PaymentMethod, Project, ProjectInvoiceData, Subscription } from '~/entities';
+import {
+  Customer,
+  Invoice,
+  InvoiceItem,
+  PaymentMethod,
+  Project,
+  ProjectInvoiceData,
+  Subscription,
+  Task,
+} from '~/entities';
 import dayjs from '~/lib/dayjs';
 import { getPeriodFromAnchorDate } from '~/utils';
 
@@ -87,5 +96,14 @@ export function getFixtures() {
   customer.paymentMethods.add(paymentMethod);
   customer.activePaymentMethod = paymentMethod;
 
-  return { customer, subscription, invoice, project, paymentMethod };
+  const task = new Task({
+    type: 'charge_subscription',
+    data: {
+      subscriptionId: subscription._id,
+    },
+    executeAt: end,
+    project,
+  });
+
+  return { customer, subscription, invoice, project, paymentMethod, task };
 }
