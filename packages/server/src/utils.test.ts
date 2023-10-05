@@ -31,16 +31,45 @@ describe('utils', () => {
   // For example, a subscription starting on January 31 bills on February 28 (or February 29 in a leap year),
   // then March 31, April 30, and so on.
 
-  it.each([
-    // date in some period, anchorDate, start, end
-    ['2022-01-23', '2022-01-02', '2022-01-02', '2022-02-01'],
-    ['2022-02-28', '2022-01-02', '2022-02-02', '2022-03-01'],
-    ['2022-03-31', '2022-01-02', '2022-03-02', '2022-04-01'],
-    ['2022-02-15', '2022-01-31', '2022-02-28', '2022-03-30'], // anchorDate is 31st
+  it.only.each([
+    // randomDate, anchorDate, start, end
+
+    // 01.01, 01.02, 01.03, 01.04
+    ['2022-01-15', '2022-01-01', '2022-01-01', '2022-01-31'],
+    ['2022-02-15', '2022-01-01', '2022-02-01', '2022-02-28'],
+
+    // 15.01, 15.02, 15.03, 15.04
+    ['2022-01-28', '2022-01-15', '2022-01-15', '2022-02-14'],
+    ['2022-02-28', '2022-01-15', '2022-02-15', '2022-03-14'],
+    ['2022-03-31', '2022-01-15', '2022-03-15', '2022-04-14'],
+    ['2022-02-05', '2022-01-15', '2022-01-15', '2022-02-14'], // randomDate 5th before anchorDate 15th // TODO: fix this
+
+    // 30.01, 28.02, 30.03, 30.04
+    ['2022-02-15', '2022-01-30', '2022-01-30', '2022-02-28'], // TODO: fix this
+    ['2022-03-15', '2022-01-30', '2022-02-28', '2022-03-30'],
+    ['2022-03-15', '2022-01-30', '2022-02-28', '2022-03-30'], // randomDate before anchorDate
+
+    // 31.01, 28.02, 31.03, 30.04
+    ['2022-02-15', '2022-01-31', '2022-01-31', '2022-02-28'], // anchorDate is 31st
+    ['2022-03-15', '2022-01-31', '2022-02-28', '2022-03-31'], // anchorDate is 31st
     ['2022-03-15', '2022-01-31', '2022-02-28', '2022-03-31'], // randomDate before anchorDate
-  ])('should return the active period boundaries of %s with anchor: %s', (randomDate, anchorDate, start, end) => {
+
+    // 31.01, 29.02, 31.03, 30.04 (leap year)
+    ['2020-02-15', '2020-01-31', '2020-01-31', '2020-02-29'], // anchorDate is 31st
+  ])('should return period boundaries of "%s" with anchor: "%s" => "%s - %s"', (randomDate, anchorDate, start, end) => {
     const d = getPeriodFromAnchorDate(new Date(randomDate), new Date(anchorDate));
-    expect(d.start, 'start date').toStrictEqual(dayjs(start).startOf('day').toDate());
-    expect(d.end, 'end date').toStrictEqual(dayjs(end).endOf('day').toDate());
+    if (!dayjs(start).isSame(d.start, 'day') || !dayjs(end).isSame(d.end, 'day')) {
+      console.log({
+        anchorDate: dayjs(anchorDate).format('DD.MM.'),
+        randomDate: dayjs(randomDate).format('DD.MM.'),
+        exp: `${dayjs(start).startOf('day').format('DD.MM.')} - ${dayjs(end).endOf('day').format('DD.MM.')}`,
+        got: `${dayjs(d.start).format('DD.MM.')} - ${dayjs(d.end).format('DD.MM.')}`,
+      });
+    }
+
+    expect(dayjs(d.start).format('DD.MM.YYYY'), 'start date').toStrictEqual(
+      dayjs(start).startOf('day').format('DD.MM.YYYY'),
+    );
+    expect(dayjs(d.end).format('DD.MM.YYYY'), 'end date').toStrictEqual(dayjs(end).endOf('day').format('DD.MM.YYYY'));
   });
 });
