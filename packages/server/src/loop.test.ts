@@ -138,8 +138,8 @@ describe('Loop', () => {
     await chargeCustomerInvoice({ billingPeriod, invoice, customer });
 
     // then
-    expect(persistAndFlush).toBeCalledTimes(3);
-    const [[updatedInvoice]] = persistAndFlush.mock.calls[2] as [[Invoice]];
+    expect(persistAndFlush).toBeCalledTimes(2);
+    const [[updatedInvoice]] = persistAndFlush.mock.calls[1] as [[Invoice]];
     expect(updatedInvoice).toBeDefined();
     expect(updatedInvoice.items.getItems().find((i) => i.description === 'Credit')).toBeDefined();
     expect(updatedInvoice.amount).toStrictEqual(Invoice.roundPrice(invoiceAmount - balance));

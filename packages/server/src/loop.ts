@@ -33,7 +33,7 @@ export async function chargeCustomerInvoice({
 
   // skip negative amounts (credits) and zero amounts
   const amount = Invoice.roundPrice(invoice.totalAmount);
-  if (amount > 0) {
+  if (amount <= 0) {
     invoice.status = 'paid';
     log.debug({ invoiceId: invoice._id, amount }, 'Invoice set to paid as the amount is 0 or negative');
     // TODO: should we create a fake payment?
@@ -103,7 +103,7 @@ export async function chargeSubscriptions(): Promise<void> {
         {
           limit: pageSize,
           offset: page * pageSize,
-          populate: ['project', 'changes', 'customer', 'invoices'],
+          populate: ['project', 'changes', 'customer'],
         },
       );
 
@@ -134,7 +134,6 @@ export async function chargeSubscriptions(): Promise<void> {
               { subscriptionId: subscription._id, customerId: customer._id },
               'Invoice for period already exists',
             );
-            // TODO: update subscription nextPayment
             throw new Error('Invoice for period already exists');
           }
 
