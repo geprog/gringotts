@@ -5,9 +5,10 @@ import * as config from '~/config';
 import * as databaseExports from '~/database';
 import { getFixtures } from '$/fixtures';
 
-import { Customer, Invoice, Payment } from './entities';
-import { chargeCustomerInvoice, chargeInvoices } from './loop';
+import { Customer, Invoice, Payment, Subscription } from './entities';
+import { chargeCustomerInvoice, chargeSubscriptions } from './loop';
 import { getPaymentProvider } from './payment_providers';
+import { getPeriodFromAnchorDate } from './utils';
 
 describe('Loop', () => {
   beforeAll(async () => {
@@ -24,7 +25,7 @@ describe('Loop', () => {
     await databaseExports.database.init();
   });
 
-  it('should loop and charge for open invoices', async () => {
+  it('should loop and charge for due subscriptions', async () => {
     // given
     const testData = getFixtures();
 
@@ -41,10 +42,11 @@ describe('Loop', () => {
       invoices: new Map<string, Invoice>(),
       payments: new Map<string, Payment>(),
       customers: new Map<string, Customer>(),
+      subscriptions: new Map<string, Subscription>(),
     };
 
     testData.invoice.items.removeAll();
-    db.invoices.set(testData.invoice._id, testData.invoice);
+    db.subscriptions.set(testData.subscription._id, testData.subscription);
 
     vi.spyOn(databaseExports, 'database', 'get').mockReturnValue({
       em: {
@@ -59,6 +61,8 @@ describe('Loop', () => {
               db.payments.set(item._id, item);
             } else if (item instanceof Customer) {
               db.customers.set(item._id, item);
+            } else if (item instanceof Subscription) {
+              db.subscriptions.set(item._id, item);
             }
           }
 
@@ -68,44 +72,38 @@ describe('Loop', () => {
           return Promise.resolve();
         },
       },
+      subscriptions: {
+        find: () => Array.from(db.subscriptions.values()),
+      },
       invoices: {
-        find() {
-          return Promise.resolve(Array.from(db.invoices.values()));
-        },
+        find: () => Array.from(db.invoices.values()),
       },
     } as unknown as databaseExports.Database);
 
-    const invoiceDate = dayjs(testData.invoice.date);
-    vi.setSystemTime(invoiceDate.add(1, 'day').toDate());
-
-    // before when
-    let oldInvoice = db.invoices.get(testData.invoice._id);
-    expect(oldInvoice?.status).toStrictEqual('draft');
-    expect(oldInvoice?.items.length).toStrictEqual(0);
-    expect(oldInvoice?.date).toStrictEqual(invoiceDate.toDate());
+    const subscription = testData.subscription;
+    const nextPayment = dayjs(subscription.nextPayment);
+    vi.setSystemTime(nextPayment.add(1, 'day').toDate());
 
     // when
-    await chargeInvoices();
+    await chargeSubscriptions();
 
     // then
-    oldInvoice = db.invoices.get(testData.invoice._id);
-    expect(oldInvoice).toBeDefined();
-    expect(oldInvoice?.status).toStrictEqual('pending');
-    expect(oldInvoice?.items.length).toStrictEqual(3);
+    expect(db.invoices.size).toBe(1);
+    const invoice = Array.from(db.invoices.values()).at(0);
+    expect(invoice).toBeDefined();
+    expect(invoice?.status).toStrictEqual('pending');
+    expect(invoice?.items.length).toStrictEqual(3);
     const itemAmounts = [(14 / 31) * 12 * 12.34, (5 / 31) * 15 * 12.34, (12 / 31) * 15 * 5.43];
-    expect(oldInvoice?.amount).toStrictEqual(itemAmounts.reduce((sum, amount) => sum + Invoice.roundPrice(amount), 0));
+    expect(invoice?.amount).toStrictEqual(itemAmounts.reduce((sum, amount) => sum + Invoice.roundPrice(amount), 0));
 
     expect(db.payments.size).toBe(1);
     const payment = Array.from(db.payments.values())[0];
     expect(payment).toBeDefined();
     expect(payment.status).toStrictEqual('pending');
-    expect(payment.amount).toStrictEqual(oldInvoice?.totalAmount);
+    expect(payment.amount).toStrictEqual(invoice?.totalAmount);
 
-    expect(db.invoices.size).toBe(2);
-    const newInvoice = Array.from(db.invoices.values()).at(-1);
-    expect(newInvoice).toBeDefined();
-    expect(newInvoice?.date).toStrictEqual(invoiceDate.add(1, 'month').endOf('day').toDate());
-    expect(newInvoice?.status).toStrictEqual('draft');
+    const updatedSubscription = Array.from(db.subscriptions.values()).at(-1);
+    expect(updatedSubscription?.nextPayment).toStrictEqual(nextPayment.add(1, 'month').endOf('day').toDate());
   });
 
   it('should apply customer balance to invoice', async () => {
@@ -134,9 +132,10 @@ describe('Loop', () => {
     const balance = 123;
     customer.balance = balance;
     const invoiceAmount = invoice.amount;
+    const billingPeriod = getPeriodFromAnchorDate(invoice.date, invoice.date);
 
     // when
-    await chargeCustomerInvoice({ invoice, customer });
+    await chargeCustomerInvoice({ billingPeriod, invoice, customer });
 
     // then
     expect(persistAndFlush).toBeCalledTimes(3);
@@ -175,9 +174,10 @@ describe('Loop', () => {
     const balance = 1000;
     customer.balance = balance;
     const invoiceAmount = invoice.amount;
+    const billingPeriod = getPeriodFromAnchorDate(invoice.date, invoice.date);
 
     // when
-    await chargeCustomerInvoice({ invoice, customer });
+    await chargeCustomerInvoice({ billingPeriod, invoice, customer });
 
     // then
     expect(persistAndFlush).toBeCalledTimes(2);

@@ -11,6 +11,7 @@ export class Subscription {
   _id: string = v4();
   anchorDate!: Date; // first date a user ever started a subscription for the object
   lastPayment?: Date;
+  nextPayment!: Date;
   customer!: Customer;
   changes = new Collection<SubscriptionChange>(this);
   createdAt: Date = new Date();
@@ -65,6 +66,7 @@ export const subscriptionSchema = new EntitySchema<Subscription>({
     _id: { type: 'uuid', onCreate: () => v4(), primary: true },
     anchorDate: { type: Date },
     lastPayment: { type: Date, nullable: true },
+    nextPayment: { type: Date },
     customer: {
       reference: ReferenceType.MANY_TO_ONE,
       entity: () => Customer,

@@ -18,6 +18,11 @@ export function getPeriodFromAnchorDate(someDateInPeriod: Date, anchorDate: Date
   return { start: start.toDate(), end: end.toDate() };
 }
 
+export function getNextPeriodFromAnchorDate(someDateInPeriod: Date, anchorDate: Date): { start: Date; end: Date } {
+  const { end } = getPeriodFromAnchorDate(someDateInPeriod, anchorDate);
+  return getPeriodFromAnchorDate(dayjs(end).add(1, 'day').toDate(), anchorDate);
+}
+
 export function getActiveUntilDate(oldActiveUntil: Date, anchorDate: Date): Date {
   const { end } = getPeriodFromAnchorDate(oldActiveUntil, anchorDate);
   return end;

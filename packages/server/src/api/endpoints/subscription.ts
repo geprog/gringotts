@@ -3,7 +3,6 @@ import { FastifyInstance } from 'fastify';
 import { getProjectFromRequest } from '~/api/helpers';
 import { database } from '~/database';
 import { Subscription } from '~/entities';
-import { Invoice } from '~/entities/invoice';
 import { getActiveUntilDate, getPeriodFromAnchorDate } from '~/utils';
 
 export function subscriptionEndpoints(server: FastifyInstance): void {
@@ -76,26 +75,17 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
 
       const now = new Date();
 
+      const period = getPeriodFromAnchorDate(now, now);
       const subscription = new Subscription({
         anchorDate: now,
+        nextPayment: period.end,
         customer,
         project,
       });
 
       subscription.changePlan({ units: body.units, pricePerUnit: body.pricePerUnit });
 
-      const period = getPeriodFromAnchorDate(now, subscription.anchorDate);
-      const newInvoice = new Invoice({
-        date: period.end,
-        sequentialId: customer.invoiceCounter,
-        status: 'draft',
-        subscription,
-        currency: project.currency,
-        vatRate: project.vatRate,
-        project,
-      });
-
-      await database.em.persistAndFlush([customer, subscription, newInvoice]);
+      await database.em.persistAndFlush([customer, subscription]);
 
       await reply.send(subscription.toJSON());
     },
