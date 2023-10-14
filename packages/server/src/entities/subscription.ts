@@ -9,6 +9,7 @@ import { SubscriptionPeriod } from '~/entities/subscription_period';
 
 export class Subscription {
   _id: string = v4();
+  status: 'active' | 'error' = 'active';
   anchorDate!: Date; // first date a user ever started a subscription for the object
   lastPayment?: Date;
   nextPayment!: Date;
@@ -64,6 +65,7 @@ export const subscriptionSchema = new EntitySchema<Subscription>({
   class: Subscription,
   properties: {
     _id: { type: 'uuid', onCreate: () => v4(), primary: true },
+    status: { type: 'string' },
     anchorDate: { type: Date },
     lastPayment: { type: Date, nullable: true },
     nextPayment: { type: Date },

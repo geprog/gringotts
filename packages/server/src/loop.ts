@@ -34,52 +34,53 @@ export async function chargeCustomerInvoice({
   // skip negative amounts (credits) and zero amounts
   const amount = Invoice.roundPrice(invoice.totalAmount);
   if (amount > 0) {
-    let paymentDescription = `Invoice ${invoice.number}`;
-
-    const { subscription } = invoice;
-    if (subscription) {
-      const formatDate = (d: Date) => dayjs(d).format('DD.MM.YYYY');
-      paymentDescription = `Subscription for period ${formatDate(billingPeriod.start)} - ${formatDate(
-        billingPeriod.end,
-      )}`; // TODO: think about text
-      log.debug({ subscriptionId: subscription._id, paymentDescription }, 'Subscription payment');
-    }
-
-    const { project } = customer;
-    if (!project) {
-      log.error({ subscriptionId: subscription._id, paymentDescription }, 'Subscription payment');
-      throw new Error(`Project for '${customer._id}' not configured`);
-    }
-
-    const payment = new Payment({
-      amount,
-      currency: project.currency,
-      customer,
-      type: 'recurring',
-      status: 'pending',
-      description: paymentDescription,
-      subscription,
-    });
-
-    invoice.status = 'pending';
-    invoice.payment = payment;
-
-    const paymentProvider = getPaymentProvider(project);
-    if (!paymentProvider) {
-      log.error({ projectId: project._id, invoiceId: invoice._id }, 'Payment provider for project not configured');
-      throw new Error(`Payment provider for '${project._id}' not configured`);
-    }
-
-    await paymentProvider.chargeBackgroundPayment({ payment, project });
-    await database.em.persistAndFlush([payment]);
-    log.debug({ paymentId: payment._id }, 'Payment created & charged');
-  } else {
     invoice.status = 'paid';
     log.debug({ invoiceId: invoice._id, amount }, 'Invoice set to paid as the amount is 0 or negative');
     // TODO: should we create a fake payment?
+    await database.em.persistAndFlush([invoice]);
+    return;
   }
 
-  await database.em.persistAndFlush([invoice]);
+  let paymentDescription = `Invoice ${invoice.number}`;
+
+  const { subscription } = invoice;
+  if (subscription) {
+    const formatDate = (d: Date) => dayjs(d).format('DD.MM.YYYY');
+    paymentDescription = `Subscription for period ${formatDate(billingPeriod.start)} - ${formatDate(
+      billingPeriod.end,
+    )}`; // TODO: think about text
+    log.debug({ subscriptionId: subscription._id, paymentDescription }, 'Subscription payment');
+  }
+
+  const { project } = customer;
+  if (!project) {
+    log.error({ subscriptionId: subscription._id, paymentDescription }, 'Subscription payment');
+    throw new Error(`Project for '${customer._id}' not configured`);
+  }
+
+  const payment = new Payment({
+    amount,
+    currency: project.currency,
+    customer,
+    type: 'recurring',
+    status: 'pending',
+    description: paymentDescription,
+    subscription,
+  });
+
+  invoice.status = 'pending';
+  invoice.payment = payment;
+
+  const paymentProvider = getPaymentProvider(project);
+  if (!paymentProvider) {
+    log.error({ projectId: project._id, invoiceId: invoice._id }, 'Payment provider for project not configured');
+    throw new Error(`Payment provider for '${project._id}' not configured`);
+  }
+
+  await paymentProvider.chargeBackgroundPayment({ payment, project });
+  await database.em.persistAndFlush([invoice, payment]);
+
+  log.debug({ paymentId: payment._id }, 'Payment created & charged');
 }
 
 let isChargingSubscriptions = false;
@@ -98,7 +99,7 @@ export async function chargeSubscriptions(): Promise<void> {
     while (true) {
       // get due subscriptions
       const subscriptions = await database.subscriptions.find(
-        { nextPayment: { $lte: now } },
+        { nextPayment: { $lte: now }, status: 'active' },
         {
           limit: pageSize,
           offset: page * pageSize,
@@ -157,27 +158,27 @@ export async function chargeSubscriptions(): Promise<void> {
           await database.em.persistAndFlush([customer, invoice]);
 
           await chargeCustomerInvoice({ billingPeriod, customer, invoice });
+
+          const nextPeriod = getPeriodFromAnchorDate(
+            dayjs(subscription.nextPayment).add(1, 'day').toDate(),
+            subscription.anchorDate,
+          );
+          subscription.nextPayment = nextPeriod.end;
+          await database.em.persistAndFlush([subscription]);
+          log.debug(
+            {
+              customerId: customer._id,
+              nextPayment: subscription.nextPayment,
+              subscriptionId: subscription._id,
+              invoiceCounter: customer.invoiceCounter,
+            },
+            'Subscription charged & invoiced',
+          );
         } catch (e) {
           log.error('Error while subscription charging:', e);
+          subscription.status = 'error';
+          await database.em.persistAndFlush([subscription]);
         }
-
-        const nextPeriod = getPeriodFromAnchorDate(
-          dayjs(subscription.nextPayment).add(1, 'day').toDate(),
-          subscription.anchorDate,
-        );
-
-        subscription.nextPayment = nextPeriod.end;
-
-        await database.em.persistAndFlush([customer, subscription]);
-        log.debug(
-          {
-            customerId: customer._id,
-            nextPayment: nextPeriod.end,
-            subscriptionId: subscription._id,
-            invoiceCounter: customer.invoiceCounter,
-          },
-          'Subscription charged & invoiced',
-        );
       }
 
       if (subscriptions.length < pageSize) {
