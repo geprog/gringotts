@@ -61,14 +61,6 @@ describe('utils', () => {
       const start = dayjs(_start).startOf('day');
       const end = dayjs(_end).endOf('day');
       const d = getPeriodFromAnchorDate(new Date(randomDate), new Date(anchorDate));
-      if (!start.isSame(d.start, 'day') || !end.isSame(d.end, 'day')) {
-        console.log({
-          anchorDate: dayjs(anchorDate).format('DD.MM.'),
-          randomDate: dayjs(randomDate).format('DD.MM.'),
-          exp: `${start.format('DD.MM.')} - ${end.format('DD.MM.')}`,
-          got: `${dayjs(d.start).format('DD.MM.')} - ${dayjs(d.end).format('DD.MM.')}`,
-        });
-      }
 
       expect(dayjs(d.start).format('DD.MM.YYYY'), 'start date').toStrictEqual(start.format('DD.MM.YYYY'));
       expect(dayjs(d.end).format('DD.MM.YYYY'), 'end date').toStrictEqual(end.format('DD.MM.YYYY'));
