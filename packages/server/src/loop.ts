@@ -16,6 +16,12 @@ export async function chargeCustomerInvoice({
   customer: Customer;
   invoice: Invoice;
 }): Promise<void> {
+  await database.em.populate(customer, ['activePaymentMethod']);
+  if (!customer.activePaymentMethod) {
+    log.error({ invoiceId: invoice._id, customerId: customer._id }, 'Customer has no active payment method');
+    throw new Error('Customer has no active payment method');
+  }
+
   // add customer credit
   if (customer.balance > 0) {
     const creditAmount = Math.min(customer.balance, invoice.amount);
@@ -108,27 +114,17 @@ export async function chargeSubscriptions(): Promise<void> {
       );
 
       for await (const subscription of subscriptions) {
-        // TODO: Should we lock subscription processing?
+        // TODO: should we lock subscription processing?
 
         const { project, customer } = subscription;
 
         const billingPeriod = getPeriodFromAnchorDate(subscription.nextPayment, subscription.anchorDate);
 
         try {
-          await database.em.populate(customer, ['activePaymentMethod']);
-          if (!customer.activePaymentMethod) {
-            log.error(
-              { subscriptionId: subscription._id, customerId: customer._id },
-              'Customer has no active payment method',
-            );
-            throw new Error('Customer has no active payment method');
-          }
-
           const existingInvoices = await database.invoices.find({
             date: { $gte: billingPeriod.start, $lte: billingPeriod.end },
             subscription,
           });
-
           if (existingInvoices.length > 0) {
             log.error(
               { subscriptionId: subscription._id, customerId: customer._id },
