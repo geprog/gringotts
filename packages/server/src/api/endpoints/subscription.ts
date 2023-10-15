@@ -78,6 +78,7 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
       const period = getPeriodFromAnchorDate(now, now);
       const subscription = new Subscription({
         anchorDate: now,
+        status: 'active',
         nextPayment: period.end,
         customer,
         project,

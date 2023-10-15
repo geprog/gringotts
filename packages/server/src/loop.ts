@@ -105,7 +105,7 @@ export async function chargeSubscriptions(): Promise<void> {
     while (true) {
       // get due subscriptions
       const subscriptions = await database.subscriptions.find(
-        { nextPayment: { $lte: now } },
+        { nextPayment: { $lte: now }, status: 'active' },
         {
           limit: pageSize,
           offset: page * pageSize,
@@ -154,6 +154,13 @@ export async function chargeSubscriptions(): Promise<void> {
 
           await chargeCustomerInvoice({ billingPeriod, customer, invoice });
 
+          const nextPeriod = getPeriodFromAnchorDate(
+            dayjs(subscription.nextPayment).add(1, 'day').toDate(),
+            subscription.anchorDate,
+          );
+          subscription.nextPayment = nextPeriod.end;
+          await database.em.persistAndFlush([subscription]);
+
           log.debug(
             {
               customerId: customer._id,
@@ -165,19 +172,10 @@ export async function chargeSubscriptions(): Promise<void> {
           );
         } catch (e) {
           log.error('Error while subscription charging:', e);
-          // TODO: think about adding a log for subscriptions to show such errors in the UI
+          subscription.status = 'error';
+          subscription.error = (e as Error)?.message || (e as string);
           await database.em.persistAndFlush([subscription]);
         }
-
-        // update next payment date to retry next period even
-        // if the current period failed, the subscription however
-        // wont be marked as "active" as the last payment timestamp will not be updated
-        const nextPeriod = getPeriodFromAnchorDate(
-          dayjs(subscription.nextPayment).add(1, 'day').toDate(),
-          subscription.anchorDate,
-        );
-        subscription.nextPayment = nextPeriod.end;
-        await database.em.persistAndFlush([subscription]);
       }
 
       if (subscriptions.length < pageSize) {
