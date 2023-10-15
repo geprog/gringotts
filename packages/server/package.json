@@ -8,8 +8,8 @@
     "build": "tsx cli/build.ts",
     "clean": "rm -rf dist/ node_modules/",
     "lint": "eslint --max-warnings 0 .",
-    "test": "vitest run --coverage",
-    "test:watch": "vitest --ui --open false",
+    "test": "TZ=UTC vitest run --coverage",
+    "test:watch": "TZ=UTC vitest --ui --open false",
     "typecheck": "tsc --noEmit",
     "generate-swagger-spec": "tsx cli/generate-swagger-spec.ts"
   },

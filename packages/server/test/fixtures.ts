@@ -23,6 +23,8 @@ export function getFixtures() {
     webhookUrl: 'http://localhost',
     name: 'Test Project',
     mollieApiKey: 'not-used',
+    currency: 'EUR',
+    vatRate: 19.0,
   });
 
   const customer = new Customer({
@@ -38,10 +40,13 @@ export function getFixtures() {
     project,
   });
 
+  const anchorDate = dayjs('2020-01-01 07:23').toDate();
+
   const subscription = new Subscription({
-    anchorDate: dayjs('2020-01-01 07:23').toDate(),
+    anchorDate,
     customer,
     project,
+    nextPayment: getPeriodFromAnchorDate(anchorDate, anchorDate).end,
   });
   subscription.changePlan({ pricePerUnit: 12.34, units: 12 });
   subscription.changePlan({ pricePerUnit: 12.34, units: 15, changeDate: dayjs('2020-01-15').toDate() });
