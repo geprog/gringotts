@@ -2,7 +2,7 @@ import { gringottsClient } from '@geprog/gringotts-client';
 import fetch from 'cross-fetch';
 
 function useGringottsClient(token: string) {
-  const baseUrl = 'http://localhost:7171';
+  const { baseUrl } = useRuntimeConfig().api;
   return gringottsClient(baseUrl, {
     customFetch: fetch,
     token,
@@ -32,7 +32,7 @@ export default defineEventHandler(async (event) => {
 
   const session = await useAuthSession(event);
   await session.update({
-    project: projectToken,
+    token: projectToken,
   });
 
   return {

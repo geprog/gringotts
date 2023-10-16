@@ -1,28 +1,43 @@
 <template>
-  <div class="flex flex-col mx-auto max-w-xl w-full mt-8">
-    <h1 class="mx-auto">login</h1>
+  <div class="flex flex-col space-y-2 text-center justify-center items-center">
+    <img src="/logo_light.svg" alt="Gringotts logo" class="w-32 dark:hidden" />
+    <img src="/logo_dark.svg" alt="Gringotts dark logo" class="w-32 hidden dark:block" />
 
-    <form @submit.prevent="login">
-      <input v-model="projectToken" type="password" placeholder="project token" />
-      <input type="submit" value="login" />
+    <h1 class="text-3xl font-semibold tracking-tight">Sign In to Your Account</h1>
+  </div>
+  <div class="grid gap-6">
+    <form class="flex flex-col gap-2" @submit.prevent="login">
+      <label for="email" class="text-sm font-medium">Token</label>
+      <input
+        id="email"
+        v-model="token"
+        type="password"
+        required
+        class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-accent focus:border-accent-500 sm:text-sm"
+      />
+
+      <button
+        class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 duration-200 border border-input hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 bg-background"
+        type="submit"
+      >
+        <UIcon name="i-ion-logo-github" class="w-4 h-4 mr-2" />
+        Login
+      </button>
     </form>
   </div>
 </template>
 
 <script lang="ts" setup>
+definePageMeta({ layout: 'auth' });
+
+const token = ref('');
 const router = useRouter();
 
-const projectToken = ref('');
-
 async function login() {
-  await useFetch('/api/auth/login', {
+  await $fetch('/api/auth/login', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ projectToken: projectToken.value }),
+    body: { token: token.value },
   });
-
   await router.push('/');
 }
 </script>

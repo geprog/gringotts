@@ -1,14 +1,14 @@
 import { gringottsClient } from '@geprog/gringotts-client';
 
-export function useGringottsClient() {
-  const baseURL = 'http://localhost:7171';
-  const token = useSession('project-token').value;
+export async function useGringottsClient() {
+  const auth = await useAuth();
+  const user = auth.user.value;
 
-  if (!token) {
-    throw new Error('project-token is required');
+  if (!user) {
+    throw new Error('user is required');
   }
 
-  return gringottsClient(baseURL, {
-    token: token,
+  return gringottsClient(user.backendUrl, {
+    token: user.token,
   });
 }
