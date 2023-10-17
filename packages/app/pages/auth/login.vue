@@ -7,20 +7,20 @@
   </div>
   <div class="grid gap-6">
     <form class="flex flex-col gap-2" @submit.prevent="login">
-      <label for="email" class="text-sm font-medium">Token</label>
-      <input
-        id="email"
+      <UInput
+        color="primary"
+        variant="outline"
         v-model="token"
         type="password"
-        required
-        class="block w-full border-gray-300 rounded-md shadow-sm focus:ring-accent focus:border-accent-500 sm:text-sm"
+        placeholder="Your Gringotts project token"
+        size="lg"
+        @update:model-value="updateSearch"
       />
 
       <button
         class="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 duration-200 border border-input hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 bg-background"
         type="submit"
       >
-        <UIcon name="i-ion-logo-github" class="w-4 h-4 mr-2" />
         Login
       </button>
     </form>
