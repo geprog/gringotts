@@ -21,7 +21,14 @@
         </UFormGroup>
 
         <UFormGroup label="Status" name="status">
-          <UInput color="primary" variant="outline" v-model="subscription.status" size="lg" disabled />
+          <USelectMenu
+            color="primary"
+            variant="outline"
+            v-model="subscription.status"
+            :options="['active', 'error']"
+            size="lg"
+            disabled
+          />
         </UFormGroup>
 
         <UFormGroup v-if="subscription.error" label="Error" name="error">
