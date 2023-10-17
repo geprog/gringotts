@@ -104,7 +104,7 @@ describe('Loop', () => {
     expect(db.invoices.size).toBe(2);
     const newInvoice = Array.from(db.invoices.values()).at(-1);
     expect(newInvoice).toBeDefined();
-    expect(newInvoice?.date).toStrictEqual(invoiceDate.add(1, 'month').toDate());
+    expect(newInvoice?.date).toStrictEqual(invoiceDate.add(1, 'month').endOf('day').toDate());
     expect(newInvoice?.status).toStrictEqual('draft');
   });
 

@@ -40,13 +40,13 @@ describe('Subscription period', () => {
     subscription.changePlan({ pricePerUnit: 1, units: 50 });
 
     // when
-    const { start, end } = getPeriodFromAnchorDate(dayjs('2020-02-15').toDate(), subscription.anchorDate);
+    const { start, end } = getPeriodFromAnchorDate(dayjs('2020-02-01').toDate(), subscription.anchorDate);
     const period = new SubscriptionPeriod(subscription, start, end);
     const invoiceItems = period.getInvoiceItems();
 
     // then
     expect(invoiceItems).toHaveLength(1);
-    expect(invoiceItems[0].pricePerUnit).toBeCloseTo(50);
+    expect(invoiceItems[0].pricePerUnit).toBe(50);
     expect(invoiceItems[0].units).toBe(1);
   });
 

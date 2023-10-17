@@ -148,7 +148,7 @@ export async function chargeInvoices(): Promise<void> {
           log.error('Error while invoice charging:', e);
         }
 
-        const nextPeriod = getPeriodFromAnchorDate(invoice.date, subscription.anchorDate);
+        const nextPeriod = getPeriodFromAnchorDate(dayjs(invoice.date).add(1, 'day').toDate(), subscription.anchorDate);
         customer.invoiceCounter += 1;
         const newInvoice = new Invoice({
           date: nextPeriod.end,

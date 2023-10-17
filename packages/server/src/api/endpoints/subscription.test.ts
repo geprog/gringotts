@@ -79,7 +79,7 @@ describe('Subscription endpoints', () => {
     const [[, subscription, newInvoice]] = persistAndFlush.mock.lastCall as [[Customer, Subscription, Invoice]];
     expect(responseData._id).toStrictEqual(subscription._id);
     expect(newInvoice).toBeDefined();
-    expect(newInvoice.date).toStrictEqual(dayjs(date).add(1, 'month').toDate());
+    expect(newInvoice.date).toStrictEqual(dayjs(date).add(1, 'month').subtract(1, 'day').endOf('day').toDate());
   });
 
   it('should update a subscription', async () => {
