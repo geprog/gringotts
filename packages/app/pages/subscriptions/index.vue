@@ -36,7 +36,7 @@ async function selectSubscription(row: Subscription) {
 }
 
 const { data: subscriptions, pending } = useAsyncData(async () => {
-  const { data } = await client.subscription.subscriptionList();
+  const { data } = await client.subscription.listSubscriptions();
   return data;
 });
 </script>

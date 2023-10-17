@@ -31,6 +31,7 @@ export function customerEndpoints(server: FastifyInstance): void {
 
   server.post('/customer', {
     schema: {
+      operationId: 'createCustomer',
       summary: 'Create a customer',
       tags: ['customer'],
       body: {
@@ -80,6 +81,7 @@ export function customerEndpoints(server: FastifyInstance): void {
 
   server.get('/customer', {
     schema: {
+      operationId: 'listCustomers',
       summary: 'List all customers or search by email',
       tags: ['customer'],
       querystring: {
@@ -119,6 +121,7 @@ export function customerEndpoints(server: FastifyInstance): void {
 
   server.get('/customer/:customerId', {
     schema: {
+      operationId: 'getCustomer',
       summary: 'Get a customer',
       tags: ['customer'],
       params: {
@@ -157,6 +160,7 @@ export function customerEndpoints(server: FastifyInstance): void {
 
   server.patch('/customer/:customerId', {
     schema: {
+      operationId: 'patchCustomer',
       summary: 'Patch a customer',
       tags: ['customer'],
       params: {
@@ -226,6 +230,7 @@ export function customerEndpoints(server: FastifyInstance): void {
 
   server.delete('/customer/:customerId', {
     schema: {
+      operationId: 'deleteCustomer',
       summary: 'Delete a customer',
       tags: ['customer'],
       params: {
@@ -275,6 +280,7 @@ export function customerEndpoints(server: FastifyInstance): void {
 
   server.get('/customer/:customerId/subscription', {
     schema: {
+      operationId: 'listCustomerSubscriptions',
       summary: 'List all subscriptions of a customer',
       tags: ['subscription', 'customer'],
       params: {

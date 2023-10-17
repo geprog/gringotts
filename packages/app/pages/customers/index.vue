@@ -34,7 +34,7 @@ async function selectCustomer(row: Customer) {
 }
 
 const { data: customers, pending } = useAsyncData(async () => {
-  const { data } = await client.customer.customerList();
+  const { data } = await client.customer.listCustomers();
   return data;
 });
 </script>

@@ -72,7 +72,7 @@ const router = useRouter();
 const customerId = route.params.customerId as string;
 
 const { data: customer } = useAsyncData(async () => {
-  const { data } = await client.customer.customerDetail(customerId);
+  const { data } = await client.customer.getCustomer(customerId);
   return data;
 });
 
@@ -95,7 +95,7 @@ const paymentMethodColumns = [
   },
 ];
 const { data: paymentMethods, pending: paymentMethodPending } = useAsyncData(async () => {
-  const { data } = await client.customer.paymentMethodDetail(customerId);
+  const { data } = await client.customer.listPaymentMethods(customerId);
   return data;
 });
 
@@ -114,7 +114,7 @@ const subscriptionColumns = [
   },
 ];
 const { data: subscriptions, pending: subscriptionPending } = useAsyncData(async () => {
-  const { data } = await client.customer.subscriptionDetail(customerId);
+  const { data } = await client.customer.listCustomerSubscriptions(customerId);
   return data;
 });
 

@@ -73,7 +73,7 @@ const router = useRouter();
 const subscriptionId = route.params.subscriptionId as string;
 
 const { data: subscription } = useAsyncData(async () => {
-  const { data } = await client.subscription.subscriptionDetail(subscriptionId);
+  const { data } = await client.subscription.getSubscription(subscriptionId);
   return data;
 });
 
@@ -101,7 +101,7 @@ const subscriptionChangeColumns = [
 const preparingInvoice = ref(false);
 async function downloadInvoice(_id: string) {
   preparingInvoice.value = true;
-  const { data } = await client.invoice.generateDownloadLinkDetail(_id);
+  const { data } = await client.invoice.generateInvoiceDownloadLink(_id);
   preparingInvoice.value = false;
   window.open(data.url, '_blank');
 }
@@ -135,7 +135,7 @@ const invoiceColumns = [
   },
 ];
 const { data: invoices, pending: invoicesPending } = useAsyncData(async () => {
-  const { data } = await client.subscription.invoiceDetail(subscriptionId);
+  const { data } = await client.subscription.listSubscriptionInvoices(subscriptionId);
   return data;
 });
 </script>

@@ -76,7 +76,7 @@ const route = useRoute();
 const invoiceId = route.params.invoiceId as string;
 
 const { data: invoice } = useAsyncData(async () => {
-  const { data } = await client.invoice.invoiceDetail(invoiceId);
+  const { data } = await client.invoice.getInvoice(invoiceId);
   return data;
 });
 
@@ -98,7 +98,7 @@ const invoiceItemColumns = [
 const preparingInvoice = ref(false);
 async function downloadInvoice() {
   preparingInvoice.value = true;
-  const { data } = await client.invoice.generateDownloadLinkDetail(invoiceId);
+  const { data } = await client.invoice.generateInvoiceDownloadLink(invoiceId);
   preparingInvoice.value = false;
   window.open(data.url, '_blank');
 }
@@ -107,7 +107,7 @@ const { data: subscription } = useAsyncData(async () => {
   const subscriptionId = invoice.value?.subscription?._id;
   if (!subscriptionId) return null;
 
-  const { data } = await client.subscription.subscriptionDetail(subscriptionId);
+  const { data } = await client.subscription.getSubscription(subscriptionId);
   return data;
 });
 </script>

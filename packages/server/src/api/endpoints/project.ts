@@ -66,6 +66,7 @@ export function projectEndpoints(server: FastifyInstance): void {
 
   server.post('/project', {
     schema: {
+      operationId: 'createProject',
       summary: 'Create a project',
       tags: ['project'],
       body: {
@@ -121,6 +122,7 @@ export function projectEndpoints(server: FastifyInstance): void {
 
   server.get('/project', {
     schema: {
+      operationId: 'listProjects',
       summary: 'Get all projects',
       tags: ['project'],
       response: {
@@ -144,6 +146,7 @@ export function projectEndpoints(server: FastifyInstance): void {
 
   server.get('/project/:projectId', {
     schema: {
+      operationId: 'getProject',
       summary: 'Get a project',
       tags: ['project'],
       params: {
@@ -167,7 +170,6 @@ export function projectEndpoints(server: FastifyInstance): void {
       const { projectId } = request.params as { projectId: string };
 
       if (projectId === 'token-project') {
-        console.log('token-project');
         const project = await getProjectFromRequest(request);
         return reply.send(project);
       }
@@ -183,6 +185,7 @@ export function projectEndpoints(server: FastifyInstance): void {
 
   server.patch('/project/:projectId', {
     schema: {
+      operationId: 'patchProject',
       summary: 'Patch a project',
       tags: ['project'],
       params: {
@@ -247,6 +250,7 @@ export function projectEndpoints(server: FastifyInstance): void {
 
   server.delete('/project/:projectId', {
     schema: {
+      operationId: 'deleteProject',
       summary: 'Delete a project',
       tags: ['project'],
       params: {

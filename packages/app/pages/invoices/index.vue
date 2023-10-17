@@ -43,7 +43,7 @@ async function selectInvoice(row: Invoice) {
 }
 
 const { data: invoices, pending } = useAsyncData(async () => {
-  const { data } = await client.invoice.invoiceList();
+  const { data } = await client.invoice.listInvoices();
   return data;
 });
 </script>

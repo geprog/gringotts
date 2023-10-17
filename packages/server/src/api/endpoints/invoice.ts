@@ -51,6 +51,7 @@ async function generateInvoicePdf(invoice: Invoice, project: Project) {
 export function invoiceEndpoints(server: FastifyInstance): void {
   server.get('/invoice', {
     schema: {
+      operationId: 'listInvoices',
       summary: 'List invoices',
       tags: ['invoice'],
       response: {
@@ -73,6 +74,7 @@ export function invoiceEndpoints(server: FastifyInstance): void {
 
   server.get('/invoice/:invoiceId', {
     schema: {
+      operationId: 'getInvoice',
       summary: 'Get an invoice',
       tags: ['invoice'],
       params: {
@@ -145,7 +147,8 @@ export function invoiceEndpoints(server: FastifyInstance): void {
     '/invoice/:invoiceId/generate-download-link',
     {
       schema: {
-        summary: 'Get a download link for an invoice',
+        operationId: 'generateInvoiceDownloadLink',
+        summary: 'Generate a download link for an invoice',
         tags: ['invoice'],
         params: {
           type: 'object',

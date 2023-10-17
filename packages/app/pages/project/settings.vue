@@ -1,5 +1,5 @@
 <template>
-  <div class="w-full flex flex-col gap-4">
+  <div class="w-full max-w-4xl mx-auto flex flex-col gap-4">
     <h1 class="text-xl">Project settings</h1>
 
     <UCard v-if="project">
@@ -70,7 +70,7 @@
 const client = await useGringottsClient();
 
 const { data: project } = useAsyncData(async () => {
-  const { data } = await client.project.projectDetail('token-project');
+  const { data } = await client.project.getProject('token-project');
   return data;
 });
 </script>

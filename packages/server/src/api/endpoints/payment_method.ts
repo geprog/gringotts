@@ -8,6 +8,7 @@ import { getPaymentProvider } from '~/payment_providers';
 export function paymentMethodEndpoints(server: FastifyInstance): void {
   server.post('/customer/:customerId/payment-method', {
     schema: {
+      operationId: 'createPaymentMethod',
       summary: 'Create payment and by accepting it add a new payment-method',
       tags: ['payment-method'],
       params: {
@@ -98,6 +99,7 @@ export function paymentMethodEndpoints(server: FastifyInstance): void {
 
   server.get('/customer/:customerId/payment-method/:paymentMethodId', {
     schema: {
+      operationId: 'getPaymentMethod',
       summary: 'Get a payment-method',
       tags: ['payment-method'],
       params: {
@@ -134,6 +136,7 @@ export function paymentMethodEndpoints(server: FastifyInstance): void {
 
   server.get('/customer/:customerId/payment-method', {
     schema: {
+      operationId: 'listPaymentMethods',
       summary: 'Get all payment-methods of a customer',
       tags: ['payment-method'],
       params: {
@@ -172,6 +175,7 @@ export function paymentMethodEndpoints(server: FastifyInstance): void {
 
   server.delete('/customer/:customerId/payment-method/:paymentMethodId', {
     schema: {
+      operationId: 'deletePaymentMethod',
       summary: 'Delete a payment method',
       tags: ['payment-method'],
       params: {

@@ -8,6 +8,7 @@ import { getActiveUntilDate, getPeriodFromAnchorDate } from '~/utils';
 export function subscriptionEndpoints(server: FastifyInstance): void {
   server.post('/subscription', {
     schema: {
+      operationId: 'createSubscription',
       summary: 'Create a subscription',
       tags: ['subscription'],
       body: {
@@ -94,6 +95,7 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
 
   server.get('/subscription', {
     schema: {
+      operationId: 'listSubscriptions',
       summary: 'List all subscriptions',
       tags: ['subscription'],
       response: {
@@ -127,6 +129,7 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
 
   server.patch('/subscription/:subscriptionId', {
     schema: {
+      operationId: 'patchSubscription',
       summary: 'Patch a subscription',
       tags: ['subscription'],
       params: {
@@ -194,6 +197,7 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
 
   server.get('/subscription/:subscriptionId', {
     schema: {
+      operationId: 'getSubscription',
       summary: 'Get a subscription',
       tags: ['subscription'],
       params: {
@@ -241,6 +245,7 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
 
   server.get('/subscription/:subscriptionId/invoice', {
     schema: {
+      operationId: 'listSubscriptionInvoices',
       summary: 'List all invoices of a subscription',
       tags: ['subscription', 'invoice'],
       params: {
