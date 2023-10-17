@@ -43,6 +43,21 @@ export async function init(): Promise<FastifyInstance> {
     logger,
   });
 
+  await server.register(cors, {
+    origin: '*',
+  });
+
+  await server.register(fastifyFormBody);
+
+  await server.register(fastifyHelmet, {
+    contentSecurityPolicy: {
+      directives: {
+        imgSrc: ["'self'", 'data:', 'https:'],
+        formAction: ['https:', 'http:'],
+      },
+    },
+  });
+
   server.addHook('onRequest', async (request, reply) => {
     if (!request.routerPath) {
       await reply.code(404).send({
@@ -96,21 +111,6 @@ export async function init(): Promise<FastifyInstance> {
     }
 
     request.project = project;
-  });
-
-  await server.register(fastifyFormBody);
-
-  await server.register(fastifyHelmet, {
-    contentSecurityPolicy: {
-      directives: {
-        imgSrc: ["'self'", 'data:', 'https:'],
-        formAction: ['https:', 'http:'],
-      },
-    },
-  });
-
-  await server.register(cors, {
-    origin: 'http://localhost:*',
   });
 
   await server.register(fastifyView, {
