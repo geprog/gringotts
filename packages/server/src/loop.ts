@@ -143,7 +143,7 @@ export async function chargeSubscriptions(): Promise<void> {
             subscription,
             project,
             status: 'draft',
-            date: billingPeriod.end, // TODO: or has this to be the current date when the invoice is issued?
+            date: new Date(),
           });
 
           const period = new SubscriptionPeriod(subscription, billingPeriod.start, billingPeriod.end);
@@ -159,7 +159,9 @@ export async function chargeSubscriptions(): Promise<void> {
             dayjs(subscription.nextPayment).add(1, 'day').toDate(),
             subscription.anchorDate,
           );
-          subscription.nextPayment = nextPeriod.end;
+
+          // charge the next time 1 day after the next period ended
+          subscription.nextPayment = dayjs(nextPeriod.end).add(1, 'day').toDate();
           await database.em.persistAndFlush([subscription]);
 
           log.debug(
