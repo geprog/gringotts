@@ -197,7 +197,7 @@ export function projectEndpoints(server: FastifyInstance): void {
         },
       },
       body: {
-        $ref: 'CustomerUpdateBody',
+        $ref: 'ProjectUpdateBody',
       },
       response: {
         200: {

@@ -4,11 +4,11 @@
 
     <UCard>
       <UForm :state="customer" class="flex flex-col gap-4">
-        <UFormGroup label="Name" name="name">
+        <UFormGroup label="Name" name="name" required>
           <UInput color="primary" variant="outline" v-model="customer.name" size="lg" required />
         </UFormGroup>
 
-        <UFormGroup label="Email" name="email">
+        <UFormGroup label="Email" name="email" required>
           <UInput color="primary" variant="outline" v-model="customer.email" size="lg" required />
         </UFormGroup>
 
@@ -47,9 +47,23 @@
     <UCard>
       <h2>Payment methods</h2>
 
+      <div class="flex">
+        <UButton label="Add payment method" icon="i-ion-plus" class="ml-auto" size="sm" @click="addNewPaymentMethod" />
+      </div>
+
       <UTable :loading="paymentMethodPending" :rows="paymentMethods || []" :columns="paymentMethodColumns">
         <template #active-data="{ row }">
-          <UIcon v-if="row._id === customer.activePaymentMethod?._id" name="i-mdi-check-decagram" />
+          <UIcon
+            v-if="row._id === customer.activePaymentMethod?._id"
+            name="i-mdi-check-decagram"
+            class="text-green-500"
+          />
+        </template>
+
+        <template #actions-data="{ row }">
+          <UDropdown :items="paymentMethodActions(row)">
+            <UButton color="gray" variant="ghost" icon="i-ion-ellipsis-horizontal" />
+          </UDropdown>
         </template>
       </UTable>
     </UCard>
@@ -85,14 +99,15 @@
 </template>
 
 <script lang="ts" setup>
-import { Subscription } from '@geprog/gringotts-client';
+import { ContentType } from '@geprog/gringotts-client';
+import { PaymentMethod, Subscription } from '@geprog/gringotts-client';
 
 const client = await useGringottsClient();
 const route = useRoute();
 const router = useRouter();
 const customerId = route.params.customerId as string;
 
-const { data: customer } = useAsyncData(async () => {
+const { data: customer, refresh: updateCustomer } = useAsyncData(async () => {
   const { data } = await client.customer.getCustomer(customerId);
   return data;
 });
@@ -114,11 +129,54 @@ const paymentMethodColumns = [
     key: 'active',
     label: 'Active',
   },
+  {
+    key: 'actions',
+    label: 'Actions',
+  },
 ];
-const { data: paymentMethods, pending: paymentMethodPending } = useAsyncData(async () => {
+const {
+  data: paymentMethods,
+  pending: paymentMethodPending,
+  refresh: updatePaymentMethods,
+} = useAsyncData(async () => {
   const { data } = await client.customer.listPaymentMethods(customerId);
   return data;
 });
+
+async function setActivePaymentMethod(paymentMethod: PaymentMethod) {
+  const _customer = customer.value;
+  if (!_customer) return;
+
+  await client.customer.patchCustomer(customerId, { activePaymentMethod: paymentMethod }, { type: ContentType.Json });
+
+  await updatePaymentMethods();
+  await updateCustomer();
+}
+
+async function deletePaymentMethod(paymentMethod: PaymentMethod) {
+  const _customer = customer.value;
+  if (!_customer) return;
+
+  await client.customer.deletePaymentMethod(customerId, paymentMethod._id!);
+
+  await updatePaymentMethods();
+  await updateCustomer();
+}
+
+const paymentMethodActions = (row: PaymentMethod) => [
+  [
+    {
+      label: 'Set active',
+      icon: 'i-mdi-check-decagram',
+      click: () => setActivePaymentMethod(row),
+    },
+    {
+      label: 'Delete',
+      icon: 'i-ion-trash',
+      click: () => deletePaymentMethod(row),
+    },
+  ],
+];
 
 const subscriptionColumns = [
   {
@@ -144,4 +202,14 @@ async function selectSubscription(row: Subscription) {
 }
 
 const currency = 'EUR'; // TODO: use variable currency for balance
+
+async function addNewPaymentMethod() {
+  const { data } = await client.customer.createPaymentMethod(customerId, {
+    redirectUrl: window.location.href,
+  });
+
+  if (data.checkoutUrl) {
+    window.location.href = data.checkoutUrl;
+  }
+}
 </script>

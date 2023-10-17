@@ -7,9 +7,11 @@ dotenv.config({
 
 const defaultPort = 3000;
 
+const port = process.env.PORT ? parseInt(process.env.PORT) : defaultPort;
+
 export const config = {
-  port: process.env.PORT ? parseInt(process.env.PORT) : defaultPort,
-  publicUrl: process.env.PUBLIC_URL || `http://localhost:${defaultPort}`,
+  port,
+  publicUrl: process.env.PUBLIC_URL || `http://localhost:${port}`,
   postgresUrl: process.env.POSTGRES_URL as string,
   adminToken: process.env.ADMIN_TOKEN as string,
   jwtSecret: process.env.JWT_SECRET as string,

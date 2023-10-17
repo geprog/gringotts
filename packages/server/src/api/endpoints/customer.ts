@@ -15,7 +15,6 @@ export function customerEndpoints(server: FastifyInstance): void {
   server.addSchema({
     $id: 'CustomerUpdateBody',
     type: 'object',
-    required: ['email', 'name', 'addressLine1', 'addressLine2', 'zipCode', 'city', 'country'],
     additionalProperties: false,
     properties: {
       email: { type: 'string' },
@@ -53,6 +52,14 @@ export function customerEndpoints(server: FastifyInstance): void {
       const project = await getProjectFromRequest(request);
 
       const body = request.body as CustomerUpdateBody;
+
+      if (!body.email) {
+        return reply.code(400).send({ error: 'Email is required' });
+      }
+
+      if (!body.name) {
+        return reply.code(400).send({ error: 'Name is required' });
+      }
 
       let customer = new Customer({
         email: body.email,
@@ -194,15 +201,16 @@ export function customerEndpoints(server: FastifyInstance): void {
         return reply.code(404).send({ error: 'Customer not found' });
       }
 
-      customer.email = body.email;
-      customer.name = body.name;
-      customer.addressLine1 = body.addressLine1;
-      customer.addressLine2 = body.addressLine2;
-      customer.city = body.city;
-      customer.country = body.country;
-      customer.zipCode = body.zipCode;
+      customer.email = body.email || customer.email;
+      customer.name = body.name || customer.name;
+      customer.addressLine1 = body.addressLine1 || customer.addressLine1;
+      customer.addressLine2 = body.addressLine2 || customer.addressLine2;
+      customer.city = body.city || customer.city;
+      customer.country = body.country || customer.country;
+      customer.zipCode = body.zipCode || customer.zipCode;
 
       if (body.activePaymentMethod?._id) {
+        console.log('activePaymentMethod', body.activePaymentMethod);
         const paymentMethod = await database.paymentMethods.findOne({
           _id: body.activePaymentMethod._id,
           customer,

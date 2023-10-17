@@ -9,6 +9,7 @@ export default defineNuxtConfig({
     public: {
       api: {
         baseUrl: 'http://localhost:7171',
+        // baseUrl: 'https://payment.bookyp.de',
       },
     },
   },
