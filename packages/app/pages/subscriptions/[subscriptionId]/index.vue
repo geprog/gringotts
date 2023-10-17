@@ -5,23 +5,27 @@
     <UCard>
       <UForm :state="subscription" class="flex flex-col gap-4">
         <UFormGroup v-if="subscription.customer" label="Customer" name="customer">
-          <UInput color="primary" variant="outline" v-model="subscription.customer.name" size="lg" read-only />
+          <UInput color="primary" variant="outline" v-model="subscription.customer.name" size="lg" disabled />
         </UFormGroup>
 
         <UFormGroup label="Anchor date" name="anchorDate">
-          <UInput color="primary" variant="outline" v-model="subscription.anchorDate" size="lg" read-only />
+          <UInput color="primary" variant="outline" v-model="subscription.anchorDate" size="lg" disabled />
         </UFormGroup>
 
         <UFormGroup label="Active until" name="activeUntil">
-          <UInput color="primary" variant="outline" v-model="subscription.activeUntil" size="lg" read-only />
+          <UInput color="primary" variant="outline" v-model="subscription.activeUntil" size="lg" disabled />
         </UFormGroup>
 
         <UFormGroup label="Last payment" name="lastPayment">
-          <UInput color="primary" variant="outline" v-model="subscription.lastPayment" size="lg" read-only />
+          <UInput color="primary" variant="outline" v-model="subscription.lastPayment" size="lg" disabled />
         </UFormGroup>
 
         <UFormGroup label="Status" name="status">
-          <UInput color="primary" variant="outline" v-model="subscription.status" size="lg" read-only />
+          <UInput color="primary" variant="outline" v-model="subscription.status" size="lg" disabled />
+        </UFormGroup>
+
+        <UFormGroup v-if="subscription.error" label="Error" name="error">
+          <UTextarea color="primary" variant="outline" v-model="subscription.error" size="lg" disabled />
         </UFormGroup>
 
         <!-- <UButton label="Save" type="submit" class="mx-auto" /> -->
@@ -31,7 +35,7 @@
     <UCard>
       <h2>Invoices</h2>
 
-      <UTable :loading="invoicesPending" :rows="invoices || []" :columns="invoiceColumns">
+      <UTable :loading="invoicesPending" :rows="invoices || []" :columns="invoiceColumns" @select="selectInvoice">
         <template #date-data="{ row }">
           <span v-if="row.date">{{ formatDate(row.date) }}</span>
         </template>
@@ -61,8 +65,11 @@
 </template>
 
 <script lang="ts" setup>
+import { Invoice } from '@geprog/gringotts-client';
+
 const client = await useGringottsClient();
 const route = useRoute();
+const router = useRouter();
 const subscriptionId = route.params.subscriptionId as string;
 
 const { data: subscription } = useAsyncData(async () => {
@@ -74,10 +81,12 @@ const subscriptionChangeColumns = [
   {
     key: 'start',
     label: 'Start',
+    sortable: true,
   },
   {
     key: 'end',
     label: 'End',
+    sortable: true,
   },
   {
     key: 'pricePerUnit',
@@ -97,18 +106,25 @@ async function downloadInvoice(_id: string) {
   window.open(data.url, '_blank');
 }
 
+async function selectInvoice(row: Invoice) {
+  await router.push(`/invoices/${row._id}`);
+}
+
 const invoiceColumns = [
   {
-    key: 'sequentialId',
-    label: 'ID',
-  },
-  {
-    key: 'status',
-    label: 'Status',
+    key: 'number',
+    label: 'Number',
+    sortable: true,
   },
   {
     key: 'date',
     label: 'Date',
+    sortable: true,
+  },
+  {
+    key: 'status',
+    label: 'Status',
+    sortable: true,
   },
   {
     key: 'totalAmount',

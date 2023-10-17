@@ -49,6 +49,28 @@ async function generateInvoicePdf(invoice: Invoice, project: Project) {
 }
 
 export function invoiceEndpoints(server: FastifyInstance): void {
+  server.get('/invoice', {
+    schema: {
+      summary: 'List invoices',
+      tags: ['invoice'],
+      response: {
+        200: {
+          type: 'array',
+          items: {
+            $ref: 'Invoice',
+          },
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      const project = await getProjectFromRequest(request);
+
+      const invoices = await database.invoices.find({ project }, { populate: ['items'] });
+
+      await reply.send(invoices.map((i) => i.toJSON()));
+    },
+  });
+
   server.get('/invoice/:invoiceId', {
     schema: {
       summary: 'Get an invoice',

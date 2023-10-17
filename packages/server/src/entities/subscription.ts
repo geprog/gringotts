@@ -57,7 +57,9 @@ export class Subscription {
   toJSON(): Subscription {
     return {
       ...this,
-      changes: this.changes.getItems().map((change) => ({ ...change, subscription: undefined })),
+      changes: this.changes?.isInitialized()
+        ? this.changes.getItems().map((change) => ({ ...change, subscription: undefined }))
+        : [],
     };
   }
 }

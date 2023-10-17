@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { FastifyInstance } from 'fastify';
 
+import { getProjectFromRequest } from '~/api/helpers';
 import { database } from '~/database';
 import { Project, ProjectInvoiceData } from '~/entities';
 
@@ -165,6 +166,12 @@ export function projectEndpoints(server: FastifyInstance): void {
     handler: async (request, reply) => {
       const { projectId } = request.params as { projectId: string };
 
+      if (projectId === 'token-project') {
+        console.log('token-project');
+        const project = await getProjectFromRequest(request);
+        return reply.send(project);
+      }
+
       const project = await database.projects.findOne({ _id: projectId });
       if (!project) {
         return reply.code(404).send({ error: 'Project not found' });
@@ -265,7 +272,7 @@ export function projectEndpoints(server: FastifyInstance): void {
     handler: async (request, reply) => {
       const { projectId } = request.params as { projectId: string };
 
-      const project = await database.projects.findOne({ _id: projectId });
+      const project = await database.projects.findOne({ _id: projectId }, { populate: ['invoiceData'] });
       if (!project) {
         return reply.code(404).send({ error: 'Project not found' });
       }

@@ -1,8 +1,68 @@
 <template>
-  <div class="w-full">
+  <div class="w-full flex flex-col gap-4">
     <h1 class="text-xl">Project settings</h1>
 
-    <pre>{{ project }}</pre>
+    <UCard v-if="project">
+      <UForm :state="project" class="flex flex-col gap-4">
+        <UFormGroup label="Name" name="name">
+          <UInput color="primary" variant="outline" v-model="project.name" size="lg" disabled />
+        </UFormGroup>
+
+        <UFormGroup label="Payment provider" name="paymentProvider">
+          <UInput color="primary" variant="outline" v-model="project.paymentProvider" size="lg" disabled />
+        </UFormGroup>
+
+        <UFormGroup label="Webhook url" name="webhookUrl">
+          <UInput color="primary" variant="outline" v-model="project.webhookUrl" size="lg" disabled />
+        </UFormGroup>
+
+        <UFormGroup label="Currency" name="currency">
+          <UInput color="primary" variant="outline" v-model="project.currency" size="lg" disabled />
+        </UFormGroup>
+
+        <UFormGroup label="Vat rate" name="vatRate">
+          <UInput color="primary" variant="outline" v-model="project.vatRate" size="lg" disabled />
+        </UFormGroup>
+
+        <!-- <UButton label="Save" type="submit" class="mx-auto" /> -->
+      </UForm>
+    </UCard>
+
+    <UCard v-if="project && project.invoiceData">
+      <h2>Invoice data</h2>
+
+      <UForm :state="project" class="flex flex-col gap-4">
+        <UFormGroup label="Name" name="name">
+          <UInput color="primary" variant="outline" v-model="project.invoiceData.name" size="lg" disabled />
+        </UFormGroup>
+
+        <UFormGroup label="Email" name="email">
+          <UInput color="primary" variant="outline" v-model="project.invoiceData.email" size="lg" disabled />
+        </UFormGroup>
+
+        <UFormGroup label="Address line 1" name="addressLine1">
+          <UInput color="primary" variant="outline" v-model="project.invoiceData.addressLine1" size="lg" disabled />
+        </UFormGroup>
+
+        <UFormGroup label="Address line 2" name="addressLine2">
+          <UInput color="primary" variant="outline" v-model="project.invoiceData.addressLine2" size="lg" disabled />
+        </UFormGroup>
+
+        <UFormGroup label="City" name="city">
+          <UInput color="primary" variant="outline" v-model="project.invoiceData.city" size="lg" disabled />
+        </UFormGroup>
+
+        <UFormGroup label="Zip" name="zipCode">
+          <UInput color="primary" variant="outline" v-model="project.invoiceData.zipCode" size="lg" disabled />
+        </UFormGroup>
+
+        <UFormGroup label="Country" name="country">
+          <UInput color="primary" variant="outline" v-model="project.invoiceData.country" size="lg" disabled />
+        </UFormGroup>
+
+        <!-- <UButton label="Save" type="submit" class="mx-auto" /> -->
+      </UForm>
+    </UCard>
   </div>
 </template>
 
@@ -10,8 +70,7 @@
 const client = await useGringottsClient();
 
 const { data: project } = useAsyncData(async () => {
-  const projectId = ''; // TODO: get project id
-  const { data } = await client.project.projectDetail(projectId);
+  const { data } = await client.project.projectDetail('token-project');
   return data;
 });
 </script>

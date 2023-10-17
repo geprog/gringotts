@@ -94,7 +94,7 @@ export async function init(): Promise<FastifyInstance> {
       return reply;
     }
 
-    if (request.routerPath?.startsWith('/project')) {
+    if (request.routerPath?.startsWith('/project') && request.url !== '/project/token-project') {
       if (apiToken === config.adminToken) {
         request.admin = true;
         return;

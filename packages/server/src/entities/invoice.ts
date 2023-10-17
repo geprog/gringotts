@@ -75,6 +75,7 @@ export class Invoice {
   toJSON(): Invoice {
     return {
       ...this,
+      subscription: this.subscription.toJSON(),
       vatAmount: this.vatAmount,
       amount: this.amount,
       totalAmount: this.totalAmount,
