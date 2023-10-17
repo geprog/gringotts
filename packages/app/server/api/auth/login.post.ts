@@ -11,20 +11,21 @@ function useGringottsClient(token: string) {
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event);
-  const projectToken = body?.projectToken;
+  const projectToken = body?.token;
+
   if (!projectToken) {
-    return createError({
+    throw createError({
       statusCode: 400,
       message: 'project-token is required',
     });
   }
 
   const client = useGringottsClient(projectToken);
-
   try {
     await client.customer.customerList();
   } catch (error) {
-    return createError({
+    console.log(error);
+    throw createError({
       statusCode: 401,
       message: 'project-token is invalid',
     });
