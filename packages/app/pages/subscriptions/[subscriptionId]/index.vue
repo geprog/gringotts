@@ -45,6 +45,24 @@
             <UIcon name="i-mdi-download" />
           </UButton>
         </template>
+
+        <template #status-data="{ row }">
+          <div class="flex items-center gap-2">
+            <div
+              class="h-2 w-2 rounded-full"
+              :class="{
+                'bg-green-500': row.status === 'paid',
+                'bg-yellow-500': row.status === 'pending',
+                'bg-red-500': row.status === 'failed',
+              }"
+            />
+            <span>{{ row.status }}</span>
+          </div>
+        </template>
+
+        <template #totalAmount-data="{ row }">
+          <span>{{ formatCurrency(row.totalAmount, row.currency) }}</span>
+        </template>
       </UTable>
     </UCard>
 

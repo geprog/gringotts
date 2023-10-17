@@ -16,6 +16,7 @@ const customerColumns = [
   {
     key: '_id',
     label: 'ID',
+    sortable: true,
   },
   {
     key: 'name',

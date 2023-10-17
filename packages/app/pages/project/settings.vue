@@ -9,7 +9,14 @@
         </UFormGroup>
 
         <UFormGroup label="Payment provider" name="paymentProvider">
-          <UInput color="primary" variant="outline" v-model="project.paymentProvider" size="lg" disabled />
+          <USelectMenu
+            color="primary"
+            variant="outline"
+            v-model="project.paymentProvider"
+            :options="['mollie', 'mocked']"
+            size="lg"
+            disabled
+          />
         </UFormGroup>
 
         <UFormGroup label="Webhook url" name="webhookUrl">
@@ -17,11 +24,22 @@
         </UFormGroup>
 
         <UFormGroup label="Currency" name="currency">
-          <UInput color="primary" variant="outline" v-model="project.currency" size="lg" disabled />
+          <USelectMenu
+            color="primary"
+            variant="outline"
+            v-model="project.currency"
+            :options="['EUR', 'USD']"
+            size="lg"
+            disabled
+          />
         </UFormGroup>
 
         <UFormGroup label="Vat rate" name="vatRate">
-          <UInput color="primary" variant="outline" v-model="project.vatRate" size="lg" disabled />
+          <UInput color="primary" variant="outline" v-model="project.vatRate" size="lg" disabled>
+            <template #trailing>
+              <span class="text-gray-500 dark:text-gray-400 text-xs">%</span>
+            </template>
+          </UInput>
         </UFormGroup>
 
         <!-- <UButton label="Save" type="submit" class="mx-auto" /> -->

@@ -25,27 +25,57 @@
         </UFormGroup>
 
         <UFormGroup label="Status" name="status">
-          <UInput color="primary" variant="outline" v-model="invoice.status" size="lg" disabled />
+          <USelectMenu
+            color="primary"
+            variant="outline"
+            v-model="invoice.status"
+            :options="['draft', 'pending', 'paid', 'failed']"
+            size="lg"
+            disabled
+          />
         </UFormGroup>
 
         <UFormGroup label="Amount" name="amount">
-          <UInput color="primary" variant="outline" v-model="invoice.amount" size="lg" disabled />
+          <UInput color="primary" variant="outline" v-model="invoice.amount" size="lg" disabled>
+            <template #trailing>
+              <span class="text-gray-500 dark:text-gray-400 text-xs">{{ invoice.currency }}</span>
+            </template>
+          </UInput>
         </UFormGroup>
 
-        <UFormGroup label="Vat rate" name="vatRate">
-          <UInput color="primary" variant="outline" v-model="invoice.vatRate" size="lg" disabled />
+        <UFormGroup label="Vat rate " name="vatRate">
+          <UInput color="primary" variant="outline" v-model="invoice.vatRate" size="lg" disabled>
+            <template #trailing>
+              <span class="text-gray-500 dark:text-gray-400 text-xs">%</span>
+            </template>
+          </UInput>
         </UFormGroup>
 
         <UFormGroup label="Vat amount" name="vatAmount">
-          <UInput color="primary" variant="outline" v-model="invoice.vatAmount" size="lg" disabled />
+          <UInput color="primary" variant="outline" v-model="invoice.vatAmount" size="lg" disabled>
+            <template #trailing>
+              <span class="text-gray-500 dark:text-gray-400 text-xs">{{ invoice.currency }}</span>
+            </template>
+          </UInput>
         </UFormGroup>
 
         <UFormGroup label="Currency" name="currency">
-          <UInput color="primary" variant="outline" v-model="invoice.currency" size="lg" disabled />
+          <USelectMenu
+            color="primary"
+            variant="outline"
+            v-model="invoice.currency"
+            :options="['EUR', 'USD']"
+            size="lg"
+            disabled
+          />
         </UFormGroup>
 
         <UFormGroup label="Total amount" name="totalAmount">
-          <UInput color="primary" variant="outline" v-model="invoice.totalAmount" size="lg" disabled />
+          <UInput color="primary" variant="outline" v-model="invoice.totalAmount" size="lg" disabled>
+            <template #trailing>
+              <span class="text-gray-500 dark:text-gray-400 text-xs">{{ invoice.currency }}</span>
+            </template>
+          </UInput>
         </UFormGroup>
 
         <template v-if="subscription && subscription.customer">
