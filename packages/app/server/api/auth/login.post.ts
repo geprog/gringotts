@@ -2,7 +2,7 @@ import { gringottsClient } from '@geprog/gringotts-client';
 import fetch from 'cross-fetch';
 
 function useGringottsClient(token: string) {
-  const { baseUrl } = useRuntimeConfig().api;
+  const { baseUrl } = useRuntimeConfig().public.api;
   return gringottsClient(baseUrl, {
     customFetch: fetch,
     token,

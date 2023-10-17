@@ -3,6 +3,8 @@ import type { H3Event, SessionConfig } from 'h3';
 type User = {
   token: string;
   backendUrl: string;
+  name: string;
+  avatarUrl?: string;
 };
 
 const sessionConfig: SessionConfig = useRuntimeConfig().auth || {};
@@ -22,8 +24,10 @@ export async function getUser(event: H3Event): Promise<User | undefined> {
     return undefined;
   }
 
-  const { baseUrl } = useRuntimeConfig().api;
+  const { baseUrl } = useRuntimeConfig().public.api;
   return {
+    name: 'Gringotts',
+    avatarUrl: undefined,
     token: session.data.token,
     backendUrl: baseUrl,
   };

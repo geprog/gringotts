@@ -16,26 +16,27 @@
       <div class="px-6 py-2">
         <h2 class="px-2 mb-2 text-lg font-semibold tracking-tight">Workspace</h2>
         <div class="space-y-1">
-          <MenuItem to="/" title="Customers" icon="i-ion-ios-chatboxes" />
-          <MenuItem to="/customers" title="Subscriptions" icon="i-ion-ios-settings" />
-          <MenuItem to="/customers" title="Settings" icon="i-ion-ios-settings" />
+          <MenuItem to="/customers" title="Customers" icon="i-ion-ios-chatboxes" />
+          <MenuItem to="/subscriptions" title="Subscriptions" icon="i-ion-ios-settings" />
+          <MenuItem to="/project/settings" title="Settings" icon="i-ion-ios-settings" />
           <MenuItem to="https://geprog.com" title="Geprog" icon="i-ion-android-favorite-outline" target="_blank" />
         </div>
       </div>
-      <!-- <div class="py-2">
-        <h2 class="relative px-8 text-lg font-semibold tracking-tight">Repos</h2>
+
+      <div class="py-2">
+        <h2 class="relative px-8 text-lg font-semibold tracking-tight">Projects</h2>
         <div dir="ltr" class="relative overflow-hidden px-4">
           <div data-radix-scroll-area-viewport="" class="h-full w-full rounded-[inherit]">
             <div class="p-2 space-y-1">
-              <div v-for="repo in repos" :key="repo.id">
-                <MenuItem :to="`/repos/${repo.id}/chat`" :title="repo.name" icon="i-ion-ios-repeat" />
+              <div v-for="project in projects || []" :key="project._id">
+                <MenuItem to="/" :title="project.name" icon="i-ion-ios-repeat" />
               </div>
 
-              <MenuItem to="/repos/add" title="Add repo" icon="i-heroicons-plus" />
+              <!-- <MenuItem to="/repos/add" title="Add repo" icon="i-heroicons-plus" /> -->
             </div>
           </div>
         </div>
-      </div> -->
+      </div>
     </div>
 
     <div v-if="user" class="absolute inset-x-0 mx-6 bottom-8">
@@ -70,9 +71,9 @@
 <script setup lang="ts">
 const { user, logout } = await useAuth();
 
-const { data: repos } = await useFetch('/api/repos');
-
 const colorMode = useColorMode();
+const client = await useGringottsClient();
+
 const isDark = computed({
   get() {
     return colorMode.value === 'dark';
@@ -96,4 +97,9 @@ const links = computed(() => [
     click: logout,
   },
 ]);
+
+const { data: projects } = await useAsyncData(async () => {
+  const { data } = await client.project.projectList();
+  return data;
+});
 </script>

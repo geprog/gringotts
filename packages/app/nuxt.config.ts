@@ -2,12 +2,14 @@
 export default defineNuxtConfig({
   modules: ['nuxt-icon', '@nuxthq/ui'],
   runtimeConfig: {
-    api: {
-      baseUrl: 'http://localhost:7171',
-    },
     auth: {
       name: 'nuxt-session',
       password: 'my-super-secret-password-is-minimum-32-characters-long',
+    },
+    public: {
+      api: {
+        baseUrl: 'http://localhost:7171',
+      },
     },
   },
   ignore: ['data/**/*'],

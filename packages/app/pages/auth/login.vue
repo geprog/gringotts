@@ -14,7 +14,6 @@
         type="password"
         placeholder="Your Gringotts project token"
         size="lg"
-        @update:model-value="updateSearch"
       />
 
       <button
