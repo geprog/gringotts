@@ -141,6 +141,39 @@ export function projectEndpoints(server: FastifyInstance): void {
     },
   });
 
+  server.get('/project/:projectId', {
+    schema: {
+      summary: 'Get a project',
+      tags: ['project'],
+      params: {
+        type: 'object',
+        required: ['projectId'],
+        additionalProperties: false,
+        properties: {
+          projectId: { type: 'string' },
+        },
+      },
+      response: {
+        200: {
+          $ref: 'Project',
+        },
+        404: {
+          $ref: 'ErrorResponse',
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      const { projectId } = request.params as { projectId: string };
+
+      const project = await database.projects.findOne({ _id: projectId });
+      if (!project) {
+        return reply.code(404).send({ error: 'Project not found' });
+      }
+
+      await reply.send(project);
+    },
+  });
+
   server.patch('/project/:projectId', {
     schema: {
       summary: 'Patch a project',

@@ -1,5 +1,5 @@
 <template>
-  <div v-if="customer" class="w-full flex flex-col gap-4 max-w-xl mx-auto">
+  <div v-if="customer" class="w-full flex flex-col gap-4 max-w-4xl mx-auto">
     <h1 class="text-xl">Customer: {{ customer.name }}</h1>
 
     <UCard>
@@ -53,11 +53,12 @@
     <UCard>
       <h2>Subscriptions</h2>
 
-      <UTable :loading="subscriptionPending" :rows="subscriptions || []" :columns="subscriptionColumns">
-        <template #action-data="{ row }">
-          <nuxt-link :to="`/customers/${customerId}/subscriptions/${row._id}`">{{ row.activeUntil }}</nuxt-link>
-        </template>
-      </UTable>
+      <UTable
+        :loading="subscriptionPending"
+        :rows="subscriptions || []"
+        :columns="subscriptionColumns"
+        @select="selectSubscription"
+      />
     </UCard>
   </div>
 </template>
@@ -67,6 +68,7 @@ import { Subscription } from '@geprog/gringotts-client';
 
 const client = await useGringottsClient();
 const route = useRoute();
+const router = useRouter();
 const customerId = route.params.customerId as string;
 
 const { data: customer } = useAsyncData(async () => {
@@ -75,6 +77,10 @@ const { data: customer } = useAsyncData(async () => {
 });
 
 const paymentMethodColumns = [
+  {
+    key: '_id',
+    label: 'ID',
+  },
   {
     key: 'name',
     label: 'Name',
@@ -95,19 +101,24 @@ const { data: paymentMethods, pending: paymentMethodPending } = useAsyncData(asy
 
 const subscriptionColumns = [
   {
-    key: 'activeUntil',
-    label: 'Active until',
+    key: '_id',
+    label: 'ID',
   },
   {
-    key: 'anchorDate',
-    label: 'Anchor date',
+    key: 'status',
+    label: 'Status',
   },
   {
-    key: 'active',
-    label: 'Active',
+    key: 'lastPayment',
+    label: 'Last payment',
   },
 ];
 const { data: subscriptions, pending: subscriptionPending } = useAsyncData(async () => {
-  return [] as Subscription[];
+  const { data } = await client.customer.subscriptionDetail(customerId);
+  return data;
 });
+
+async function selectSubscription(row: Subscription) {
+  await router.push(`/subscriptions/${row._id}`);
+}
 </script>

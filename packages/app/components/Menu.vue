@@ -23,7 +23,7 @@
         </div>
       </div>
 
-      <div class="py-2">
+      <!-- <div class="py-2">
         <h2 class="relative px-8 text-lg font-semibold tracking-tight">Projects</h2>
         <div dir="ltr" class="relative overflow-hidden px-4">
           <div data-radix-scroll-area-viewport="" class="h-full w-full rounded-[inherit]">
@@ -32,11 +32,11 @@
                 <MenuItem to="/" :title="project.name" icon="i-ion-ios-repeat" />
               </div>
 
-              <!-- <MenuItem to="/repos/add" title="Add repo" icon="i-heroicons-plus" /> -->
+              <MenuItem to="/project/add" title="Add repo" icon="i-heroicons-plus" />
             </div>
           </div>
         </div>
-      </div>
+      </div> -->
     </div>
 
     <div v-if="user" class="absolute inset-x-0 mx-6 bottom-8">
@@ -98,8 +98,8 @@ const links = computed(() => [
   },
 ]);
 
-const { data: projects } = await useAsyncData(async () => {
-  const { data } = await client.project.projectList();
-  return data;
-});
+// const { data: projects } = await useAsyncData(async () => {
+//   const { data } = await client.project.projectList();
+//   return data;
+// });
 </script>

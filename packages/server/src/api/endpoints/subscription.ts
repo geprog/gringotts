@@ -92,6 +92,39 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
     },
   });
 
+  server.get('/subscription', {
+    schema: {
+      summary: 'List all subscriptions',
+      tags: ['subscription'],
+      response: {
+        200: {
+          type: 'array',
+          items: {
+            $ref: 'Subscription',
+          },
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      const project = await getProjectFromRequest(request);
+
+      const subscriptions = await database.subscriptions.find({ project }, { populate: ['customer', 'changes'] });
+
+      const _subscriptions = subscriptions.map((subscription) => {
+        const activeUntil = subscription.lastPayment
+          ? getActiveUntilDate(subscription.lastPayment, subscription.anchorDate)
+          : undefined;
+
+        return {
+          ...subscription.toJSON(),
+          activeUntil,
+        };
+      });
+
+      await reply.send(_subscriptions);
+    },
+  });
+
   server.patch('/subscription/:subscriptionId', {
     schema: {
       summary: 'Patch a subscription',

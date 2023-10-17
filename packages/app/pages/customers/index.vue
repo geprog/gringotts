@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="w-full">
     <h1 class="text-xl">Customers</h1>
 
     <UTable :loading="pending" :rows="customers || []" :columns="customerColumns" @select="selectCustomer" />
@@ -13,6 +13,10 @@ const router = useRouter();
 const client = await useGringottsClient();
 
 const customerColumns = [
+  {
+    key: '_id',
+    label: 'ID',
+  },
   {
     key: 'name',
     label: 'Name',

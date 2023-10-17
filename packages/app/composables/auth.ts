@@ -1,5 +1,7 @@
-export async function useAuth() {
-  const { data: user, refresh: updateSession } = await useFetch('/api/user');
+import { defineStore } from 'pinia';
+
+export const useAuth = defineStore('auth', () => {
+  const { data: user, refresh: updateSession } = useFetch('/api/user');
 
   const isAuthenticated = computed(() => !!user.value?.token);
 
@@ -11,11 +13,23 @@ export async function useAuth() {
     window.location.href = '/api/auth/logout';
   }
 
+  const loaded = ref(false);
+  async function load() {
+    if (loaded.value) {
+      return;
+    }
+
+    await updateSession();
+
+    loaded.value = true;
+  }
+
   return {
+    load,
     isAuthenticated,
     user,
     login,
     logout,
     updateSession,
   };
-}
+});

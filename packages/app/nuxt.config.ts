@@ -1,6 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  modules: ['nuxt-icon', '@nuxthq/ui'],
+  modules: ['nuxt-icon', '@nuxthq/ui', '@pinia/nuxt'],
   runtimeConfig: {
     auth: {
       name: 'nuxt-session',

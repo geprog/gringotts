@@ -4,6 +4,7 @@ import { getProjectFromRequest } from '~/api/helpers';
 import { database } from '~/database';
 import { Customer, Project } from '~/entities';
 import { getPaymentProvider } from '~/payment_providers';
+import { getActiveUntilDate } from '~/utils';
 
 export function customerEndpoints(server: FastifyInstance): void {
   type CustomerUpdateBody = Pick<
@@ -269,6 +270,57 @@ export function customerEndpoints(server: FastifyInstance): void {
       await database.em.removeAndFlush(customer);
 
       await reply.send({ ok: true });
+    },
+  });
+
+  server.get('/customer/:customerId/subscription', {
+    schema: {
+      summary: 'List all subscriptions of a customer',
+      tags: ['subscription', 'customer'],
+      params: {
+        type: 'object',
+        required: ['customerId'],
+        additionalProperties: false,
+        properties: {
+          customerId: { type: 'string' },
+        },
+      },
+      response: {
+        200: {
+          type: 'array',
+          items: {
+            $ref: 'Subscription',
+          },
+        },
+        404: {
+          $ref: 'ErrorResponse',
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      const project = await getProjectFromRequest(request);
+
+      const { customerId } = request.params as { customerId: string };
+
+      const customer = await database.customers.findOne({ _id: customerId, project });
+      if (!customer) {
+        return reply.code(404).send({ error: 'Customer not found' });
+      }
+
+      const subscriptions = await database.subscriptions.find({ project, customer }, { populate: ['changes'] });
+
+      const _subscriptions = subscriptions.map((subscription) => {
+        const activeUntil = subscription.lastPayment
+          ? getActiveUntilDate(subscription.lastPayment, subscription.anchorDate)
+          : undefined;
+
+        return {
+          ...subscription.toJSON(),
+          activeUntil,
+        };
+      });
+
+      await reply.send(_subscriptions);
     },
   });
 }

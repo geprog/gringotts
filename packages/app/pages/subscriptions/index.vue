@@ -1,13 +1,12 @@
 <template>
-  <div>
+  <div class="w-full">
     <h1 class="text-xl">Subscriptions</h1>
 
-    <UTable
-      :loading="pending"
-      :rows="subscriptions || []"
-      :columns="subscriptionColumns"
-      @select="selectSubscription"
-    />
+    <UTable :loading="pending" :rows="subscriptions || []" :columns="subscriptionColumns" @select="selectSubscription">
+      <template #customer-data="{ row }">
+        <span>{{ row.customer.name }}</span>
+      </template>
+    </UTable>
   </div>
 </template>
 
@@ -19,14 +18,16 @@ const client = await useGringottsClient();
 
 const subscriptionColumns = [
   {
-    key: 'name',
-    label: 'Name',
-    sortable: true,
+    key: '_id',
+    label: 'ID',
   },
   {
-    key: 'email',
-    label: 'Email',
-    sortable: true,
+    key: 'status',
+    label: 'Status',
+  },
+  {
+    key: 'customer',
+    label: 'Customer',
   },
 ];
 
@@ -35,7 +36,7 @@ async function selectSubscription(row: Subscription) {
 }
 
 const { data: subscriptions, pending } = useAsyncData(async () => {
-  const { data } = await client.subscription.subscriptionList(); // TODO
+  const { data } = await client.subscription.subscriptionList();
   return data;
 });
 </script>

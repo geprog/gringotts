@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex flex-col min-h-screen w-screen lg:flex-row bg-gradient-to-tl from-stone-200 to-stone-100 dark:from-neutral-950 dark:to-neutral-900"
+    class="flex flex-col min-h-screen w-full lg:flex-row bg-gradient-to-tl from-stone-200 to-stone-100 dark:from-neutral-950 dark:to-neutral-900"
   >
     <Menu />
 
