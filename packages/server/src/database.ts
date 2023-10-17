@@ -22,6 +22,7 @@ import {
 import { addExitHook } from '~/lib/exit_hooks';
 import { MigrationAlterColumnLogo } from '~/migrations/alter_column_logo_to_text';
 import { MigrationReplaceStartAndEndWithDate } from '~/migrations/replace_start_and_end_with_date_invoice';
+import { MigrationSetNextPaymentForSubscriptions } from '~/migrations/set_next_payment_for_subscriptions';
 
 export class Database {
   orm!: MikroORM;
@@ -57,6 +58,10 @@ export class Database {
               name: 'MigrationAlterColumnLogo',
               class: MigrationAlterColumnLogo,
             },
+            {
+              name: 'MigrationSetNextPaymentForSubscriptions',
+              class: MigrationSetNextPaymentForSubscriptions,
+            },
           ],
           disableForeignKeys: false,
         },
@@ -72,6 +77,7 @@ export class Database {
     await this.orm.connect();
 
     await this.orm.getMigrator().up();
+
     const generator = this.orm.getSchemaGenerator();
     await generator.updateSchema();
 
