@@ -18,9 +18,14 @@ export function getPeriodFromAnchorDate(someDateInPeriod: Date, anchorDate: Date
   return { start: start.toDate(), end: end.toDate() };
 }
 
-export function getNextPeriodFromAnchorDate(someDateInPeriod: Date, anchorDate: Date): { start: Date; end: Date } {
+export function getNextPeriod(someDateInPeriod: Date, anchorDate: Date): { start: Date; end: Date } {
   const { end } = getPeriodFromAnchorDate(someDateInPeriod, anchorDate);
   return getPeriodFromAnchorDate(dayjs(end).add(1, 'day').toDate(), anchorDate);
+}
+
+export function getPreviousPeriod(nextPayment: Date, anchorDate: Date): { start: Date; end: Date } {
+  const { start } = getPeriodFromAnchorDate(nextPayment, anchorDate);
+  return getPeriodFromAnchorDate(dayjs(start).subtract(1, 'day').toDate(), anchorDate);
 }
 
 export function getActiveUntilDate(oldActiveUntil: Date, anchorDate: Date): Date {
@@ -28,13 +33,7 @@ export function getActiveUntilDate(oldActiveUntil: Date, anchorDate: Date): Date
   return end;
 }
 
-export function getBillingPeriodFromNextPaymentDate(nextPayment: Date, anchorDate: Date): { start: Date; end: Date } {
-  const { start } = getPeriodFromAnchorDate(nextPayment, anchorDate);
-  return getPeriodFromAnchorDate(dayjs(start).subtract(1, 'hour').toDate(), anchorDate);
-}
-
-// charge the next time 1 hour after the next period ended
 export function getNextPaymentDate(currentNextPayment: Date, anchorDate: Date): Date {
-  const { end } = getPeriodFromAnchorDate(currentNextPayment, anchorDate);
-  return dayjs(end).add(1, 'hour').toDate();
+  const { start } = getNextPeriod(currentNextPayment, anchorDate);
+  return start;
 }

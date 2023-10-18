@@ -3,7 +3,7 @@ import { Customer, Invoice, InvoiceItem, Payment, SubscriptionPeriod } from '~/e
 import dayjs from '~/lib/dayjs';
 import { log } from '~/log';
 import { getPaymentProvider } from '~/payment_providers';
-import { getBillingPeriodFromNextPaymentDate, getNextPaymentDate } from '~/utils';
+import { getNextPaymentDate, getPreviousPeriod } from '~/utils';
 
 const pageSize = 10;
 
@@ -118,7 +118,7 @@ export async function chargeSubscriptions(): Promise<void> {
 
         const { project, customer } = subscription;
 
-        const billingPeriod = getBillingPeriodFromNextPaymentDate(subscription.nextPayment, subscription.anchorDate);
+        const billingPeriod = getPreviousPeriod(subscription.nextPayment, subscription.anchorDate);
 
         try {
           const existingInvoices = await database.invoices.find({
