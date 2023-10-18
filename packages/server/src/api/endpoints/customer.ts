@@ -210,7 +210,6 @@ export function customerEndpoints(server: FastifyInstance): void {
       customer.zipCode = body.zipCode || customer.zipCode;
 
       if (body.activePaymentMethod?._id) {
-        console.log('activePaymentMethod', body.activePaymentMethod);
         const paymentMethod = await database.paymentMethods.findOne({
           _id: body.activePaymentMethod._id,
           customer,

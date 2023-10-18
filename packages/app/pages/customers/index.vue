@@ -2,7 +2,11 @@
   <div class="w-full">
     <h1 class="text-xl">Customers</h1>
 
-    <UTable :loading="pending" :rows="customers || []" :columns="customerColumns" @select="selectCustomer" />
+    <UTable :loading="pending" :rows="customers || []" :columns="customerColumns" @select="selectCustomer">
+      <template #country-data="{ row }">
+        <span>{{ row.country }}, {{ row.city }}</span>
+      </template>
+    </UTable>
   </div>
 </template>
 
@@ -16,7 +20,6 @@ const customerColumns = [
   {
     key: '_id',
     label: 'ID',
-    sortable: true,
   },
   {
     key: 'name',
@@ -26,6 +29,11 @@ const customerColumns = [
   {
     key: 'email',
     label: 'Email',
+    sortable: true,
+  },
+  {
+    key: 'country',
+    label: 'Address',
     sortable: true,
   },
 ];

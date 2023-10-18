@@ -20,6 +20,10 @@
           <UInput color="primary" variant="outline" v-model="subscription.lastPayment" size="lg" disabled />
         </UFormGroup>
 
+        <UFormGroup label="Next payment" name="nextPayment">
+          <UInput color="primary" variant="outline" v-model="subscription.nextPayment" size="lg" disabled />
+        </UFormGroup>
+
         <UFormGroup label="Status" name="status">
           <USelectMenu
             color="primary"

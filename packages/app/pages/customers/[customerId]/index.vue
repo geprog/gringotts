@@ -120,10 +120,12 @@ const paymentMethodColumns = [
   {
     key: 'name',
     label: 'Name',
+    sortable: true,
   },
   {
     key: 'type',
     label: 'Type',
+    sortable: true,
   },
   {
     key: 'active',
@@ -186,10 +188,12 @@ const subscriptionColumns = [
   {
     key: 'status',
     label: 'Status',
+    sortable: true,
   },
   {
-    key: 'lastPayment',
-    label: 'Last payment',
+    key: 'nextPayment',
+    label: 'Next payment',
+    sortable: true,
   },
 ];
 const { data: subscriptions, pending: subscriptionPending } = useAsyncData(async () => {

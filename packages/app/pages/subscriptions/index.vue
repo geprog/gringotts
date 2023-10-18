@@ -19,6 +19,10 @@
           <span>{{ row.status }}</span>
         </div>
       </template>
+
+      <template #nextPayment-data="{ row }">
+        <span>{{ formatDate(row.nextPayment) }}</span>
+      </template>
     </UTable>
   </div>
 </template>
@@ -33,7 +37,6 @@ const subscriptionColumns = [
   {
     key: '_id',
     label: 'ID',
-    sortable: true,
   },
   {
     key: 'status',
@@ -43,6 +46,11 @@ const subscriptionColumns = [
   {
     key: 'customer',
     label: 'Customer',
+    sortable: true,
+  },
+  {
+    key: 'nextPayment',
+    label: 'Next payment',
     sortable: true,
   },
 ];
