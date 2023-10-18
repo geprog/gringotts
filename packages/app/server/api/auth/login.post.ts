@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
 
   const client = useGringottsClient(projectToken);
   try {
-    await client.customer.customerList();
+    await client.customer.listCustomers();
   } catch (error) {
     console.log(error);
     throw createError({
