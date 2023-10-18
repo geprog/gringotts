@@ -27,3 +27,14 @@ export function getActiveUntilDate(oldActiveUntil: Date, anchorDate: Date): Date
   const { end } = getPeriodFromAnchorDate(oldActiveUntil, anchorDate);
   return end;
 }
+
+export function getBillingPeriodFromNextPaymentDate(nextPayment: Date, anchorDate: Date): { start: Date; end: Date } {
+  const { start } = getPeriodFromAnchorDate(nextPayment, anchorDate);
+  return getPeriodFromAnchorDate(dayjs(start).subtract(1, 'hour').toDate(), anchorDate);
+}
+
+// charge the next time 1 hour after the next period ended
+export function getNextPaymentDate(currentNextPayment: Date, anchorDate: Date): Date {
+  const { end } = getPeriodFromAnchorDate(currentNextPayment, anchorDate);
+  return dayjs(end).add(1, 'hour').toDate();
+}

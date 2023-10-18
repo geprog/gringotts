@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import dayjs from '~/lib/dayjs';
 
-import { getActiveUntilDate, getPeriodFromAnchorDate } from './utils';
+import { getActiveUntilDate, getBillingPeriodFromNextPaymentDate, getPeriodFromAnchorDate } from './utils';
 
 describe('utils', () => {
   const getActiveUntilDateTests = [
@@ -67,4 +67,13 @@ describe('utils', () => {
       expect(dayjs(randomDate).isBetween(start, end)).toBe(true);
     },
   );
+
+  it('should get the billing period from a next-payment date', () => {
+    const a = getPeriodFromAnchorDate(new Date('2022-02-16'), new Date('2022-01-15'));
+    console.log(a);
+    console.log(dayjs(a.start).subtract(1, 'hour').toDate());
+    const { start, end } = getBillingPeriodFromNextPaymentDate(new Date('2022-02-16'), new Date('2022-01-15'));
+    expect(dayjs(start).format('DD.MM.YYYY')).toStrictEqual('15.01.2022');
+    expect(dayjs(end).format('DD.MM.YYYY')).toStrictEqual('15.02.2022');
+  });
 });
