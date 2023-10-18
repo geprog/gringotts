@@ -1,6 +1,6 @@
 import { Customer, Invoice, InvoiceItem, PaymentMethod, Project, ProjectInvoiceData, Subscription } from '~/entities';
 import dayjs from '~/lib/dayjs';
-import { getPeriodFromAnchorDate } from '~/utils';
+import { getNextPaymentDate, getPeriodFromAnchorDate } from '~/utils';
 
 // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function getFixtures() {
@@ -46,7 +46,7 @@ export function getFixtures() {
     anchorDate,
     customer,
     project,
-    nextPayment: getPeriodFromAnchorDate(anchorDate, anchorDate).end,
+    nextPayment: getNextPaymentDate(anchorDate, anchorDate),
   });
   subscription.changePlan({ pricePerUnit: 12.34, units: 12 });
   subscription.changePlan({ pricePerUnit: 12.34, units: 15, changeDate: dayjs('2020-01-15').toDate() });

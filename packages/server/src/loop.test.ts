@@ -91,8 +91,8 @@ describe('Loop', () => {
     expect(db.invoices.size).toBe(1);
     const invoice = Array.from(db.invoices.values()).at(0);
     expect(invoice).toBeDefined();
-    expect(invoice?.status).toStrictEqual('pending');
     expect(invoice?.items.length).toStrictEqual(3);
+    expect(invoice?.status).toStrictEqual('pending');
     const itemAmounts = [(14 / 31) * 12 * 12.34, (5 / 31) * 15 * 12.34, (12 / 31) * 15 * 5.43];
     expect(invoice?.amount).toStrictEqual(itemAmounts.reduce((sum, amount) => sum + Invoice.roundPrice(amount), 0));
 
@@ -103,9 +103,7 @@ describe('Loop', () => {
     expect(payment.amount).toStrictEqual(invoice?.totalAmount);
 
     const updatedSubscription = Array.from(db.subscriptions.values()).at(-1);
-    expect(updatedSubscription?.nextPayment).toStrictEqual(
-      nextPayment.add(1, 'month').add(1, 'day').endOf('day').toDate(),
-    );
+    expect(updatedSubscription?.nextPayment).toStrictEqual(nextPayment.add(1, 'month').startOf('day').toDate());
   });
 
   it('should apply customer balance to invoice', async () => {
