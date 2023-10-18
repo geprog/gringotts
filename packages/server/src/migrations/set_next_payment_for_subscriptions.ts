@@ -64,6 +64,8 @@ export class MigrationSetNextPaymentForSubscriptions extends Migration {
 
     await this.ctx?.schema.alterTable('subscription', (table) => {
       table.dropColumn('next_payment');
+      table.dropColumn('status');
+      table.dropColumn('error');
     });
   }
 }

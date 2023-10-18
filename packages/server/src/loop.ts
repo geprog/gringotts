@@ -3,7 +3,7 @@ import { Customer, Invoice, InvoiceItem, Payment, SubscriptionPeriod } from '~/e
 import dayjs from '~/lib/dayjs';
 import { log } from '~/log';
 import { getPaymentProvider } from '~/payment_providers';
-import { getPeriodFromAnchorDate } from '~/utils';
+import { getNextPaymentDate, getPreviousPeriod } from '~/utils';
 
 const pageSize = 10;
 
@@ -118,7 +118,7 @@ export async function chargeSubscriptions(): Promise<void> {
 
         const { project, customer } = subscription;
 
-        const billingPeriod = getPeriodFromAnchorDate(subscription.nextPayment, subscription.anchorDate);
+        const billingPeriod = getPreviousPeriod(subscription.nextPayment, subscription.anchorDate);
 
         try {
           const existingInvoices = await database.invoices.find({
@@ -143,7 +143,7 @@ export async function chargeSubscriptions(): Promise<void> {
             subscription,
             project,
             status: 'draft',
-            date: billingPeriod.end, // TODO: or has this to be the current date when the invoice is issued?
+            date: new Date(),
           });
 
           const period = new SubscriptionPeriod(subscription, billingPeriod.start, billingPeriod.end);
@@ -155,11 +155,7 @@ export async function chargeSubscriptions(): Promise<void> {
 
           await chargeCustomerInvoice({ billingPeriod, customer, invoice });
 
-          const nextPeriod = getPeriodFromAnchorDate(
-            dayjs(subscription.nextPayment).add(1, 'day').toDate(),
-            subscription.anchorDate,
-          );
-          subscription.nextPayment = nextPeriod.end;
+          subscription.nextPayment = getNextPaymentDate(subscription.nextPayment, subscription.anchorDate);
           await database.em.persistAndFlush([subscription]);
 
           log.debug(
