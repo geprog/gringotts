@@ -1,6 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  modules: ['nuxt-icon', '@nuxthq/ui', '@pinia/nuxt'],
+  modules: ['nuxt-icon', '@nuxt/ui', '@pinia/nuxt'],
   runtimeConfig: {
     auth: {
       name: 'nuxt-session',
@@ -8,8 +8,7 @@ export default defineNuxtConfig({
     },
     public: {
       api: {
-        baseUrl: 'http://localhost:7171',
-        // baseUrl: 'https://payment.bookyp.de',
+        baseUrl: 'http://localhost:7171/api',
       },
     },
   },
@@ -25,5 +24,8 @@ export default defineNuxtConfig({
         { rel: 'icon', type: 'image/svg+xml', href: '/logo.svg' },
       ],
     },
+  },
+  nitro: {
+    preset: 'node',
   },
 });

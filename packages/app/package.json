@@ -10,9 +10,9 @@
     "typecheck": "vue-tsc --noEmit"
   },
   "devDependencies": {
-    "@iconify/json": "^2.2.106",
+    "@iconify/json": "^2.2.130",
     "@nuxt/devtools": "latest",
-    "@nuxthq/ui": "^2.7.0",
+    "@nuxt/ui": "^2.9.0",
     "@nuxtjs/tailwindcss": "^6.8.0",
     "@types/node": "^18.16.19",
     "nuxt": "^3.7.4",
@@ -23,8 +23,8 @@
   "dependencies": {
     "@geprog/gringotts-client": "workspace:*",
     "@pinia/nuxt": "^0.5.1",
-    "cross-fetch": "^3.1.5",
-    "dayjs": "^1.11.4",
+    "cross-fetch": "^4.0.0",
+    "dayjs": "^1.11.10",
     "pinia": "^2.1.7"
   }
 }

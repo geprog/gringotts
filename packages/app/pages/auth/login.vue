@@ -31,12 +31,14 @@ definePageMeta({ layout: 'auth' });
 
 const token = ref('');
 const router = useRouter();
+const auth = useAuth();
 
 async function login() {
   await $fetch('/api/auth/login', {
     method: 'POST',
     body: { token: token.value },
   });
+  await auth.updateSession();
   await router.push('/');
 }
 </script>

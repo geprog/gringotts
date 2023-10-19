@@ -3,5 +3,3 @@
     <h1 class="text-xl">Welcome to Gringotts</h1>
   </div>
 </template>
-
-<script setup lang="ts"></script>
