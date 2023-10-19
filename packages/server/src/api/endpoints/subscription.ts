@@ -5,7 +5,8 @@ import { database } from '~/database';
 import { Subscription } from '~/entities';
 import { getActiveUntilDate, getNextPaymentDate } from '~/utils';
 
-export function subscriptionEndpoints(server: FastifyInstance): void {
+// eslint-disable-next-line @typescript-eslint/require-await
+export async function subscriptionEndpoints(server: FastifyInstance): Promise<void> {
   server.post('/subscription', {
     schema: {
       operationId: 'createSubscription',

@@ -5,7 +5,8 @@ import { database } from '~/database';
 import { Payment } from '~/entities';
 import { getPaymentProvider } from '~/payment_providers';
 
-export function paymentMethodEndpoints(server: FastifyInstance): void {
+// eslint-disable-next-line @typescript-eslint/require-await
+export async function paymentMethodEndpoints(server: FastifyInstance): Promise<void> {
   server.post('/customer/:customerId/payment-method', {
     schema: {
       operationId: 'createPaymentMethod',

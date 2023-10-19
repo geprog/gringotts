@@ -17,7 +17,8 @@ async function generateApiToken(length = 32) {
   );
 }
 
-export function projectEndpoints(server: FastifyInstance): void {
+// eslint-disable-next-line @typescript-eslint/require-await
+export async function projectEndpoints(server: FastifyInstance): Promise<void> {
   type ProjectInvoiceDataUpdateBody = Pick<
     ProjectInvoiceData,
     'addressLine1' | 'addressLine2' | 'city' | 'country' | 'email' | 'name' | 'zipCode' | 'logo'

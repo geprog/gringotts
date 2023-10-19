@@ -6,7 +6,8 @@ import { Customer, Project } from '~/entities';
 import { getPaymentProvider } from '~/payment_providers';
 import { getActiveUntilDate } from '~/utils';
 
-export function customerEndpoints(server: FastifyInstance): void {
+// eslint-disable-next-line @typescript-eslint/require-await
+export async function customerEndpoints(server: FastifyInstance): Promise<void> {
   type CustomerUpdateBody = Pick<
     Customer,
     'addressLine1' | 'addressLine2' | 'city' | 'country' | 'email' | 'name' | 'zipCode' | 'activePaymentMethod'

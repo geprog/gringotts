@@ -1,6 +1,5 @@
 import cors from '@fastify/cors';
 import fastifyFormBody from '@fastify/formbody';
-import fastifyHelmet from '@fastify/helmet';
 import fastifyStatic from '@fastify/static';
 import fastifySwagger from '@fastify/swagger';
 import fastifyView from '@fastify/view';
@@ -10,20 +9,17 @@ import path from 'path';
 import pino from 'pino';
 
 import { config } from '~/config';
-import { database } from '~/database';
 import { Invoice } from '~/entities';
 import { Currency } from '~/entities/payment';
 import { formatDate } from '~/lib/dayjs';
 import { log } from '~/log';
 
-import { customerEndpoints } from './endpoints/customer';
-import { invoiceEndpoints } from './endpoints/invoice';
-import { mockedCheckoutEndpoints } from './endpoints/mocked_checkout';
-import { paymentEndpoints } from './endpoints/payment';
-import { paymentMethodEndpoints } from './endpoints/payment_method';
-import { projectEndpoints } from './endpoints/project';
-import { subscriptionEndpoints } from './endpoints/subscription';
+import { listener } from '../../../app/.output/server/index.mjs';
+import { apiEndpoints } from './endpoints';
 import { addSchemas } from './schema';
+
+// routing priority:
+// api routes -> static files -> nuxt -> 404
 
 export async function init(): Promise<FastifyInstance> {
   const logger =
@@ -49,82 +45,44 @@ export async function init(): Promise<FastifyInstance> {
 
   await server.register(fastifyFormBody);
 
-  await server.register(fastifyHelmet, {
-    contentSecurityPolicy: {
-      directives: {
-        imgSrc: ["'self'", 'data:', 'https:'],
-        formAction: ['https:', 'http:'],
-      },
-    },
-  });
-
-  server.addHook('onRequest', async (request, reply) => {
-    if (!request.routerPath) {
-      await reply.code(404).send({
-        error: 'Not found',
-      });
-      return reply;
-    }
-
-    // skip requests to our docs
-    if (request.routerPath?.startsWith('/docs')) {
-      return;
-    }
-
-    if (request.routerPath?.startsWith('/static')) {
-      return;
-    }
-
-    if (request.routerPath === '/invoice/download') {
-      return;
-    }
-
-    if (request.routerPath === '/payment/webhook/:projectId') {
-      return;
-    }
-
-    if (request.routerPath === '/mocked/checkout/:paymentId') {
-      return;
-    }
-
-    const apiToken =
-      (request.headers?.authorization || '').replace('Bearer ', '') || (request.query as { token: string }).token;
-    if (!apiToken) {
-      await reply.code(401).send({ error: 'Missing api token' });
-      return reply;
-    }
-
-    if (request.routerPath?.startsWith('/project') && request.url !== '/project/token-project') {
-      if (apiToken === config.adminToken) {
-        request.admin = true;
-        return;
-      }
-
-      await reply.code(401).send({ error: 'You need to have admin access' });
-      return reply;
-    }
-
-    const project = await database.projects.findOne({ apiToken }, { populate: ['invoiceData'] });
-    if (!project) {
-      await reply.code(401).send({ error: 'Invalid api token' });
-      return reply;
-    }
-
-    request.project = project;
-  });
-
-  await server.register(fastifyView, {
-    engine: {
-      handlebars: Handlebars,
-    },
-  });
-
   await server.register(fastifyStatic, {
     root:
       process.env.NODE_ENV === 'production'
         ? path.join(__dirname, 'public')
         : path.join(__dirname, '..', '..', 'public'),
     prefix: '/static',
+  });
+
+  // TODO: cleanup
+  await server.register(fastifyStatic, {
+    root: path.join(__dirname, '..', '..', '..', 'app', '.output', 'public'),
+    prefix: '/',
+    decorateReply: false,
+  });
+
+  server.setNotFoundHandler(async (request, reply) => {
+    console.log('404', request.url);
+    if (
+      request.url?.startsWith('/api') &&
+      request.url !== '/api/auth/login' &&
+      request.url !== '/api/auth/logout' &&
+      request.url !== '/api/user'
+    ) {
+      await reply.code(404).send({
+        error: 'Not found',
+      });
+      return;
+    }
+
+    // forward to nuxt
+    console.log('nuxt', request.url);
+    await listener(request.raw, reply.raw);
+  });
+
+  await server.register(fastifyView, {
+    engine: {
+      handlebars: Handlebars,
+    },
   });
 
   Handlebars.registerHelper('formatDate', (date: Date, format: string) => formatDate(date, format));
@@ -166,13 +124,7 @@ export async function init(): Promise<FastifyInstance> {
 
   addSchemas(server);
 
-  subscriptionEndpoints(server);
-  customerEndpoints(server);
-  invoiceEndpoints(server);
-  paymentEndpoints(server);
-  projectEndpoints(server);
-  paymentMethodEndpoints(server);
-  mockedCheckoutEndpoints(server);
+  await server.register(apiEndpoints, { prefix: '/api' });
 
   return server;
 }

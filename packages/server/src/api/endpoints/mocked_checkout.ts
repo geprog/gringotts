@@ -3,7 +3,8 @@ import path from 'path';
 
 import { database } from '~/database';
 
-export function mockedCheckoutEndpoints(server: FastifyInstance): void {
+// eslint-disable-next-line @typescript-eslint/require-await
+export async function mockedCheckoutEndpoints(server: FastifyInstance): Promise<void> {
   server.get(
     '/mocked/checkout/:paymentId',
     {

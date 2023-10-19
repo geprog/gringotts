@@ -48,7 +48,8 @@ async function generateInvoicePdf(invoice: Invoice, project: Project) {
   return invoice;
 }
 
-export function invoiceEndpoints(server: FastifyInstance): void {
+// eslint-disable-next-line @typescript-eslint/require-await
+export async function invoiceEndpoints(server: FastifyInstance): Promise<void> {
   server.get('/invoice', {
     schema: {
       operationId: 'listInvoices',
