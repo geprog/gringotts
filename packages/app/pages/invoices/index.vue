@@ -12,17 +12,10 @@
       </template>
 
       <template #status-data="{ row }">
-        <div class="flex items-center gap-2">
-          <div
-            class="h-2 w-2 rounded-full"
-            :class="{
-              'bg-green-500': row.status === 'paid',
-              'bg-yellow-500': row.status === 'pending',
-              'bg-red-500': row.status === 'failed',
-            }"
-          />
-          <span>{{ row.status }}</span>
-        </div>
+        <UBadge v-if="row.status === 'draft'" size="xs" label="Draft" color="primary" variant="subtle" />
+        <UBadge v-else-if="row.status === 'pending'" size="xs" label="Pending" color="amber" variant="subtle" />
+        <UBadge v-else-if="row.status === 'paid'" size="xs" label="Paid" color="emerald" variant="subtle" />
+        <UBadge v-else-if="row.status === 'failed'" size="xs" label="Failed" color="rose" variant="subtle" />
       </template>
     </UTable>
   </div>

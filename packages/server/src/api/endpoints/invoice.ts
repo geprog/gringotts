@@ -21,7 +21,7 @@ async function generateInvoicePdf(invoice: Invoice, project: Project) {
   }
 
   const formData = new NodeFormData() as unknown as FormData;
-  formData.append('url', `${config.publicUrl}/invoice/${invoice._id}/html?token=${project.apiToken}`);
+  formData.append('url', `${config.publicUrl}/api/invoice/${invoice._id}/html?token=${project.apiToken}`);
 
   const response = await fetch(`${config.gotenbergUrl}/forms/chromium/convert/url`, {
     method: 'POST',
@@ -199,7 +199,7 @@ export async function invoiceEndpoints(server: FastifyInstance): Promise<void> {
 
       const downloadToken = jwt.sign({ invoiceId }, config.jwtSecret, { expiresIn: '1d' });
       return reply.send({
-        url: `${config.publicUrl}/invoice/download?token=${downloadToken}`,
+        url: `${config.publicUrl}/api/invoice/download?token=${downloadToken}`,
       });
     },
   );

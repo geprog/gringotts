@@ -9,19 +9,19 @@
         </UFormGroup>
 
         <UFormGroup label="Anchor date" name="anchorDate">
-          <UInput color="primary" variant="outline" v-model="subscription.anchorDate" size="lg" disabled />
+          <DatePicker v-model="subscription.anchorDate" disabled />
         </UFormGroup>
 
         <UFormGroup label="Active until" name="activeUntil">
-          <UInput color="primary" variant="outline" v-model="subscription.activeUntil" size="lg" disabled />
+          <DatePicker v-model="subscription.activeUntil" disabled />
         </UFormGroup>
 
         <UFormGroup label="Last payment" name="lastPayment">
-          <UInput color="primary" variant="outline" v-model="subscription.lastPayment" size="lg" disabled />
+          <DatePicker v-model="subscription.lastPayment" disabled />
         </UFormGroup>
 
         <UFormGroup label="Next payment" name="nextPayment">
-          <UInput color="primary" variant="outline" v-model="subscription.nextPayment" size="lg" disabled />
+          <DatePicker v-model="subscription.nextPayment" disabled />
         </UFormGroup>
 
         <UFormGroup label="Status" name="status">
@@ -51,24 +51,11 @@
           <span v-if="row.date">{{ formatDate(row.date) }}</span>
         </template>
 
-        <template #action-data="{ row }">
-          <UButton v-if="!preparingInvoice" @click="downloadInvoice(row._id)">
-            <UIcon name="i-mdi-download" />
-          </UButton>
-        </template>
-
         <template #status-data="{ row }">
-          <div class="flex items-center gap-2">
-            <div
-              class="h-2 w-2 rounded-full"
-              :class="{
-                'bg-green-500': row.status === 'paid',
-                'bg-yellow-500': row.status === 'pending',
-                'bg-red-500': row.status === 'failed',
-              }"
-            />
-            <span>{{ row.status }}</span>
-          </div>
+          <UBadge v-if="row.status === 'draft'" size="xs" label="Draft" color="primary" variant="subtle" />
+          <UBadge v-else-if="row.status === 'pending'" size="xs" label="Pending" color="amber" variant="subtle" />
+          <UBadge v-else-if="row.status === 'paid'" size="xs" label="Paid" color="emerald" variant="subtle" />
+          <UBadge v-else-if="row.status === 'failed'" size="xs" label="Failed" color="rose" variant="subtle" />
         </template>
 
         <template #totalAmount-data="{ row }">
@@ -127,14 +114,6 @@ const subscriptionChangeColumns = [
   },
 ];
 
-const preparingInvoice = ref(false);
-async function downloadInvoice(_id: string) {
-  preparingInvoice.value = true;
-  const { data } = await client.invoice.generateInvoiceDownloadLink(_id);
-  preparingInvoice.value = false;
-  window.open(data.url, '_blank');
-}
-
 async function selectInvoice(row: Invoice) {
   await router.push(`/invoices/${row._id}`);
 }
@@ -158,9 +137,6 @@ const invoiceColumns = [
   {
     key: 'totalAmount',
     label: 'Total',
-  },
-  {
-    key: 'action',
   },
 ];
 const { data: invoices, pending: invoicesPending } = useAsyncData(async () => {

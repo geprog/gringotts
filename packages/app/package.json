@@ -23,8 +23,10 @@
   "dependencies": {
     "@geprog/gringotts-client": "workspace:*",
     "@pinia/nuxt": "^0.5.1",
+    "@popperjs/core": "^2.11.8",
     "cross-fetch": "^4.0.0",
     "dayjs": "^1.11.10",
-    "pinia": "^2.1.7"
+    "pinia": "^2.1.7",
+    "v-calendar": "^3.1.2"
   }
 }

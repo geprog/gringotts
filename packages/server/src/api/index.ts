@@ -99,6 +99,7 @@ export async function init(): Promise<FastifyInstance> {
         version: '0.1.0',
       },
       host: `localhost:${config.port}`,
+      basePath: '/api',
       schemes: ['http', 'https'],
       consumes: ['application/json'],
       produces: ['application/json'],

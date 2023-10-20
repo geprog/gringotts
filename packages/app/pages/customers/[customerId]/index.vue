@@ -5,35 +5,43 @@
     <UCard>
       <UForm :state="customer" class="flex flex-col gap-4">
         <UFormGroup label="Name" name="name" required>
-          <UInput color="primary" variant="outline" v-model="customer.name" size="lg" required />
+          <UInput color="primary" variant="outline" v-model="customer.name" size="lg" required :disabled="disabled" />
         </UFormGroup>
 
         <UFormGroup label="Email" name="email" required>
-          <UInput color="primary" variant="outline" v-model="customer.email" size="lg" required />
+          <UInput color="primary" variant="outline" v-model="customer.email" size="lg" required :disabled="disabled" />
         </UFormGroup>
 
         <UFormGroup label="Address line 1" name="addressLine1">
-          <UInput color="primary" variant="outline" v-model="customer.addressLine1" size="lg" />
+          <UInput color="primary" variant="outline" v-model="customer.addressLine1" size="lg" :disabled="disabled" />
         </UFormGroup>
 
         <UFormGroup label="Address line 2" name="addressLine2">
-          <UInput color="primary" variant="outline" v-model="customer.addressLine2" size="lg" />
+          <UInput color="primary" variant="outline" v-model="customer.addressLine2" size="lg" :disabled="disabled" />
         </UFormGroup>
 
         <UFormGroup label="City" name="city">
-          <UInput color="primary" variant="outline" v-model="customer.city" size="lg" />
+          <UInput color="primary" variant="outline" v-model="customer.city" size="lg" :disabled="disabled" />
         </UFormGroup>
 
         <UFormGroup label="Zip code" name="zipCode">
-          <UInput color="primary" variant="outline" v-model="customer.zipCode" size="lg" />
+          <UInput color="primary" variant="outline" v-model="customer.zipCode" size="lg" :disabled="disabled" />
         </UFormGroup>
 
         <UFormGroup label="Country" name="country">
-          <UInput color="primary" variant="outline" v-model="customer.country" size="lg" />
+          <UInput color="primary" variant="outline" v-model="customer.country" size="lg" :disabled="disabled" />
         </UFormGroup>
 
         <UFormGroup label="Balance" name="balance" required>
-          <UInput color="primary" variant="outline" type="number" v-model="customer.balance" size="lg" required>
+          <UInput
+            color="primary"
+            variant="outline"
+            type="number"
+            v-model="customer.balance"
+            size="lg"
+            required
+            :disabled="disabled"
+          >
             <template #trailing>
               <span class="text-gray-500 dark:text-gray-400 text-xs">{{ currency }}</span>
             </template>
@@ -58,6 +66,7 @@
             name="i-mdi-check-decagram"
             class="text-green-500"
           />
+          <div v-else />
         </template>
 
         <template #actions-data="{ row }">
@@ -78,16 +87,8 @@
         @select="selectSubscription"
       >
         <template #status-data="{ row }">
-          <div class="flex items-center gap-2">
-            <div
-              class="h-2 w-2 rounded-full"
-              :class="{
-                'bg-green-500': row.status === 'active',
-                'bg-red-500': row.status === 'error',
-              }"
-            />
-            <span>{{ row.status }}</span>
-          </div>
+          <UBadge v-if="row.status === 'active'" size="xs" label="Active" color="emerald" variant="subtle" />
+          <UBadge v-else-if="row.status === 'error'" size="xs" label="Error" color="rose" variant="subtle" />
         </template>
 
         <template #lastPayment-data="{ row }">
@@ -106,6 +107,8 @@ const client = await useGringottsClient();
 const route = useRoute();
 const router = useRouter();
 const customerId = route.params.customerId as string;
+
+const disabled = true;
 
 const { data: customer, refresh: updateCustomer } = useAsyncData(async () => {
   const { data } = await client.customer.getCustomer(customerId);
