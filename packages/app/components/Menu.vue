@@ -20,13 +20,8 @@
           <MenuItem to="/subscriptions" title="Subscriptions" icon="i-ion-md-refresh" />
           <MenuItem to="/invoices" title="Invoices" icon="i-ion-document-text" />
           <MenuItem to="/project/settings" title="Settings" icon="i-ion-settings-sharp" />
-          <MenuItem
-            to="https://geprog.com"
-            title="Geprog"
-            icon="i-ion-android-favorite-outline"
-            class="mt-auto"
-            target="_blank"
-          />
+          <MenuItem to="/docs" title="Api docs" icon="i-ion-document-text-sharp" />
+          <MenuItem to="https://geprog.com" title="Geprog" icon="i-ion-android-favorite-outline" />
         </div>
       </div>
 
