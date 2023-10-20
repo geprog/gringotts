@@ -103,7 +103,9 @@ describe('Loop', () => {
     expect(payment.amount).toStrictEqual(invoice?.totalAmount);
 
     const updatedSubscription = Array.from(db.subscriptions.values()).at(-1);
-    expect(updatedSubscription?.nextPayment).toStrictEqual(nextPayment.add(1, 'month').startOf('day').toDate());
+    expect(updatedSubscription?.nextPayment).toStrictEqual(
+      nextPayment.add(1, 'month').startOf('day').add(1, 'hour').toDate(),
+    );
   });
 
   it('should apply customer balance to invoice', async () => {

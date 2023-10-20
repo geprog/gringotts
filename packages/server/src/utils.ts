@@ -35,5 +35,5 @@ export function getActiveUntilDate(oldActiveUntil: Date, anchorDate: Date): Date
 
 export function getNextPaymentDate(currentNextPayment: Date, anchorDate: Date): Date {
   const { start } = getNextPeriod(currentNextPayment, anchorDate);
-  return start;
+  return dayjs(start).add(1, 'hour').toDate(); // add short buffer
 }

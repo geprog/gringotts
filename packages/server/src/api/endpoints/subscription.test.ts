@@ -78,8 +78,8 @@ describe('Subscription endpoints', () => {
     expect(persistAndFlush).toHaveBeenCalledTimes(1);
     const [[, subscription]] = persistAndFlush.mock.lastCall as [[Customer, Subscription]];
     expect(responseData._id).toStrictEqual(subscription._id);
-    expect(dayjs(responseData.nextPayment).endOf('day').toISOString()).toStrictEqual(
-      dayjs(date).add(1, 'month').endOf('day').toISOString(),
+    expect(new Date(responseData.nextPayment)).toStrictEqual(
+      dayjs(date).add(1, 'month').startOf('day').add(1, 'hour').toDate(),
     );
   });
 
