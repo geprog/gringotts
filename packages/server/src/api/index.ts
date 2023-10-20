@@ -5,6 +5,7 @@ import fastifySwagger from '@fastify/swagger';
 import fastifyView from '@fastify/view';
 import fastify, { FastifyInstance } from 'fastify';
 import Handlebars from 'handlebars';
+import { createProxyServer } from 'httpxy';
 import path from 'path';
 import pino from 'pino';
 
@@ -14,7 +15,7 @@ import { Currency } from '~/entities/payment';
 import { formatDate } from '~/lib/dayjs';
 import { log } from '~/log';
 
-import { listener } from '../../../app/.output/server/index.mjs';
+// import { listener } from '../../../app/.output/server/index.mjs';
 import { apiEndpoints } from './endpoints';
 import { addSchemas } from './schema';
 
@@ -60,8 +61,9 @@ export async function init(): Promise<FastifyInstance> {
     decorateReply: false,
   });
 
+  const proxy = createProxyServer({});
+
   server.setNotFoundHandler(async (request, reply) => {
-    console.log('404', request.url);
     if (
       request.url?.startsWith('/api') &&
       request.url !== '/api/auth/login' &&
@@ -75,8 +77,16 @@ export async function init(): Promise<FastifyInstance> {
     }
 
     // forward to nuxt
-    console.log('nuxt', request.url);
-    await listener(request.raw, reply.raw);
+    // await listener(request.raw, reply.raw);
+    try {
+      await proxy.web(request.raw, reply.raw, {
+        target: 'http://localhost:3000/',
+      });
+    } catch (error) {
+      await reply.code(500).send({
+        error: 'Proxy error' + (error as Error).toString(),
+      });
+    }
   });
 
   await server.register(fastifyView, {

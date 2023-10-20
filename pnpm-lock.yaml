@@ -150,6 +150,9 @@ importers:
       handlebars:
         specifier: ^4.7.7
         version: 4.7.7
+      httpxy:
+        specifier: ^0.1.5
+        version: 0.1.5
       jsonwebtoken:
         specifier: ^9.0.0
         version: 9.0.0
@@ -7118,7 +7121,6 @@ packages:
 
   /httpxy@0.1.5:
     resolution: {integrity: sha512-hqLDO+rfststuyEUTWObQK6zHEEmZ/kaIP2/zclGGZn6X8h/ESTWg+WKecQ/e5k4nPswjzZD+q2VqZIbr15CoQ==}
-    dev: true
 
   /human-signals@2.1.0:
     resolution: {integrity: sha512-B4FFZ6q/T2jhhksgkbEW3HBvWIfDW85snkQgawt07S7J5QXTk6BkNV+0yAeZrM5QpMAdYlocGoljn0sJ/WQkFw==}
