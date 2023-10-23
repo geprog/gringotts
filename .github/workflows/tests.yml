@@ -69,8 +69,8 @@ jobs:
         working-directory: packages/client/
         run: pnpm build
 
-    # install app again to respect shamefully hoisted dependencies
-    - name: Install app
+      # install app again to respect shamefully hoisted dependencies
+      - name: Install app
         working-directory: packages/app/
         run: pnpm install
 
