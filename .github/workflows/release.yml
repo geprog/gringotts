@@ -37,10 +37,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-
 
-      - uses: pnpm/action-setup@v2.0.1
+      - uses: pnpm/action-setup@v2
         with:
           version: 8
-          run_install: true
 
       - name: Build
         run: pnpm run -r build
@@ -100,10 +99,9 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-
 
-      - uses: pnpm/action-setup@v2.0.1
+      - uses: pnpm/action-setup@v2
         with:
           version: 8
-          run_install: true
 
       - name: Build
         working-directory: packages/client/
