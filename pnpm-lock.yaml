@@ -135,9 +135,6 @@ importers:
       dotenv:
         specifier: ^16.0.1
         version: 16.0.1
-      fast-proxy:
-        specifier: ^2.2.0
-        version: 2.2.0
       fastify:
         specifier: ^4.3.0
         version: 4.3.0
@@ -1493,6 +1490,7 @@ packages:
   /@fastify/busboy@2.0.0:
     resolution: {integrity: sha512-JUFJad5lv7jxj926GPgymrWQxxjPYuJNiNjNMzqT+HiuP6Vl3dk5xzG+8sTX96np0ZAluvaMzPsjhHZ5rNuNQQ==}
     engines: {node: '>=14'}
+    dev: true
 
   /@fastify/cors@8.3.0:
     resolution: {integrity: sha512-oj9xkka2Tg0MrwuKhsSUumcAkfp2YCnKxmFEusi01pjk1YrdDsuSYTHXEelWNW+ilSy/ApZq0c2SvhKrLX0H1g==}
@@ -6321,23 +6319,6 @@ packages:
   /fast-levenshtein@2.0.6:
     resolution: {integrity: sha512-DCXu6Ifhqcks7TZKY3Hxp3y6qphY5SJZmrWMDrKcERSOXWQdMhU9Ig/PYrzyw/ul9jOIyh0N4M0tbC5hodg8dw==}
     dev: true
-
-  /fast-proxy@2.2.0:
-    resolution: {integrity: sha512-jSrXdYKxPg+DcP8qoKKPbZ1sLvRKGN8sSbmCn+xrSAMfErI+tMJAwUbqMBDJi2tzq7c/m4Nv4ewosD+SIA4vhg==}
-    dependencies:
-      end-of-stream: 1.4.4
-      fast-querystring: 1.1.2
-      pump: 3.0.0
-      semver: 7.5.4
-      tiny-lru: 11.2.3
-      undici: 5.26.3
-    dev: false
-
-  /fast-querystring@1.1.2:
-    resolution: {integrity: sha512-g6KuKWmFXc0fID8WWH0jit4g0AGBoJhCkJMb1RmbsSEUNvQ+ZC8D6CUZ+GtF8nMzSPXnhiePyyqqipzNNEnHjg==}
-    dependencies:
-      fast-decode-uri-component: 1.0.1
-    dev: false
 
   /fast-redact@3.1.1:
     resolution: {integrity: sha512-odVmjC8x8jNeMZ3C+rPMESzXVSEU8tSWSHv9HFxP2mm89G/1WwqhrerJDQm9Zus8X6aoRgQDThKqptdNA6bt+A==}
@@ -11486,11 +11467,6 @@ packages:
     resolution: {integrity: sha512-AD5ih2NlSssTCwsMznbvwMZpJ1cbhkGd2uueNxzv2jDlEeZdU04JQfRnggJQ8DrcVBGjAsCKwFBbDlVNtEMlzw==}
     dev: true
 
-  /tiny-lru@11.2.3:
-    resolution: {integrity: sha512-mF9jPTrvN7UHk0bekOk3RlFdFwfyS4CJYVsGc7nInL3pVgUCYj5r9X6GpZBFQgLr0TKJo8Dp+F3oRvYzxU9xiA==}
-    engines: {node: '>=12'}
-    dev: false
-
   /tiny-lru@8.0.2:
     resolution: {integrity: sha512-ApGvZ6vVvTNdsmt676grvCkUCGwzG9IqXma5Z07xJgiC5L7akUMof5U8G2JTI9Rz/ovtVhJBlY6mNhEvtjzOIg==}
     engines: {node: '>=6'}
@@ -11773,6 +11749,7 @@ packages:
     engines: {node: '>=14.0'}
     dependencies:
       '@fastify/busboy': 2.0.0
+    dev: true
 
   /unenv@1.7.4:
     resolution: {integrity: sha512-fjYsXYi30It0YCQYqLOcT6fHfMXsBr2hw9XC7ycf8rTG7Xxpe3ZssiqUnD0khrjiZEmkBXWLwm42yCSCH46fMw==}
