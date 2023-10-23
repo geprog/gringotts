@@ -42,8 +42,17 @@ jobs:
           version: 8
           run_install: true
 
-      - name: Build
-        run: pnpm run -r build
+      - name: Build client
+        working-directory: packages/client/
+        run: pnpm build
+
+      - name: Build server
+        working-directory: packages/server/
+        run: pnpm build
+
+      - name: Build app
+        working-directory: packages/app/
+        run: pnpm build
 
       - name: Build the Docker image
         run: docker build --tag $IMAGE_NAME:latest --cache-from ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:latest .
