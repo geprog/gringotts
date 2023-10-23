@@ -50,6 +50,7 @@ jobs:
         working-directory: packages/server/
         run: pnpm build
 
+      # install app again to respect shamefully hoisted dependencies
       - name: Build app
         working-directory: packages/app/
         run: |
@@ -60,8 +61,8 @@ jobs:
         run: docker build --tag $IMAGE_NAME:latest --cache-from ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:latest .
 
       - name: Log in to Github registry
-        if: github.event_name != 'pull_request'
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
+        if: github.event_name != 'pull_request'
 
       - name: Push image to Github registry (latest & tag)
         run: |
@@ -71,17 +72,11 @@ jobs:
           docker push ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:${GITHUB_REF#refs/*/}
         if: "github.ref_type == 'tag'"
 
-      - name: Push image to DockerHub (next)
-        run: |
-          docker tag $IMAGE_NAME:latest ${{ env.DOCKERHUB_ORG }}/$IMAGE_NAME:next
-          docker push ${{ env.DOCKERHUB_ORG }}/$IMAGE_NAME:next
-        if: "github.ref_type != 'tag'"
-
       - name: Push image to Github registry (next)
         run: |
           docker tag $IMAGE_NAME:latest ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:next
           docker push ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:next
-        if: "github.ref_type != 'tag'"
+        if: github.event_name != 'pull_request' && github.ref_type != 'tag'
 
   client:
     name: Release client
