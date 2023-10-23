@@ -5,7 +5,7 @@ dotenv.config({
   path: path.join(__dirname, '..', '..', '..', '.env'),
 });
 
-const defaultPort = 3000;
+const defaultPort = 7171;
 
 const port = process.env.PORT ? parseInt(process.env.PORT) : defaultPort;
 

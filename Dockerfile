@@ -20,6 +20,9 @@ COPY ./packages/server/dist/ .
 COPY ./packages/server/public/ ./public
 COPY ./packages/server/templates/ ./templates
 
+# TODO: used to suppress warning remove after fixed
+RUN mkdir -p /static
+
 # app
 COPY ./packages/app/.output .output
 

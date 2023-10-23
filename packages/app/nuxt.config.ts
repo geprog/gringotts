@@ -25,7 +25,7 @@ export default defineNuxtConfig({
       ],
     },
   },
-  nitro: {
-    preset: 'node',
-  },
+  // nitro: {
+  //   preset: 'node',
+  // },
 });

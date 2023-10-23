@@ -15,7 +15,6 @@ import { Currency } from '~/entities/payment';
 import { formatDate } from '~/lib/dayjs';
 import { log } from '~/log';
 
-// import { listener } from '../../../app/.output/server/index.mjs';
 import { apiEndpoints } from './endpoints';
 import { addSchemas } from './schema';
 
@@ -32,12 +31,11 @@ export async function init(): Promise<FastifyInstance> {
             write: (data: string) => console.log(data),
           },
         )
-      : process.env.NODE_ENV === 'production'
-      ? true
       : log;
 
   const server = fastify({
     logger,
+    disableRequestLogging: process.env.NODE_ENV === 'production',
   });
 
   await server.register(cors, {
@@ -51,14 +49,7 @@ export async function init(): Promise<FastifyInstance> {
       process.env.NODE_ENV === 'production'
         ? path.join(__dirname, 'public')
         : path.join(__dirname, '..', '..', 'public'),
-    prefix: '/static',
-  });
-
-  // TODO: cleanup
-  await server.register(fastifyStatic, {
-    root: path.join(__dirname, '..', '..', '..', 'app', '.output', 'public'),
-    prefix: '/',
-    decorateReply: false,
+    prefix: '/static/',
   });
 
   const proxy = createProxyServer({});
@@ -77,10 +68,9 @@ export async function init(): Promise<FastifyInstance> {
     }
 
     // forward to nuxt
-    // await listener(request.raw, reply.raw);
     try {
       await proxy.web(request.raw, reply.raw, {
-        target: 'http://localhost:3000/',
+        target: 'http://localhost:3000/', // TODO: allow to configure
       });
     } catch (error) {
       await reply.code(500).send({
