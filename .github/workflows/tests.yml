@@ -69,6 +69,10 @@ jobs:
         working-directory: packages/client/
         run: pnpm build
 
+    - name: Build app
+        working-directory: packages/app/
+        run: pnpm install
+
       - name: Typecheck
         run: pnpm run -r typecheck
 
