@@ -56,7 +56,7 @@ describe('Invoice endpoints', () => {
       headers: {
         authorization: `Bearer ${testData.project.apiToken}`,
       },
-      url: `/invoice/${testData.invoice._id}`,
+      url: `/api/invoice/${testData.invoice._id}`,
     });
 
     // then
@@ -103,7 +103,7 @@ describe('Invoice endpoints', () => {
       headers: {
         authorization: `Bearer ${testData.project.apiToken}`,
       },
-      url: `/invoice/${testData.invoice._id}/html`,
+      url: `/api/invoice/${testData.invoice._id}/html`,
     });
 
     // then

@@ -123,7 +123,7 @@ export async function mockedCheckoutEndpoints(server: FastifyInstance): Promise<
         headers: {
           authorization: `Bearer ${project.apiToken}`,
         },
-        url: `/payment/webhook/${project._id}`,
+        url: `/api/payment/webhook/${project._id}`,
         payload: {
           paymentId: payment._id,
           paymentStatus: body.status,

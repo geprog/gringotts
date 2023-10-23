@@ -27,7 +27,7 @@ async function start() {
         headers: {
           authorization: `Bearer ${config.adminToken}`,
         },
-        url: '/project',
+        url: '/api/project',
         payload: JSON.parse(process.env.CREATE_PROJECT_DATA) as Record<string, unknown>,
       });
 

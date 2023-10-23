@@ -65,7 +65,7 @@ describe('Subscription endpoints', () => {
       headers: {
         authorization: `Bearer ${testData.project.apiToken}`,
       },
-      url: '/subscription',
+      url: '/api/subscription',
       payload: subscriptionPayload,
     });
 
@@ -140,7 +140,7 @@ describe('Subscription endpoints', () => {
       headers: {
         authorization: `Bearer ${testData.project.apiToken}`,
       },
-      url: `/subscription/${subscription._id}`,
+      url: `/api/subscription/${subscription._id}`,
       payload: subscriptionPayload,
     });
 
@@ -191,7 +191,7 @@ describe('Subscription endpoints', () => {
       headers: {
         authorization: `Bearer ${testData.project.apiToken}`,
       },
-      url: `/subscription/${testData.subscription._id}/invoice`,
+      url: `/api/subscription/${testData.subscription._id}/invoice`,
     });
 
     // then

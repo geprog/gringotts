@@ -61,7 +61,7 @@ describe('Customer endpoints', () => {
       headers: {
         authorization: `Bearer ${testData.project.apiToken}`,
       },
-      url: '/customer',
+      url: '/api/customer',
       payload: customerData,
     });
 
@@ -106,7 +106,7 @@ describe('Customer endpoints', () => {
     // when
     const customersResponse = await server.inject({
       method: 'GET',
-      url: `/customer`,
+      url: `/api/customer`,
       headers: {
         authorization: `Bearer ${testData.project.apiToken}`,
       },
@@ -157,7 +157,7 @@ describe('Customer endpoints', () => {
     // when
     const customersResponse = await server.inject({
       method: 'GET',
-      url: `/customer`,
+      url: `/api/customer`,
       headers: {
         authorization: `Bearer ${testData.project.apiToken}`,
       },
@@ -195,7 +195,7 @@ describe('Customer endpoints', () => {
     // when
     const customerResponse = await server.inject({
       method: 'GET',
-      url: `/customer/${testData.customer._id}`,
+      url: `/api/customer/${testData.customer._id}`,
       headers: {
         authorization: `Bearer ${testData.project.apiToken}`,
       },
@@ -249,7 +249,7 @@ describe('Customer endpoints', () => {
       headers: {
         authorization: `Bearer ${testData.project.apiToken}`,
       },
-      url: `/customer/${customerData._id}`,
+      url: `/api/customer/${customerData._id}`,
       payload: customerData,
     });
 
@@ -304,7 +304,7 @@ describe('Customer endpoints', () => {
       headers: {
         authorization: `Bearer ${testData.project.apiToken}`,
       },
-      url: `/customer/${customerData._id}`,
+      url: `/api/customer/${customerData._id}`,
     });
 
     // then
