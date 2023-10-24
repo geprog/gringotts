@@ -12,7 +12,7 @@ export class Mocked implements PaymentProvider {
     payment: Payment;
     redirectUrl: string;
   }): Promise<{ checkoutUrl: string }> {
-    const checkoutUrl = `${config.publicUrl}/mocked/checkout/${payment._id}?redirect_url=${redirectUrl}`;
+    const checkoutUrl = `${config.publicUrl}/api/mocked/checkout/${payment._id}?redirect_url=${redirectUrl}`;
 
     return { checkoutUrl };
   }

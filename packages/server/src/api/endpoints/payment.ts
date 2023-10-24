@@ -4,7 +4,8 @@ import { database } from '~/database';
 import { getPaymentProvider } from '~/payment_providers';
 import { triggerWebhook } from '~/webhook';
 
-export function paymentEndpoints(server: FastifyInstance): void {
+// eslint-disable-next-line @typescript-eslint/require-await
+export async function paymentEndpoints(server: FastifyInstance): Promise<void> {
   server.post('/payment/webhook/:projectId', {
     schema: { hide: true },
     handler: async (request, reply) => {

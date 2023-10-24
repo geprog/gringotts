@@ -5,9 +5,11 @@ import { database } from '~/database';
 import { Subscription } from '~/entities';
 import { getActiveUntilDate, getNextPaymentDate } from '~/utils';
 
-export function subscriptionEndpoints(server: FastifyInstance): void {
+// eslint-disable-next-line @typescript-eslint/require-await
+export async function subscriptionEndpoints(server: FastifyInstance): Promise<void> {
   server.post('/subscription', {
     schema: {
+      operationId: 'createSubscription',
       summary: 'Create a subscription',
       tags: ['subscription'],
       body: {
@@ -91,8 +93,43 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
     },
   });
 
+  server.get('/subscription', {
+    schema: {
+      operationId: 'listSubscriptions',
+      summary: 'List all subscriptions',
+      tags: ['subscription'],
+      response: {
+        200: {
+          type: 'array',
+          items: {
+            $ref: 'Subscription',
+          },
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      const project = await getProjectFromRequest(request);
+
+      const subscriptions = await database.subscriptions.find({ project }, { populate: ['customer', 'changes'] });
+
+      const _subscriptions = subscriptions.map((subscription) => {
+        const activeUntil = subscription.lastPayment
+          ? getActiveUntilDate(subscription.lastPayment, subscription.anchorDate)
+          : undefined;
+
+        return {
+          ...subscription.toJSON(),
+          activeUntil,
+        };
+      });
+
+      await reply.send(_subscriptions);
+    },
+  });
+
   server.patch('/subscription/:subscriptionId', {
     schema: {
+      operationId: 'patchSubscription',
       summary: 'Patch a subscription',
       tags: ['subscription'],
       params: {
@@ -160,6 +197,7 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
 
   server.get('/subscription/:subscriptionId', {
     schema: {
+      operationId: 'getSubscription',
       summary: 'Get a subscription',
       tags: ['subscription'],
       params: {
@@ -207,6 +245,7 @@ export function subscriptionEndpoints(server: FastifyInstance): void {
 
   server.get('/subscription/:subscriptionId/invoice', {
     schema: {
+      operationId: 'listSubscriptionInvoices',
       summary: 'List all invoices of a subscription',
       tags: ['subscription', 'invoice'],
       params: {

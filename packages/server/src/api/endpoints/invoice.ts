@@ -21,7 +21,7 @@ async function generateInvoicePdf(invoice: Invoice, project: Project) {
   }
 
   const formData = new NodeFormData() as unknown as FormData;
-  formData.append('url', `${config.publicUrl}/invoice/${invoice._id}/html?token=${project.apiToken}`);
+  formData.append('url', `${config.publicUrl}/api/invoice/${invoice._id}/html?token=${project.apiToken}`);
 
   const response = await fetch(`${config.gotenbergUrl}/forms/chromium/convert/url`, {
     method: 'POST',
@@ -48,9 +48,34 @@ async function generateInvoicePdf(invoice: Invoice, project: Project) {
   return invoice;
 }
 
-export function invoiceEndpoints(server: FastifyInstance): void {
+// eslint-disable-next-line @typescript-eslint/require-await
+export async function invoiceEndpoints(server: FastifyInstance): Promise<void> {
+  server.get('/invoice', {
+    schema: {
+      operationId: 'listInvoices',
+      summary: 'List invoices',
+      tags: ['invoice'],
+      response: {
+        200: {
+          type: 'array',
+          items: {
+            $ref: 'Invoice',
+          },
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      const project = await getProjectFromRequest(request);
+
+      const invoices = await database.invoices.find({ project }, { populate: ['items'] });
+
+      await reply.send(invoices.map((i) => i.toJSON()));
+    },
+  });
+
   server.get('/invoice/:invoiceId', {
     schema: {
+      operationId: 'getInvoice',
       summary: 'Get an invoice',
       tags: ['invoice'],
       params: {
@@ -123,7 +148,8 @@ export function invoiceEndpoints(server: FastifyInstance): void {
     '/invoice/:invoiceId/generate-download-link',
     {
       schema: {
-        summary: 'Get a download link for an invoice',
+        operationId: 'generateInvoiceDownloadLink',
+        summary: 'Generate a download link for an invoice',
         tags: ['invoice'],
         params: {
           type: 'object',
@@ -173,7 +199,7 @@ export function invoiceEndpoints(server: FastifyInstance): void {
 
       const downloadToken = jwt.sign({ invoiceId }, config.jwtSecret, { expiresIn: '1d' });
       return reply.send({
-        url: `${config.publicUrl}/invoice/download?token=${downloadToken}`,
+        url: `${config.publicUrl}/api/invoice/download?token=${downloadToken}`,
       });
     },
   );

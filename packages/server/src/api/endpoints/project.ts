@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { FastifyInstance } from 'fastify';
 
+import { getProjectFromRequest } from '~/api/helpers';
 import { database } from '~/database';
 import { Project, ProjectInvoiceData } from '~/entities';
 
@@ -16,7 +17,8 @@ async function generateApiToken(length = 32) {
   );
 }
 
-export function projectEndpoints(server: FastifyInstance): void {
+// eslint-disable-next-line @typescript-eslint/require-await
+export async function projectEndpoints(server: FastifyInstance): Promise<void> {
   type ProjectInvoiceDataUpdateBody = Pick<
     ProjectInvoiceData,
     'addressLine1' | 'addressLine2' | 'city' | 'country' | 'email' | 'name' | 'zipCode' | 'logo'
@@ -65,6 +67,7 @@ export function projectEndpoints(server: FastifyInstance): void {
 
   server.post('/project', {
     schema: {
+      operationId: 'createProject',
       summary: 'Create a project',
       tags: ['project'],
       body: {
@@ -120,6 +123,7 @@ export function projectEndpoints(server: FastifyInstance): void {
 
   server.get('/project', {
     schema: {
+      operationId: 'listProjects',
       summary: 'Get all projects',
       tags: ['project'],
       response: {
@@ -141,8 +145,48 @@ export function projectEndpoints(server: FastifyInstance): void {
     },
   });
 
+  server.get('/project/:projectId', {
+    schema: {
+      operationId: 'getProject',
+      summary: 'Get a project',
+      tags: ['project'],
+      params: {
+        type: 'object',
+        required: ['projectId'],
+        additionalProperties: false,
+        properties: {
+          projectId: { type: 'string' },
+        },
+      },
+      response: {
+        200: {
+          $ref: 'Project',
+        },
+        404: {
+          $ref: 'ErrorResponse',
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      const { projectId } = request.params as { projectId: string };
+
+      if (projectId === 'token-project') {
+        const project = await getProjectFromRequest(request);
+        return reply.send(project);
+      }
+
+      const project = await database.projects.findOne({ _id: projectId });
+      if (!project) {
+        return reply.code(404).send({ error: 'Project not found' });
+      }
+
+      await reply.send(project);
+    },
+  });
+
   server.patch('/project/:projectId', {
     schema: {
+      operationId: 'patchProject',
       summary: 'Patch a project',
       tags: ['project'],
       params: {
@@ -154,7 +198,7 @@ export function projectEndpoints(server: FastifyInstance): void {
         },
       },
       body: {
-        $ref: 'CustomerUpdateBody',
+        $ref: 'ProjectUpdateBody',
       },
       response: {
         200: {
@@ -207,6 +251,7 @@ export function projectEndpoints(server: FastifyInstance): void {
 
   server.delete('/project/:projectId', {
     schema: {
+      operationId: 'deleteProject',
       summary: 'Delete a project',
       tags: ['project'],
       params: {
@@ -232,7 +277,7 @@ export function projectEndpoints(server: FastifyInstance): void {
     handler: async (request, reply) => {
       const { projectId } = request.params as { projectId: string };
 
-      const project = await database.projects.findOne({ _id: projectId });
+      const project = await database.projects.findOne({ _id: projectId }, { populate: ['invoiceData'] });
       if (!project) {
         return reply.code(404).send({ error: 'Project not found' });
       }

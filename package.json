@@ -7,7 +7,8 @@
   "license": "MIT",
   "repository": "github:geprog/gringotts",
   "scripts": {
-    "lint:format": "prettier --check .",
+    "format:check": "prettier --check .",
+    "format:fix": "prettier --write .",
     "start": "pnpm --parallel start"
   },
   "devDependencies": {

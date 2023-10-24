@@ -74,7 +74,7 @@ describe('Payment webhook endpoints', () => {
         headers: {
           authorization: `Bearer ${testData.project.apiToken}`,
         },
-        url: `/payment/webhook/${testData.project._id}`,
+        url: `/api/payment/webhook/${testData.project._id}`,
         payload,
       });
 

@@ -1,6 +1,9 @@
 name: Release
 
 on:
+  pull_request:
+    branches:
+      - main
   push:
     branches:
       - main
@@ -34,31 +37,25 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-
 
-      - uses: pnpm/action-setup@v2.0.1
+      - uses: pnpm/action-setup@v2
         with:
           version: 8
           run_install: true
 
-      - name: Build
+      - name: Build client
+        working-directory: packages/client/
+        run: pnpm build
+
+      - name: Build server
         working-directory: packages/server/
         run: pnpm build
 
       - name: Build the Docker image
-        run: docker build --file packages/server/Containerfile --tag $IMAGE_NAME:latest --cache-from ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:latest .
-
-      - name: Login to DockerHub registry
-        run: docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_PASSWORD }}
+        run: docker build --tag $IMAGE_NAME:latest --cache-from ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:latest .
 
       - name: Log in to Github registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u $ --password-stdin
-
-      - name: Push image to DockerHub (latest & tag)
-        run: |
-          docker tag $IMAGE_NAME:latest ${{ env.DOCKERHUB_ORG }}/$IMAGE_NAME:latest
-          docker push ${{ env.DOCKERHUB_ORG }}/$IMAGE_NAME:latest
-          docker tag $IMAGE_NAME:latest ${{ env.DOCKERHUB_ORG }}/$IMAGE_NAME:${GITHUB_REF#refs/*/}
-          docker push ${{ env.DOCKERHUB_ORG }}/$IMAGE_NAME:${GITHUB_REF#refs/*/}
-        if: "github.ref_type == 'tag'"
+        if: github.event_name != 'pull_request'
 
       - name: Push image to Github registry (latest & tag)
         run: |
@@ -68,17 +65,11 @@ jobs:
           docker push ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:${GITHUB_REF#refs/*/}
         if: "github.ref_type == 'tag'"
 
-      - name: Push image to DockerHub (next)
-        run: |
-          docker tag $IMAGE_NAME:latest ${{ env.DOCKERHUB_ORG }}/$IMAGE_NAME:next
-          docker push ${{ env.DOCKERHUB_ORG }}/$IMAGE_NAME:next
-        if: "github.ref_type != 'tag'"
-
       - name: Push image to Github registry (next)
         run: |
           docker tag $IMAGE_NAME:latest ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:next
           docker push ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:next
-        if: "github.ref_type != 'tag'"
+        if: github.event_name != 'pull_request' && github.ref_type != 'tag'
 
   client:
     name: Release client
@@ -108,7 +99,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-
 
-      - uses: pnpm/action-setup@v2.0.1
+      - uses: pnpm/action-setup@v2
         with:
           version: 8
           run_install: true
@@ -132,15 +123,6 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         if: "github.ref_type == 'tag'"
-
-      # - name: Release pre version
-      #   working-directory: packages/client/
-      #   run: |
-      #     pnpm version 1.0.0-pre.1 --no-commit-hooks --no-git-tag-version
-      #     pnpm publish --no-git-check --access public --tag pre
-      #   env:
-      #     NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-      #   if: "github.ref_type != 'tag'"
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4.2.3

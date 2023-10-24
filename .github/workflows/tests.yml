@@ -30,7 +30,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-
 
-      - uses: pnpm/action-setup@v2.0.1
+      - uses: pnpm/action-setup@v2
         with:
           version: 8
           run_install: true
@@ -60,13 +60,14 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-
 
-      - uses: pnpm/action-setup@v2.0.1
+      - uses: pnpm/action-setup@v2
         with:
           version: 8
           run_install: true
 
-      - name: Build
-        run: pnpm run -r build
+      - name: Build client
+        working-directory: packages/client/
+        run: pnpm build
 
       - name: Typecheck
         run: pnpm run -r typecheck
@@ -93,14 +94,15 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-
 
-      - uses: pnpm/action-setup@v2.0.1
+      - uses: pnpm/action-setup@v2
         with:
           version: 8
           run_install: true
 
       # needed to prepare the auto-generated files for the client package
-      - name: Build
-        run: pnpm run -r build
+      - name: Build client
+        working-directory: packages/client/
+        run: pnpm build
 
       - name: Lint
         run: pnpm run -r lint
@@ -127,10 +129,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-
 
-      - uses: pnpm/action-setup@v2.0.1
+      - uses: pnpm/action-setup@v2
         with:
           version: 8
           run_install: true
 
       - name: Check format
-        run: pnpm run lint:format
+        run: pnpm run format:check

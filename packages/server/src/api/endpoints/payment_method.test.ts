@@ -71,7 +71,7 @@ describe('Payment-method endpoints', () => {
       headers: {
         authorization: `Bearer ${testData.project.apiToken}`,
       },
-      url: `/customer/${customer._id}/payment-method`,
+      url: `/api/customer/${customer._id}/payment-method`,
       payload: paymentMethodPayload,
     });
 
@@ -111,7 +111,7 @@ describe('Payment-method endpoints', () => {
     // when
     const response = await server.inject({
       method: 'GET',
-      url: `/customer/${testData.customer._id}/payment-method/${testData.paymentMethod._id}}`,
+      url: `/api/customer/${testData.customer._id}/payment-method/${testData.paymentMethod._id}}`,
       headers: {
         authorization: `Bearer ${testData.project.apiToken}`,
       },
@@ -158,7 +158,7 @@ describe('Payment-method endpoints', () => {
     // when
     const response = await server.inject({
       method: 'GET',
-      url: `/customer/${testData.customer._id}/payment-method`,
+      url: `/api/customer/${testData.customer._id}/payment-method`,
       headers: {
         authorization: `Bearer ${testData.project.apiToken}`,
       },
@@ -212,7 +212,7 @@ describe('Payment-method endpoints', () => {
       headers: {
         authorization: `Bearer ${testData.project.apiToken}`,
       },
-      url: `/customer/${testData.customer._id}/payment-method/${paymentMethodData._id}`,
+      url: `/api/customer/${testData.customer._id}/payment-method/${paymentMethodData._id}`,
     });
 
     // then

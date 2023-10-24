@@ -87,6 +87,7 @@ export function addSchemas(server: FastifyInstance): void {
           $ref: 'InvoiceItem',
         },
       },
+      subscription: { type: 'object', properties: { _id: { type: 'string' } }, additionalProperties: false },
       // subscription: { $ref: 'Subscription' },
       status: { type: 'string' },
       currency: { type: 'string' },

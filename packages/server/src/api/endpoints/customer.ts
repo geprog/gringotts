@@ -4,8 +4,10 @@ import { getProjectFromRequest } from '~/api/helpers';
 import { database } from '~/database';
 import { Customer, Project } from '~/entities';
 import { getPaymentProvider } from '~/payment_providers';
+import { getActiveUntilDate } from '~/utils';
 
-export function customerEndpoints(server: FastifyInstance): void {
+// eslint-disable-next-line @typescript-eslint/require-await
+export async function customerEndpoints(server: FastifyInstance): Promise<void> {
   type CustomerUpdateBody = Pick<
     Customer,
     'addressLine1' | 'addressLine2' | 'city' | 'country' | 'email' | 'name' | 'zipCode' | 'activePaymentMethod'
@@ -14,7 +16,6 @@ export function customerEndpoints(server: FastifyInstance): void {
   server.addSchema({
     $id: 'CustomerUpdateBody',
     type: 'object',
-    required: ['email', 'name', 'addressLine1', 'addressLine2', 'zipCode', 'city', 'country'],
     additionalProperties: false,
     properties: {
       email: { type: 'string' },
@@ -30,6 +31,7 @@ export function customerEndpoints(server: FastifyInstance): void {
 
   server.post('/customer', {
     schema: {
+      operationId: 'createCustomer',
       summary: 'Create a customer',
       tags: ['customer'],
       body: {
@@ -51,6 +53,14 @@ export function customerEndpoints(server: FastifyInstance): void {
       const project = await getProjectFromRequest(request);
 
       const body = request.body as CustomerUpdateBody;
+
+      if (!body.email) {
+        return reply.code(400).send({ error: 'Email is required' });
+      }
+
+      if (!body.name) {
+        return reply.code(400).send({ error: 'Name is required' });
+      }
 
       let customer = new Customer({
         email: body.email,
@@ -79,6 +89,7 @@ export function customerEndpoints(server: FastifyInstance): void {
 
   server.get('/customer', {
     schema: {
+      operationId: 'listCustomers',
       summary: 'List all customers or search by email',
       tags: ['customer'],
       querystring: {
@@ -118,6 +129,7 @@ export function customerEndpoints(server: FastifyInstance): void {
 
   server.get('/customer/:customerId', {
     schema: {
+      operationId: 'getCustomer',
       summary: 'Get a customer',
       tags: ['customer'],
       params: {
@@ -156,6 +168,7 @@ export function customerEndpoints(server: FastifyInstance): void {
 
   server.patch('/customer/:customerId', {
     schema: {
+      operationId: 'patchCustomer',
       summary: 'Patch a customer',
       tags: ['customer'],
       params: {
@@ -189,13 +202,13 @@ export function customerEndpoints(server: FastifyInstance): void {
         return reply.code(404).send({ error: 'Customer not found' });
       }
 
-      customer.email = body.email;
-      customer.name = body.name;
-      customer.addressLine1 = body.addressLine1;
-      customer.addressLine2 = body.addressLine2;
-      customer.city = body.city;
-      customer.country = body.country;
-      customer.zipCode = body.zipCode;
+      customer.email = body.email || customer.email;
+      customer.name = body.name || customer.name;
+      customer.addressLine1 = body.addressLine1 || customer.addressLine1;
+      customer.addressLine2 = body.addressLine2 || customer.addressLine2;
+      customer.city = body.city || customer.city;
+      customer.country = body.country || customer.country;
+      customer.zipCode = body.zipCode || customer.zipCode;
 
       if (body.activePaymentMethod?._id) {
         const paymentMethod = await database.paymentMethods.findOne({
@@ -225,6 +238,7 @@ export function customerEndpoints(server: FastifyInstance): void {
 
   server.delete('/customer/:customerId', {
     schema: {
+      operationId: 'deleteCustomer',
       summary: 'Delete a customer',
       tags: ['customer'],
       params: {
@@ -269,6 +283,58 @@ export function customerEndpoints(server: FastifyInstance): void {
       await database.em.removeAndFlush(customer);
 
       await reply.send({ ok: true });
+    },
+  });
+
+  server.get('/customer/:customerId/subscription', {
+    schema: {
+      operationId: 'listCustomerSubscriptions',
+      summary: 'List all subscriptions of a customer',
+      tags: ['subscription', 'customer'],
+      params: {
+        type: 'object',
+        required: ['customerId'],
+        additionalProperties: false,
+        properties: {
+          customerId: { type: 'string' },
+        },
+      },
+      response: {
+        200: {
+          type: 'array',
+          items: {
+            $ref: 'Subscription',
+          },
+        },
+        404: {
+          $ref: 'ErrorResponse',
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      const project = await getProjectFromRequest(request);
+
+      const { customerId } = request.params as { customerId: string };
+
+      const customer = await database.customers.findOne({ _id: customerId, project });
+      if (!customer) {
+        return reply.code(404).send({ error: 'Customer not found' });
+      }
+
+      const subscriptions = await database.subscriptions.find({ project, customer }, { populate: ['changes'] });
+
+      const _subscriptions = subscriptions.map((subscription) => {
+        const activeUntil = subscription.lastPayment
+          ? getActiveUntilDate(subscription.lastPayment, subscription.anchorDate)
+          : undefined;
+
+        return {
+          ...subscription.toJSON(),
+          activeUntil,
+        };
+      });
+
+      await reply.send(_subscriptions);
     },
   });
 }
