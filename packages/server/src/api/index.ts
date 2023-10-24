@@ -5,7 +5,6 @@ import fastifySwagger from '@fastify/swagger';
 import fastifyView from '@fastify/view';
 import fastify, { FastifyInstance } from 'fastify';
 import Handlebars from 'handlebars';
-import { createProxyServer } from 'httpxy';
 import path from 'path';
 import pino from 'pino';
 
@@ -52,8 +51,6 @@ export async function init(): Promise<FastifyInstance> {
     prefix: '/static/',
   });
 
-  const proxy = createProxyServer({});
-
   server.setNotFoundHandler(async (request, reply) => {
     if (
       request.url?.startsWith('/api') &&
@@ -67,16 +64,9 @@ export async function init(): Promise<FastifyInstance> {
       return;
     }
 
-    // forward to nuxt
-    try {
-      await proxy.web(request.raw, reply.raw, {
-        target: 'http://localhost:3000/', // TODO: allow to configure
-      });
-    } catch (error) {
-      await reply.code(500).send({
-        error: 'Proxy error' + (error as Error).toString(),
-      });
-    }
+    await reply.code(404).send({
+      error: 'Not found',
+    });
   });
 
   await server.register(fastifyView, {

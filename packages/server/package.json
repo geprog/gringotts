@@ -31,7 +31,6 @@
     "form-data": "^4.0.0",
     "got": "^12.2.0",
     "handlebars": "^4.7.7",
-    "httpxy": "^0.1.5",
     "jsonwebtoken": "^9.0.0",
     "ngrok": "^4.3.1",
     "pg": "^8.7.3",

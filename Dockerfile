@@ -23,7 +23,4 @@ COPY ./packages/server/templates/ ./templates
 # TODO: used to suppress warning remove after fixed
 RUN mkdir -p /static
 
-# app
-COPY ./packages/app/.output .output
-
 RUN chown -R node:node /app

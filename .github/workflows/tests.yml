@@ -69,11 +69,6 @@ jobs:
         working-directory: packages/client/
         run: pnpm build
 
-      # install app again to respect shamefully hoisted dependencies
-      - name: Install app
-        working-directory: packages/app/
-        run: pnpm install
-
       - name: Typecheck
         run: pnpm run -r typecheck
 

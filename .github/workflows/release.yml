@@ -50,13 +50,6 @@ jobs:
         working-directory: packages/server/
         run: pnpm build
 
-      # install app again to respect shamefully hoisted dependencies
-      - name: Build app
-        working-directory: packages/app/
-        run: |
-          pnpm install
-          pnpm build
-
       - name: Build the Docker image
         run: docker build --tag $IMAGE_NAME:latest --cache-from ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:latest .
 
