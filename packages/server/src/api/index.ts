@@ -18,7 +18,7 @@ import { apiEndpoints } from './endpoints';
 import { addSchemas } from './schema';
 
 // routing priority:
-// api routes -> static files -> nuxt -> 404
+// api routes -> static files -> 404
 
 export async function init(): Promise<FastifyInstance> {
   const logger =
