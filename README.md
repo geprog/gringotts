@@ -3,7 +3,15 @@
 [![npm version](https://img.shields.io/npm/v/@geprog/gringotts-client)](https://www.npmjs.com/package/@geprog/gringotts-client)
 [![docker image Version (latest by date)](https://img.shields.io/docker/v/geprog/gringotts?label=docker)](https://github.com/geprog/gringotts-payments/pkgs/container/gringotts)
 
-Gringotts is an api service (maybe a frontend will follow at some point) which can be used as gateway between your payment provider and for example your SAAS application. It allows you to easily handle subscriptions, subscription changes and invoice generation for your users.
+Gringotts is a service which can be used as gateway between your payment provider and for example your SAAS application. It allows you to easily handle customers, subscriptions and invoice generation for your users.
+
+![Gringotts](./docs/screenshot.png)
+
+## Some (current) opinions
+
+- Subscriptions are always monthly
+- Subscription-periods start at the first day the customer started the subscription (exp. 2021-01-15 to 2021-02-14, 2021-02-15 to 2021-03-14, ...)
+- Invoices are generated at the end of the subscription-period (exp. 2021-01-15 to 2021-02-14 => invoice is generated on 2021-02-14)
 
 ## Usage
 
@@ -15,8 +23,8 @@ The container image can be found at `ghcr.io/geprog/gringotts`.
 
 | Name                | Description                                                      | Default                                               |
 | ------------------- | ---------------------------------------------------------------- | ----------------------------------------------------- |
-| PORT                | Port on which the server should listen                           | 3000                                                  |
-| PUBLIC_URL          | Url on which the server is reachable                             | http://localhost:3000                                 |
+| PORT                | Port on which the server should listen                           | 7171                                                  |
+| PUBLIC_URL          | Url on which the server is reachable                             | http://localhost:7171                                 |
 | POSTGRES_URL        | Url to the postgres database                                     | postgres://postgres:postgres@localhost:5432/gringotts |
 | ADMIN_TOKEN         | Token which is used to authenticate admin endpoints like project |                                                       |
 | CREATE_PROJECT_DATA | Json string which is used to create the first project            |                                                       |
@@ -32,7 +40,7 @@ To create a project on start you can set the `CREATE_PROJECT_DATA` environment v
 
 ### OpenApi Documention
 
-The OpenApi documentation can be found at `https://<PUBLIC_URL>/docs` like <http://localhost:3000/docs>
+The OpenApi documentation can be found at `https://<PUBLIC_URL>/docs` like <http://localhost:7171/docs>
 
 ## Development
 
@@ -50,3 +58,58 @@ cp .env.example .env
 # start the server
 pnpm start
 ```
+
+- [x] customers
+  - [x] details
+  - [ ] update (with balance)
+  - [x] change active payment-method
+  - [ ] create
+- [x] subscriptions
+  - [x] details
+  - [ ] update (remove error / update status)
+  - [ ] show current period date
+  - [ ] show start
+  - [ ] show upcoming invoice price & items
+  - [ ] terminate
+- [x] invoices
+  - [x] download
+  - [x] details
+  - [ ] create new draft (add items)
+  - [ ] charge if not pending yet
+- [ ] payments
+  - [ ] details
+  - [ ] update state => and thereby update the invoice & subscription
+- [x] payment methods
+  - [x] details
+  - [x] add new payment method
+  - [x] remove payment method
+- [x] project
+  - [x] details
+  - [x] invoice data details
+  - [ ] update
+
+- [x] error for subscription if charge failed
+- [x] add list customer subscriptions endpoint
+- [x] add project details endpoint
+- [x] show invoices
+- [x] show project and invoice data
+- [x] swagger list endpoint should not be named detail
+
+- [ ] add way to unlock error in subscription
+- [ ] create draft invoice
+- [ ] charge draft invoice
+- [ ] retry invoice charging
+- [ ] add way to add balance to customer
+
+- [ ] add optional name to subscription
+- [ ] subscription trial
+- [ ] add products (plans)
+  - [ ] product: name, description, price, currency
+  - [ ] add metered data (key, value, timestamp)
+  - [ ] a plan will apply some function to the metered data
+  - [ ] a subscription will have a plan and calculate the price by applying the plan to the metered data
+  - [ ] add tax to subscriptions (include or exclude)
+- [ ] add multiple products per subscription
+- [ ] add subscription metadata
+- [ ] pay without payment-method if sufficient balance?
+- [ ] add more specific subscription plans
