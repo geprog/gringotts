@@ -35,7 +35,8 @@ export async function init(): Promise<FastifyInstance> {
 
   const server = fastify({
     logger,
-    disableRequestLogging: process.env.NODE_ENV === 'production',
+    // disableRequestLogging: process.env.NODE_ENV === 'production',
+    disableRequestLogging: true,
   });
 
   await server.register(cors, {

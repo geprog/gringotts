@@ -1,14 +1,3 @@
-import { gringottsClient } from '@geprog/gringotts-client';
-import fetch from 'cross-fetch';
-
-function useGringottsClient(token: string) {
-  const { baseUrl } = useRuntimeConfig().public.api;
-  return gringottsClient(baseUrl, {
-    customFetch: fetch,
-    token,
-  });
-}
-
 export default defineEventHandler(async (event) => {
   const body = await readBody(event);
   const projectToken = body?.token;
