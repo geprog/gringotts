@@ -55,6 +55,7 @@ export async function init(): Promise<FastifyInstance> {
 
   await server.register(fastifyReplyFrom, {
     base: 'http://localhost:3000/', // TODO: allow to configure
+    disableRequestLogging: true,
   });
 
   server.setNotFoundHandler(async (request, reply) => {

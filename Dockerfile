@@ -24,6 +24,7 @@ COPY ./packages/server/templates/ ./templates
 RUN mkdir -p /static
 
 # app
+ENV NUXT_PUBLIC_API_CLIENT_BASE_URL=/api
 COPY ./packages/app/.output .output
 
 RUN chown -R node:node /app

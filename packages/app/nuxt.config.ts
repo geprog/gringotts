@@ -8,6 +8,7 @@ export default defineNuxtConfig({
     },
     public: {
       api: {
+        clientBaseUrl: 'http://localhost:7171/api',
         baseUrl: 'http://localhost:7171/api',
       },
     },

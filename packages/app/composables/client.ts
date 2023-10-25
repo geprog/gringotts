@@ -10,7 +10,7 @@ export async function useGringottsClient() {
   }
 
   const config = useRuntimeConfig();
-  const url = process.client ? '/api' : config.public.api.baseUrl;
+  const url = process.client ? config.public.api.clientBaseUrl : config.public.api.baseUrl;
   return gringottsClient(url, {
     token: user.token,
   });
