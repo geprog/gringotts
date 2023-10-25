@@ -101,7 +101,7 @@
 
 <script lang="ts" setup>
 import { ContentType } from '@geprog/gringotts-client';
-import { PaymentMethod, Subscription } from '@geprog/gringotts-client';
+import type { PaymentMethod, Subscription } from '@geprog/gringotts-client';
 
 const client = await useGringottsClient();
 const route = useRoute();

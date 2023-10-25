@@ -20,7 +20,7 @@
 </template>
 
 <script lang="ts" setup>
-import { Subscription } from '@geprog/gringotts-client';
+import type { Subscription } from '@geprog/gringotts-client';
 
 const router = useRouter();
 const client = await useGringottsClient();

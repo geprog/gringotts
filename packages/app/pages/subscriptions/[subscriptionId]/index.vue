@@ -81,7 +81,7 @@
 </template>
 
 <script lang="ts" setup>
-import { Invoice } from '@geprog/gringotts-client';
+import type { Invoice } from '@geprog/gringotts-client';
 
 const client = await useGringottsClient();
 const route = useRoute();

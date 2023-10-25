@@ -11,7 +11,7 @@
 </template>
 
 <script lang="ts" setup>
-import { Customer } from '@geprog/gringotts-client';
+import type { Customer } from '@geprog/gringotts-client';
 
 const router = useRouter();
 const client = await useGringottsClient();
