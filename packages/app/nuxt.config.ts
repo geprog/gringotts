@@ -12,7 +12,6 @@ export default defineNuxtConfig({
       },
     },
   },
-  ignore: ['data/**/*'],
   ui: {
     icons: ['mdi', 'simple-icons', 'heroicons', 'ion'],
   },

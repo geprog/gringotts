@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
     });
   }
 
-  const client = useGringottsClient(projectToken);
+  const client = useGringottsClient(event, projectToken);
   try {
     await client.customer.listCustomers();
   } catch (error) {
