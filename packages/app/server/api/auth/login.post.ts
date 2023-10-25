@@ -1,15 +1,23 @@
+import { gringottsClient } from '@geprog/gringotts-client';
+import fetch from 'cross-fetch';
+
 export default defineEventHandler(async (event) => {
   const body = await readBody(event);
-  const projectToken = body?.token;
+  const { token } = body;
 
-  if (!projectToken) {
+  if (!token) {
     throw createError({
       statusCode: 400,
-      message: 'project-token is required',
+      message: 'token is required',
     });
   }
 
-  const client = useGringottsClient(event, projectToken);
+  const config = useRuntimeConfig();
+  const client = gringottsClient(config.public.api.baseUrl, {
+    customFetch: fetch,
+    token,
+  });
+
   try {
     await client.customer.listCustomers();
   } catch (error) {
@@ -22,7 +30,7 @@ export default defineEventHandler(async (event) => {
 
   const session = await useAuthSession(event);
   await session.update({
-    token: projectToken,
+    token,
   });
 
   return {
