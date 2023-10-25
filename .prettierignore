@@ -6,3 +6,5 @@ packages/client/src/api.ts
 packages/client/docs/
 packages/server/swagger.json
 packages/server/templates/invoice.hbs
+.nuxt/
+.output/

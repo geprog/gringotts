@@ -13,6 +13,11 @@ import { subscriptionEndpoints } from './subscription';
 
 export async function apiEndpoints(server: FastifyInstance): Promise<void> {
   server.addHook('onRequest', async (request, reply) => {
+    // skip nuxt api routes
+    if (request.url === '/api/auth/login' || request.url === '/api/auth/logout' || request.url === '/api/user') {
+      return;
+    }
+
     if (request.routerPath === '/api/invoice/download') {
       return;
     }

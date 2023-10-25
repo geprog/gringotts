@@ -1,5 +1,6 @@
 import cors from '@fastify/cors';
 import fastifyFormBody from '@fastify/formbody';
+import fastifyReplyFrom from '@fastify/reply-from';
 import fastifyStatic from '@fastify/static';
 import fastifySwagger from '@fastify/swagger';
 import fastifyView from '@fastify/view';
@@ -18,7 +19,7 @@ import { apiEndpoints } from './endpoints';
 import { addSchemas } from './schema';
 
 // routing priority:
-// api routes -> static files -> 404
+// api routes -> static files -> nuxt -> 404
 
 export async function init(): Promise<FastifyInstance> {
   const logger =
@@ -34,7 +35,8 @@ export async function init(): Promise<FastifyInstance> {
 
   const server = fastify({
     logger,
-    disableRequestLogging: process.env.NODE_ENV === 'production',
+    // disableRequestLogging: process.env.NODE_ENV === 'production',
+    disableRequestLogging: true,
   });
 
   await server.register(cors, {
@@ -51,6 +53,11 @@ export async function init(): Promise<FastifyInstance> {
     prefix: '/static/',
   });
 
+  await server.register(fastifyReplyFrom, {
+    base: 'http://localhost:3000/', // TODO: allow to configure
+    disableRequestLogging: true,
+  });
+
   server.setNotFoundHandler(async (request, reply) => {
     if (
       request.url?.startsWith('/api') &&
@@ -64,9 +71,14 @@ export async function init(): Promise<FastifyInstance> {
       return;
     }
 
-    await reply.code(404).send({
-      error: 'Not found',
-    });
+    // forward to nuxt
+    try {
+      await reply.from(request.url);
+    } catch (error) {
+      await reply.code(500).send({
+        error: 'Proxy error' + (error as Error).toString(),
+      });
+    }
   });
 
   await server.register(fastifyView, {
