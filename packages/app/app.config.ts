@@ -65,5 +65,9 @@ export default defineAppConfig({
         },
       },
     },
+    notification: {
+      background: 'bg-white dark:bg-zinc-900',
+      ring: 'ring-1 ring-zinc-200 dark:ring-zinc-800',
+    },
   },
 });
