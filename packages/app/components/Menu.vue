@@ -74,7 +74,6 @@
 const { user, logout } = await useAuth();
 
 const colorMode = useColorMode();
-const client = await useGringottsClient();
 
 const isDark = computed({
   get() {
