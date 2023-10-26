@@ -108,6 +108,7 @@ export const invoiceSchema = new EntitySchema<Invoice>({
     subscription: {
       reference: ReferenceType.MANY_TO_ONE,
       entity: () => Subscription,
+      nullable: true,
     },
     customer: {
       reference: ReferenceType.MANY_TO_ONE,

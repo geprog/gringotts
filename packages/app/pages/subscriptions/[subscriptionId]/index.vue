@@ -56,7 +56,7 @@
         </template>
 
         <template #status-data="{ row }">
-          <StatusSubscription :subscription="row" />
+          <StatusInvoice :invoice="row" />
         </template>
 
         <template #totalAmount-data="{ row }">

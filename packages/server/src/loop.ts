@@ -128,6 +128,7 @@ export async function chargeSubscriptions(): Promise<void> {
           vatRate: project.vatRate,
           sequentialId: customer.invoiceCounter,
           subscription,
+          customer: subscription.customer,
           project,
           status: 'pending',
           date: new Date(),
@@ -182,7 +183,7 @@ export async function chargePendingInvoices(): Promise<void> {
       { status: 'pending', payment: null },
       {
         limit: pageLimit,
-        populate: ['project', 'payment', 'subscription', 'customer'],
+        populate: ['items', 'project', 'payment', 'subscription', 'customer'],
       },
     );
 
@@ -190,7 +191,13 @@ export async function chargePendingInvoices(): Promise<void> {
       invoice.status = 'processing';
       await database.em.persistAndFlush([invoice]);
 
-      await chargeCustomerInvoice(invoice);
+      try {
+        await chargeCustomerInvoice(invoice);
+      } catch (e) {
+        log.error('Error while invoice charging:', e);
+        invoice.status = 'failed';
+        await database.em.persistAndFlush([invoice]);
+      }
     }
   } catch (e) {
     log.error(e, 'An error occurred while charging invoices');
