@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import dayjs from '~/lib/dayjs';
 
-import { getActiveUntilDate, getNextPaymentDate, getPeriodFromAnchorDate, getPreviousPeriod } from './utils';
+import { getActiveUntilDate, getNextPeriod, getPeriodFromAnchorDate, getPreviousPeriod } from './utils';
 
 describe('utils', () => {
   const getActiveUntilDateTests = [
@@ -68,14 +68,15 @@ describe('utils', () => {
     },
   );
 
-  it('should get the billing period from a next-payment date', () => {
+  it('should get the previous period from a date', () => {
     const { start, end } = getPreviousPeriod(new Date('2022-02-16'), new Date('2022-01-15'));
     expect(dayjs(start).format('DD.MM.YYYY')).toStrictEqual('15.01.2022');
     expect(dayjs(end).format('DD.MM.YYYY')).toStrictEqual('14.02.2022');
   });
 
-  it('should get the next-payment date from the current next-payment date', () => {
-    const nextPayment = getNextPaymentDate(new Date('2022-01-15'), new Date('2022-01-15'));
-    expect(dayjs(nextPayment).format('DD.MM.YYYY')).toStrictEqual('15.02.2022');
+  it('should get the next period from a date', () => {
+    const { start, end } = getNextPeriod(new Date('2022-01-16'), new Date('2022-01-15'));
+    expect(dayjs(start).format('DD.MM.YYYY')).toStrictEqual('15.02.2022');
+    expect(dayjs(end).format('DD.MM.YYYY')).toStrictEqual('14.03.2022');
   });
 });

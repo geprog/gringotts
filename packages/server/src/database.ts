@@ -20,9 +20,12 @@ import {
   subscriptionSchema,
 } from '~/entities';
 import { addExitHook } from '~/lib/exit_hooks';
-import { MigrationAlterColumnLogo } from '~/migrations/alter_column_logo_to_text';
-import { MigrationReplaceStartAndEndWithDate } from '~/migrations/replace_start_and_end_with_date_invoice';
-import { MigrationSetNextPaymentForSubscriptions } from '~/migrations/set_next_payment_for_subscriptions';
+import { MigrationAlterColumnLogo } from '~/migrations/000_alter_column_logo_to_text';
+import { MigrationReplaceStartAndEndWithDate } from '~/migrations/001_replace_start_and_end_with_date_invoice';
+import { MigrationSetNextPaymentForSubscriptions } from '~/migrations/002_set_next_payment_for_subscriptions';
+import { MigrationPaymentStatusFromPendingToProcessing } from '~/migrations/003_update_payment_status';
+import { MigrationUpdateInvoiceAddCustomerAndAllowOptionalSubscription } from '~/migrations/004_update_invoice_add_customer_make_subscription_optional';
+import { MigrationReplaceNextPaymentWithCurrentPeriod } from '~/migrations/005_update_status_optional_invoice_subscription';
 
 export class Database {
   orm!: MikroORM;
@@ -61,6 +64,18 @@ export class Database {
             {
               name: 'MigrationSetNextPaymentForSubscriptions',
               class: MigrationSetNextPaymentForSubscriptions,
+            },
+            {
+              name: 'MigrationPaymentStatusFromPendingToProcessing',
+              class: MigrationPaymentStatusFromPendingToProcessing,
+            },
+            {
+              name: 'MigrationUpdateInvoiceAddCustomerAndAllowOptionalSubscription',
+              class: MigrationUpdateInvoiceAddCustomerAndAllowOptionalSubscription,
+            },
+            {
+              name: 'MigrationReplaceNextPaymentWithCurrentPeriod',
+              class: MigrationReplaceNextPaymentWithCurrentPeriod,
             },
           ],
           disableForeignKeys: false,

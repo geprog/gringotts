@@ -10,10 +10,11 @@ import { SubscriptionPeriod } from '~/entities/subscription_period';
 export class Subscription {
   _id: string = v4();
   anchorDate!: Date; // first date a user ever started a subscription for the object
-  status: 'active' | 'error' = 'active';
+  status: 'processing' | 'active' | 'error' = 'active';
   error?: string;
   lastPayment?: Date;
-  nextPayment!: Date;
+  currentPeriodStart!: Date;
+  currentPeriodEnd!: Date;
   customer!: Customer;
   changes = new Collection<SubscriptionChange>(this);
   createdAt: Date = new Date();
@@ -38,6 +39,10 @@ export class Subscription {
         throw new Error('changeDate is required if you already have a change');
       }
       this.changes[this.changes.count() - 1].end = data.changeDate;
+    }
+
+    if (this.changes.getItems().filter((c) => c.end === undefined).length > 1) {
+      throw new Error('Only the last item is allowed to have no end date');
     }
 
     this.changes.add(
@@ -72,7 +77,8 @@ export const subscriptionSchema = new EntitySchema<Subscription>({
     status: { type: 'string', default: 'active' },
     error: { type: 'string', nullable: true },
     lastPayment: { type: Date, nullable: true },
-    nextPayment: { type: Date },
+    currentPeriodStart: { type: Date },
+    currentPeriodEnd: { type: Date },
     customer: {
       reference: ReferenceType.MANY_TO_ONE,
       entity: () => Customer,

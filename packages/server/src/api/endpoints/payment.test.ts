@@ -30,7 +30,7 @@ describe('Payment webhook endpoints', () => {
         amount: 1,
         currency: 'EUR',
         customer: testData.customer,
-        status: 'pending',
+        status: 'processing',
         type: 'verification',
         description: 'Verification payment',
       });

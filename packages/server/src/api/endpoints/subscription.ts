@@ -3,7 +3,7 @@ import { FastifyInstance } from 'fastify';
 import { getProjectFromRequest } from '~/api/helpers';
 import { database } from '~/database';
 import { Subscription } from '~/entities';
-import { getActiveUntilDate, getNextPaymentDate } from '~/utils';
+import { getActiveUntilDate, getPeriodFromAnchorDate } from '~/utils';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function subscriptionEndpoints(server: FastifyInstance): Promise<void> {
@@ -76,11 +76,13 @@ export async function subscriptionEndpoints(server: FastifyInstance): Promise<vo
       }
 
       const now = new Date();
+      const currentPeriod = getPeriodFromAnchorDate(now, now);
 
       const subscription = new Subscription({
         anchorDate: now,
         status: 'active',
-        nextPayment: getNextPaymentDate(now, now),
+        currentPeriodStart: currentPeriod.start,
+        currentPeriodEnd: currentPeriod.end,
         customer,
         project,
       });
@@ -142,11 +144,12 @@ export async function subscriptionEndpoints(server: FastifyInstance): Promise<vo
       },
       body: {
         type: 'object',
-        required: ['pricePerUnit', 'units'],
         additionalProperties: false,
         properties: {
           pricePerUnit: { type: 'number' },
           units: { type: 'number' },
+          status: { type: 'string' },
+          error: { type: 'string' },
         },
       },
       response: {
@@ -164,20 +167,6 @@ export async function subscriptionEndpoints(server: FastifyInstance): Promise<vo
     handler: async (request, reply) => {
       const project = await getProjectFromRequest(request);
 
-      const body = request.body as { pricePerUnit: number; units: number };
-
-      if (body.units < 1) {
-        return reply.code(400).send({
-          error: 'Units must be greater than 0',
-        });
-      }
-
-      if (body.pricePerUnit < 0) {
-        return reply.code(400).send({
-          error: 'Price per unit must be greater than 0',
-        });
-      }
-
       const { subscriptionId } = request.params as { subscriptionId: string };
 
       const subscription = await database.subscriptions.findOne(
@@ -188,7 +177,32 @@ export async function subscriptionEndpoints(server: FastifyInstance): Promise<vo
         return reply.code(404).send({ error: 'Subscription not found' });
       }
 
-      subscription.changePlan({ pricePerUnit: body.pricePerUnit, units: body.units, changeDate: new Date() });
+      const body = request.body as {
+        pricePerUnit?: number;
+        units?: number;
+        error?: string;
+        status?: Subscription['status'];
+      };
+
+      if (body.units && body.pricePerUnit) {
+        if (body.units < 1) {
+          return reply.code(400).send({
+            error: 'Units must be greater than 0',
+          });
+        }
+
+        if (body.pricePerUnit < 0) {
+          return reply.code(400).send({
+            error: 'Price per unit must be greater than 0',
+          });
+        }
+
+        subscription.changePlan({ pricePerUnit: body.pricePerUnit, units: body.units, changeDate: new Date() });
+      }
+
+      subscription.error = body.error ?? subscription.error;
+      subscription.status = body.status ?? subscription.status;
+
       await database.em.persistAndFlush(subscription);
 
       await reply.send({ ok: true });

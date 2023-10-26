@@ -1,29 +1,29 @@
 import { database } from '~/database';
-import { Customer, Invoice, InvoiceItem, Payment, SubscriptionPeriod } from '~/entities';
+import { Invoice, InvoiceItem, Payment, SubscriptionPeriod } from '~/entities';
 import dayjs from '~/lib/dayjs';
 import { log } from '~/log';
 import { getPaymentProvider } from '~/payment_providers';
-import { getNextPaymentDate, getPreviousPeriod } from '~/utils';
+import { getNextPeriod } from '~/utils';
+import { triggerWebhook } from '~/webhook';
 
-const pageSize = 10;
+const pageLimit = 10; // fetch 10 items at a time and process them
 
-export async function chargeCustomerInvoice({
-  billingPeriod,
-  customer,
-  invoice,
-}: {
-  billingPeriod: { start: Date; end: Date };
-  customer: Customer;
-  invoice: Invoice;
-}): Promise<void> {
+export async function chargeCustomerInvoice(invoice: Invoice): Promise<void> {
+  const { customer } = invoice;
+  if (!customer) {
+    throw new Error(`Invoice '${invoice._id}' has no customer`);
+  }
+
   await database.em.populate(customer, ['activePaymentMethod']);
   if (!customer.activePaymentMethod) {
     log.error({ invoiceId: invoice._id, customerId: customer._id }, 'Customer has no active payment method');
     throw new Error('Customer has no active payment method');
   }
 
-  // add customer credit
-  if (customer.balance > 0) {
+  const amount = Invoice.roundPrice(invoice.totalAmount);
+
+  // add customer credit if amount is above 0 and customer has credit
+  if (customer.balance > 0 && amount > 0) {
     const creditAmount = Math.min(customer.balance, invoice.amount);
     invoice.items.add(
       new InvoiceItem({
@@ -37,60 +37,62 @@ export async function chargeCustomerInvoice({
     log.debug({ customerId: customer._id, creditAmount }, 'Credit applied');
   }
 
-  // skip negative amounts (credits) and zero amounts
-  const amount = Invoice.roundPrice(invoice.totalAmount);
-  if (amount <= 0) {
-    invoice.status = 'paid';
-    log.debug({ invoiceId: invoice._id, amount }, 'Invoice set to paid as the amount is 0 or negative');
-    // TODO: should we create a fake payment?
-    await database.em.persistAndFlush([invoice]);
-    return;
-  }
+  const paymentDescription = `Invoice ${invoice.number}`;
 
-  let paymentDescription = `Invoice ${invoice.number}`;
-
-  const { subscription } = invoice;
-  if (subscription) {
-    const formatDate = (d: Date) => dayjs(d).format('DD.MM.YYYY');
-    paymentDescription = `Subscription for period ${formatDate(billingPeriod.start)} - ${formatDate(
-      billingPeriod.end,
-    )}`; // TODO: think about text
-    log.debug({ subscriptionId: subscription._id, paymentDescription }, 'Subscription payment');
-  }
-
-  const { project } = customer;
+  const { project } = invoice;
   if (!project) {
-    log.error({ subscriptionId: subscription._id, paymentDescription }, 'Subscription payment');
     throw new Error(`Project for '${customer._id}' not configured`);
   }
 
   const payment = new Payment({
-    amount,
+    amount: Math.max(amount, 0), // negative amounts are not allowed
     currency: project.currency,
     customer,
     type: 'recurring',
-    status: 'pending',
+    status: 'processing',
     description: paymentDescription,
-    subscription,
+    subscription: invoice.subscription,
   });
 
-  invoice.status = 'pending';
   invoice.payment = payment;
 
-  const paymentProvider = getPaymentProvider(project);
-  if (!paymentProvider) {
-    log.error({ projectId: project._id, invoiceId: invoice._id }, 'Payment provider for project not configured');
-    throw new Error(`Payment provider for '${project._id}' not configured`);
+  // skip negative amounts (credits) and zero amounts
+  if (amount > 0) {
+    const paymentProvider = getPaymentProvider(project);
+    if (!paymentProvider) {
+      log.error({ projectId: project._id, invoiceId: invoice._id }, 'Payment provider for project not configured');
+      throw new Error(`Payment provider for '${project._id}' not configured`);
+    }
+
+    await paymentProvider.chargeBackgroundPayment({ payment, project });
+  } else {
+    // set invoice and payment to paid immediately if the amount is 0 or negative
+    invoice.status = 'paid';
+    payment.status = 'paid';
+
+    const { subscription } = payment;
+    if (subscription) {
+      subscription.lastPayment = new Date();
+      await database.em.persistAndFlush([subscription]);
+      void triggerWebhook({
+        url: project.webhookUrl,
+        body: {
+          subscriptionId: subscription._id,
+        },
+      });
+    }
+    log.debug(
+      { invoiceId: invoice._id, paymentId: payment._id, amount },
+      'Invoice and payment set to paid as the amount is 0 or negative',
+    );
   }
 
-  await paymentProvider.chargeBackgroundPayment({ payment, project });
   await database.em.persistAndFlush([invoice, payment]);
 
   log.debug({ paymentId: payment._id }, 'Payment created & charged');
 }
 
 let isChargingSubscriptions = false;
-
 export async function chargeSubscriptions(): Promise<void> {
   if (isChargingSubscriptions) {
     return;
@@ -99,87 +101,80 @@ export async function chargeSubscriptions(): Promise<void> {
 
   try {
     const now = new Date();
-    let page = 0;
 
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-      // get due subscriptions
-      const subscriptions = await database.subscriptions.find(
-        { nextPayment: { $lte: now }, status: 'active' },
-        {
-          limit: pageSize,
-          offset: page * pageSize,
-          populate: ['project', 'changes', 'customer'],
-        },
-      );
+    // get due subscriptions
+    const subscriptions = await database.subscriptions.find(
+      // use an 1 hour buffer before creating an invoice
+      { currentPeriodEnd: { $lte: dayjs(now).subtract(1, 'hour').toDate() }, status: 'active' },
+      {
+        limit: pageLimit,
+        populate: ['project', 'changes', 'customer'],
+      },
+    );
 
-      for await (const subscription of subscriptions) {
-        // TODO: should we lock subscription processing?
+    for await (const subscription of subscriptions) {
+      subscription.status = 'processing';
+      await database.em.persistAndFlush([subscription]);
 
-        const { project, customer } = subscription;
+      const { project, customer } = subscription;
 
-        const billingPeriod = getPreviousPeriod(subscription.nextPayment, subscription.anchorDate);
+      const billingPeriod = { start: subscription.currentPeriodStart, end: subscription.currentPeriodEnd };
 
-        try {
-          const existingInvoices = await database.invoices.find({
-            date: { $gte: billingPeriod.start, $lte: billingPeriod.end },
-            subscription,
-          });
-          if (existingInvoices.length > 0) {
-            log.error(
-              { subscriptionId: subscription._id, customerId: customer._id },
-              'Invoice for period already exists',
-            );
-            // TODO: should we just ignore this? currently this sets the subscription to error state?
-            throw new Error('Invoice for period already exists');
-          }
-
-          customer.invoiceCounter += 1;
-
-          const invoice = new Invoice({
-            currency: project.currency,
-            vatRate: project.vatRate,
-            sequentialId: customer.invoiceCounter,
-            subscription,
-            project,
-            status: 'draft',
-            date: new Date(),
-          });
-
-          const period = new SubscriptionPeriod(subscription, billingPeriod.start, billingPeriod.end);
-          period.getInvoiceItems().forEach((item) => {
-            invoice.items.add(item);
-          });
-
-          await database.em.persistAndFlush([customer, invoice]);
-
-          await chargeCustomerInvoice({ billingPeriod, customer, invoice });
-
-          subscription.nextPayment = getNextPaymentDate(subscription.nextPayment, subscription.anchorDate);
-          await database.em.persistAndFlush([subscription]);
-
-          log.debug(
-            {
-              customerId: customer._id,
-              nextPayment: subscription.nextPayment,
-              subscriptionId: subscription._id,
-              invoiceCounter: customer.invoiceCounter,
-            },
-            'Subscription charged & invoiced',
+      try {
+        const existingInvoices = await database.invoices.find({
+          date: { $gte: billingPeriod.start, $lte: billingPeriod.end },
+          subscription,
+        });
+        if (existingInvoices.length > 0) {
+          log.error(
+            { subscriptionId: subscription._id, customerId: customer._id },
+            'Invoice for period already exists',
           );
-        } catch (e) {
-          log.error('Error while subscription charging:', e);
-          subscription.status = 'error';
-          subscription.error = (e as Error)?.message || (e as string);
-          await database.em.persistAndFlush([subscription]);
+          // TODO: should we just ignore this? currently this sets the subscription to error state?
+          throw new Error('Invoice for period already exists');
         }
-      }
 
-      if (subscriptions.length < pageSize) {
-        break;
-      }
+        customer.invoiceCounter += 1;
 
-      page += 1;
+        const invoice = new Invoice({
+          currency: project.currency,
+          vatRate: project.vatRate,
+          sequentialId: customer.invoiceCounter,
+          subscription,
+          customer: subscription.customer,
+          project,
+          status: 'pending',
+          date: new Date(),
+        });
+
+        const period = new SubscriptionPeriod(subscription, billingPeriod.start, billingPeriod.end);
+        period.getInvoiceItems().forEach((item) => {
+          invoice.items.add(item);
+        });
+
+        const nextPeriod = getNextPeriod(billingPeriod.start, subscription.anchorDate);
+        subscription.currentPeriodStart = nextPeriod.start;
+        subscription.currentPeriodEnd = nextPeriod.end;
+        subscription.status = 'active';
+
+        await database.em.persistAndFlush([subscription, customer, invoice]);
+
+        log.debug(
+          {
+            customerId: customer._id,
+            currentPeriodStart: subscription.currentPeriodStart,
+            currentPeriodEnd: subscription.currentPeriodEnd,
+            subscriptionId: subscription._id,
+            invoiceCounter: customer.invoiceCounter,
+          },
+          'Subscription charged & invoiced',
+        );
+      } catch (e) {
+        log.error('Error while subscription charging:', e);
+        subscription.status = 'error';
+        subscription.error = (e as Error)?.message || (e as string);
+        await database.em.persistAndFlush([subscription]);
+      }
     }
   } catch (e) {
     log.error(e, 'An error occurred while charging subscriptions');
@@ -188,8 +183,44 @@ export async function chargeSubscriptions(): Promise<void> {
   isChargingSubscriptions = false;
 }
 
+let isChargingPendingInvoices = false;
+export async function chargePendingInvoices(): Promise<void> {
+  if (isChargingPendingInvoices) {
+    return;
+  }
+
+  isChargingPendingInvoices = true;
+
+  try {
+    const invoices = await database.invoices.find(
+      { status: 'pending', payment: null },
+      {
+        limit: pageLimit,
+        populate: ['items', 'project', 'payment', 'subscription', 'customer'],
+      },
+    );
+
+    for await (const invoice of invoices) {
+      invoice.status = 'processing';
+      await database.em.persistAndFlush([invoice]);
+
+      try {
+        await chargeCustomerInvoice(invoice);
+      } catch (e) {
+        log.error('Error while invoice charging:', e);
+        invoice.status = 'failed';
+        await database.em.persistAndFlush([invoice]);
+      }
+    }
+  } catch (e) {
+    log.error(e, 'An error occurred while charging invoices');
+  }
+
+  isChargingPendingInvoices = false;
+}
+
 export function startLoops(): void {
-  // charge subscriptions for past periods
-  void chargeSubscriptions();
-  setInterval(() => void chargeSubscriptions(), 1000); // TODO: increase loop time
+  const loopInterval = 1000 * 1; // TODO: increase loop time
+  setInterval(() => void chargeSubscriptions(), loopInterval);
+  setInterval(() => void chargePendingInvoices(), loopInterval);
 }

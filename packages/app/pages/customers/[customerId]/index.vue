@@ -87,12 +87,39 @@
         @select="selectSubscription"
       >
         <template #status-data="{ row }">
-          <UBadge v-if="row.status === 'active'" size="xs" label="Active" color="emerald" variant="subtle" />
-          <UBadge v-else-if="row.status === 'error'" size="xs" label="Error" color="rose" variant="subtle" />
+          <StatusSubscription :subscription="row" />
         </template>
 
         <template #lastPayment-data="{ row }">
           <span v-if="row.lastPayment">{{ formatDate(row.lastPayment) }}</span>
+        </template>
+
+        <template #currentPeriodEnd-data="{ row }">
+          <span>{{ formatDate(row.currentPeriodStart) }} - {{ formatDate(row.currentPeriodEnd) }}</span>
+        </template>
+      </UTable>
+    </UCard>
+
+    <UCard>
+      <h2>Invoices</h2>
+
+      <UTable
+        :loading="invoicesPending"
+        :rows="invoices || []"
+        :columns="invoicesColumns"
+        :sort="{ column: 'date', direction: 'desc' }"
+        @select="selectInvoice"
+      >
+        <template #date-data="{ row }">
+          <span>{{ formatDate(row.date) }}</span>
+        </template>
+
+        <template #totalAmount-data="{ row }">
+          <span>{{ formatCurrency(row.totalAmount, row.currency) }}</span>
+        </template>
+
+        <template #status-data="{ row }">
+          <StatusInvoice :invoice="row" />
         </template>
       </UTable>
     </UCard>
@@ -101,7 +128,7 @@
 
 <script lang="ts" setup>
 import { ContentType } from '@geprog/gringotts-client';
-import type { PaymentMethod, Subscription } from '@geprog/gringotts-client';
+import type { Invoice, PaymentMethod, Subscription } from '@geprog/gringotts-client';
 
 const client = await useGringottsClient();
 const route = useRoute();
@@ -133,6 +160,7 @@ const paymentMethodColumns = [
   {
     key: 'active',
     label: 'Active',
+    sortable: true,
   },
   {
     key: 'actions',
@@ -194,8 +222,8 @@ const subscriptionColumns = [
     sortable: true,
   },
   {
-    key: 'nextPayment',
-    label: 'Next payment',
+    key: 'currentPeriodEnd',
+    label: 'Current period',
     sortable: true,
   },
 ];
@@ -206,6 +234,37 @@ const { data: subscriptions, pending: subscriptionPending } = useAsyncData(async
 
 async function selectSubscription(row: Subscription) {
   await router.push(`/subscriptions/${row._id}`);
+}
+
+const invoicesColumns = [
+  {
+    key: 'number',
+    label: 'Number',
+    sortable: true,
+  },
+  {
+    key: 'date',
+    label: 'Date',
+    sortable: true,
+  },
+  {
+    key: 'status',
+    label: 'Status',
+    sortable: true,
+  },
+  {
+    key: 'totalAmount',
+    label: 'Total',
+    sortable: true,
+  },
+];
+const { data: invoices, pending: invoicesPending } = useAsyncData(async () => {
+  const { data } = await client.customer.listCustomerInvoices(customerId);
+  return data;
+});
+
+async function selectInvoice(row: Invoice) {
+  await router.push(`/invoices/${row._id}`);
 }
 
 const currency = 'EUR'; // TODO: use variable currency for balance

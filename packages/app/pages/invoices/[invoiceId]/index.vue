@@ -3,16 +3,7 @@
     <div class="flex justify-between">
       <h1 class="text-xl">Invoice: {{ invoice.number }}</h1>
 
-      <UBadge v-if="invoice.status === 'draft'" size="xs" label="Status: Draft" color="primary" variant="subtle" />
-      <UBadge
-        v-else-if="invoice.status === 'pending'"
-        size="xs"
-        label="Status: Pending"
-        color="amber"
-        variant="subtle"
-      />
-      <UBadge v-else-if="invoice.status === 'paid'" size="xs" label="Status: Paid" color="emerald" variant="subtle" />
-      <UBadge v-else-if="invoice.status === 'failed'" size="xs" label="Status: Failed" color="rose" variant="subtle" />
+      <StatusInvoice :invoice="invoice" />
     </div>
 
     <UCard>
@@ -26,14 +17,20 @@
           @click="downloadInvoice"
         />
 
-        <template v-if="subscription?.customer">
-          <router-link :to="`/customers/${subscription.customer._id}`">
-            <UButton :label="subscription.customer.name" icon="i-ion-people" size="sm" />
-          </router-link>
-          <router-link :to="`/subscriptions/${subscription._id}`">
-            <UButton label="Subscription" icon="i-ion-md-refresh" size="sm" />
-          </router-link>
-        </template>
+        <UButton
+          v-if="invoice.status === 'draft'"
+          label="Charge invoice"
+          icon="i-ion-bag-check-outline"
+          size="sm"
+          @click="chargeInvoice"
+        />
+
+        <router-link v-if="invoice.customer" :to="`/customers/${invoice.customer._id}`">
+          <UButton :label="invoice.customer.name" icon="i-ion-people" size="sm" />
+        </router-link>
+        <router-link v-if="invoice.subscription" :to="`/subscriptions/${invoice.subscription._id}`">
+          <UButton label="Subscription" icon="i-ion-md-refresh" size="sm" />
+        </router-link>
       </div>
 
       <UForm :state="invoice" class="flex flex-col gap-4">
@@ -43,6 +40,10 @@
 
         <UFormGroup label="Date" name="date">
           <DatePicker v-model="invoice.date" :disabled="disabled" />
+        </UFormGroup>
+
+        <UFormGroup v-if="invoice.customer" label="Customer" name="customer">
+          <UInput color="primary" variant="outline" v-model="invoice.customer.name" size="lg" disabled />
         </UFormGroup>
 
         <UFormGroup label="Amount" name="amount">
@@ -88,18 +89,6 @@
           </UInput>
         </UFormGroup>
 
-        <template v-if="subscription && subscription.customer">
-          <UFormGroup label="Customer">
-            <UInput
-              color="primary"
-              variant="outline"
-              v-model="subscription.customer.name"
-              size="lg"
-              :disabled="disabled"
-            />
-          </UFormGroup>
-        </template>
-
         <!-- <UButton label="Save" type="submit" class="mx-auto" /> -->
       </UForm>
     </UCard>
@@ -121,7 +110,7 @@ const client = await useGringottsClient();
 const route = useRoute();
 const invoiceId = route.params.invoiceId as string;
 
-const { data: invoice } = useAsyncData(async () => {
+const { data: invoice, refresh } = useAsyncData(async () => {
   const { data } = await client.invoice.getInvoice(invoiceId);
   return data;
 });
@@ -152,11 +141,10 @@ async function downloadInvoice() {
   window.open(data.url, '_blank');
 }
 
-const { data: subscription } = useAsyncData(async () => {
-  const subscriptionId = invoice.value?.subscription?._id;
-  if (!subscriptionId) return null;
-
-  const { data } = await client.subscription.getSubscription(subscriptionId);
-  return data;
-});
+async function chargeInvoice() {
+  await client.invoice.patchInvoice(invoiceId, {
+    status: 'pending',
+  });
+  await refresh();
+}
 </script>

@@ -67,7 +67,7 @@ export async function invoiceEndpoints(server: FastifyInstance): Promise<void> {
     handler: async (request, reply) => {
       const project = await getProjectFromRequest(request);
 
-      const invoices = await database.invoices.find({ project }, { populate: ['items'] });
+      const invoices = await database.invoices.find({ project }, { populate: ['items', 'customer'] });
 
       await reply.send(invoices.map((i) => i.toJSON()));
     },
@@ -103,12 +103,73 @@ export async function invoiceEndpoints(server: FastifyInstance): Promise<void> {
         return reply.code(400).send({ error: 'Missing invoiceId' });
       }
 
-      const invoice = await database.invoices.findOne({ _id: invoiceId, project }, { populate: ['items'] });
+      const invoice = await database.invoices.findOne({ _id: invoiceId, project }, { populate: ['items', 'customer'] });
       if (!invoice) {
         return reply.code(404).send({ error: 'Invoice not found' });
       }
 
       await reply.send(invoice.toJSON());
+    },
+  });
+
+  server.patch('/invoice/:invoiceId', {
+    schema: {
+      operationId: 'patchInvoice',
+      summary: 'Patch an invoice',
+      tags: ['invoice'],
+      params: {
+        type: 'object',
+        required: ['invoiceId'],
+        additionalProperties: false,
+        properties: {
+          invoiceId: { type: 'string' },
+        },
+      },
+      body: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          status: { type: 'string' },
+        },
+      },
+      response: {
+        200: {
+          $ref: 'SuccessResponse',
+        },
+        400: {
+          $ref: 'ErrorResponse',
+        },
+        404: {
+          $ref: 'ErrorResponse',
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      const project = await getProjectFromRequest(request);
+
+      const { invoiceId } = request.params as { invoiceId: string };
+      if (!invoiceId) {
+        return reply.code(400).send({ error: 'Missing invoiceId' });
+      }
+
+      const invoice = await database.invoices.findOne({ _id: invoiceId, project }, { populate: ['items', 'customer'] });
+      if (!invoice) {
+        return reply.code(404).send({ error: 'Invoice not found' });
+      }
+
+      if (invoice.status === 'paid' || invoice.status === 'failed') {
+        return reply.code(400).send({ error: "Invoice is already paid or failed and can't be changed anymore" });
+      }
+
+      const body = request.body as {
+        status?: Invoice['status'];
+      };
+
+      invoice.status = body.status ?? invoice.status;
+
+      await database.em.persistAndFlush(invoice);
+
+      await reply.send({ ok: true });
     },
   });
 
@@ -125,22 +186,19 @@ export async function invoiceEndpoints(server: FastifyInstance): Promise<void> {
         return reply.code(400).send({ error: 'Missing invoiceId' });
       }
 
-      const invoice = await database.invoices.findOne({ _id: invoiceId, project }, { populate: ['items'] });
+      const invoice = await database.invoices.findOne(
+        { _id: invoiceId, project },
+        { populate: ['items', 'subscription', 'customer'] },
+      );
       if (!invoice) {
         return reply.code(404).send({ error: 'Invoice not found' });
       }
 
-      const subscription = await database.subscriptions.findOne(invoice.subscription);
-      if (!subscription) {
-        return reply.code(404).send({ error: 'Subscription not found' });
-      }
-
-      const customer = await database.customers.findOne(subscription.customer);
-      if (!customer) {
-        return reply.code(404).send({ error: 'Customer not found' });
-      }
-
-      await reply.view(path.join('templates', 'invoice.hbs'), { invoice: invoice.toJSON(), project, customer });
+      await reply.view(path.join('templates', 'invoice.hbs'), {
+        invoice: invoice.toJSON(),
+        project,
+        customer: invoice.customer,
+      });
     },
   );
 

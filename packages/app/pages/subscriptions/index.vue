@@ -8,12 +8,11 @@
       </template>
 
       <template #status-data="{ row }">
-        <UBadge v-if="row.status === 'active'" size="xs" label="Active" color="emerald" variant="subtle" />
-        <UBadge v-else-if="row.status === 'error'" size="xs" label="Error" color="rose" variant="subtle" />
+        <StatusSubscription :subscription="row" />
       </template>
 
-      <template #nextPayment-data="{ row }">
-        <span>{{ formatDate(row.nextPayment) }}</span>
+      <template #currentPeriodEnd-data="{ row }">
+        <span>{{ formatDate(row.currentPeriodStart) }} - {{ formatDate(row.currentPeriodEnd) }}</span>
       </template>
     </UTable>
   </div>
@@ -31,18 +30,18 @@ const subscriptionColumns = [
     label: 'ID',
   },
   {
-    key: 'status',
-    label: 'Status',
-    sortable: true,
-  },
-  {
     key: 'customer',
     label: 'Customer',
     sortable: true,
   },
   {
-    key: 'nextPayment',
-    label: 'Next payment',
+    key: 'status',
+    label: 'Status',
+    sortable: true,
+  },
+  {
+    key: 'currentPeriodEnd',
+    label: 'Current period',
     sortable: true,
   },
 ];

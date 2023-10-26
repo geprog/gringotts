@@ -1,13 +1,19 @@
 import { Collection, EntitySchema, ReferenceType } from '@mikro-orm/core';
 import { v4 } from 'uuid';
 
+import { Customer } from '~/entities/customer';
 import { InvoiceItem } from '~/entities/invoice_item';
 import { Currency, Payment } from '~/entities/payment';
 import { Project } from '~/entities/project';
 import { Subscription } from '~/entities/subscription';
 import dayjs from '~/lib/dayjs';
 
-export type InvoiceStatus = 'draft' | 'pending' | 'paid' | 'failed';
+export type InvoiceStatus =
+  | 'draft' // invoice is not yet ready to be charged
+  | 'pending' // invoice is waiting to be charged / picked up by loop
+  | 'processing' // invoice is waiting for the payment to be processed
+  | 'paid' // invoice is paid
+  | 'failed'; // invoice failed to be paid
 
 export class Invoice {
   _id: string = v4();
@@ -15,7 +21,8 @@ export class Invoice {
   sequentialId!: number;
   items = new Collection<InvoiceItem>(this);
   status: InvoiceStatus = 'draft';
-  subscription!: Subscription;
+  subscription?: Subscription;
+  customer!: Customer;
   currency!: Currency;
   vatRate!: number;
   payment?: Payment;
@@ -75,7 +82,8 @@ export class Invoice {
   toJSON(): Invoice {
     return {
       ...this,
-      subscription: this.subscription.toJSON(),
+      subscription: this.subscription?.toJSON(),
+      customer: this.customer.toJSON(),
       vatAmount: this.vatAmount,
       amount: this.amount,
       totalAmount: this.totalAmount,
@@ -100,6 +108,11 @@ export const invoiceSchema = new EntitySchema<Invoice>({
     subscription: {
       reference: ReferenceType.MANY_TO_ONE,
       entity: () => Subscription,
+      nullable: true,
+    },
+    customer: {
+      reference: ReferenceType.MANY_TO_ONE,
+      entity: () => Customer,
     },
     payment: {
       reference: ReferenceType.ONE_TO_ONE,
