@@ -78,7 +78,11 @@
     <UCard>
       <h2>Changes</h2>
 
-      <UTable :rows="subscription.changes || []" :columns="subscriptionChangeColumns">
+      <UTable
+        :rows="subscription.changes || []"
+        :columns="subscriptionChangeColumns"
+        :sort="{ column: 'start', direction: 'desc' }"
+      >
         <template #start-data="{ row }">
           <span v-if="row.start">{{ formatDateTime(row.start) }}</span>
         </template>
