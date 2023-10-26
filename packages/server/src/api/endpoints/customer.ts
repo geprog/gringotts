@@ -337,4 +337,45 @@ export async function customerEndpoints(server: FastifyInstance): Promise<void> 
       await reply.send(_subscriptions);
     },
   });
+
+  server.get('/customer/:customerId/invoice', {
+    schema: {
+      operationId: 'listCustomerInvoices',
+      summary: 'List all invoices of a customer',
+      tags: ['invoice', 'customer'],
+      params: {
+        type: 'object',
+        required: ['customerId'],
+        additionalProperties: false,
+        properties: {
+          customerId: { type: 'string' },
+        },
+      },
+      response: {
+        200: {
+          type: 'array',
+          items: {
+            $ref: 'Invoice',
+          },
+        },
+        404: {
+          $ref: 'ErrorResponse',
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      const project = await getProjectFromRequest(request);
+
+      const { customerId } = request.params as { customerId: string };
+
+      const customer = await database.customers.findOne({ _id: customerId, project });
+      if (!customer) {
+        return reply.code(404).send({ error: 'Customer not found' });
+      }
+
+      const invoices = await database.invoices.find({ project, customer }, { populate: ['items'] });
+
+      await reply.send(invoices.map((invoice) => invoice.toJSON()));
+    },
+  });
 }

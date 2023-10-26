@@ -89,6 +89,7 @@ export function addSchemas(server: FastifyInstance): void {
       },
       subscription: { type: 'object', properties: { _id: { type: 'string' } }, additionalProperties: false },
       // subscription: { $ref: 'Subscription' },
+      customer: { $ref: 'Customer' },
       status: { type: 'string' },
       currency: { type: 'string' },
       vatRate: { type: 'number' },
@@ -139,7 +140,8 @@ export function addSchemas(server: FastifyInstance): void {
       status: { type: 'string' },
       error: { type: 'string' },
       lastPayment: { type: 'string' },
-      nextPayment: { type: 'string' },
+      currentPeriodStart: { type: 'string' },
+      currentPeriodEnd: { type: 'string' },
       activeUntil: { type: 'string' },
       customer: { $ref: 'Customer' },
       changes: {

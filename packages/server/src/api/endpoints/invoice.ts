@@ -125,17 +125,15 @@ export async function invoiceEndpoints(server: FastifyInstance): Promise<void> {
         return reply.code(400).send({ error: 'Missing invoiceId' });
       }
 
-      const invoice = await database.invoices.findOne({ _id: invoiceId, project }, { populate: ['items'] });
+      const invoice = await database.invoices.findOne(
+        { _id: invoiceId, project },
+        { populate: ['items', 'subscription'] },
+      );
       if (!invoice) {
         return reply.code(404).send({ error: 'Invoice not found' });
       }
 
-      const subscription = await database.subscriptions.findOne(invoice.subscription);
-      if (!subscription) {
-        return reply.code(404).send({ error: 'Subscription not found' });
-      }
-
-      const customer = await database.customers.findOne(subscription.customer);
+      const customer = await database.customers.findOne(invoice.customer);
       if (!customer) {
         return reply.code(404).send({ error: 'Customer not found' });
       }

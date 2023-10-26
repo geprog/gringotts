@@ -3,7 +3,7 @@ import { FastifyInstance } from 'fastify';
 import { getProjectFromRequest } from '~/api/helpers';
 import { database } from '~/database';
 import { Subscription } from '~/entities';
-import { getActiveUntilDate, getNextPaymentDate } from '~/utils';
+import { getActiveUntilDate, getPeriodFromAnchorDate } from '~/utils';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function subscriptionEndpoints(server: FastifyInstance): Promise<void> {
@@ -76,11 +76,13 @@ export async function subscriptionEndpoints(server: FastifyInstance): Promise<vo
       }
 
       const now = new Date();
+      const currentPeriod = getPeriodFromAnchorDate(now, now);
 
       const subscription = new Subscription({
         anchorDate: now,
         status: 'active',
-        nextPayment: getNextPaymentDate(now, now),
+        currentPeriodStart: currentPeriod.start,
+        currentPeriodEnd: currentPeriod.end,
         customer,
         project,
       });

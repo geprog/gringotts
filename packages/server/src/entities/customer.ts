@@ -1,6 +1,7 @@
 import { Collection, EntitySchema, ReferenceType } from '@mikro-orm/core';
 import { v4 } from 'uuid';
 
+import { Invoice } from '~/entities/invoice';
 import { PaymentMethod } from '~/entities/payment_method';
 import { Project } from '~/entities/project';
 import { Subscription } from '~/entities/subscription';
@@ -64,6 +65,11 @@ export const customerSchema = new EntitySchema<Customer>({
       reference: ReferenceType.ONE_TO_MANY,
       entity: () => Subscription,
       mappedBy: (subscription: Subscription) => subscription.customer,
+    },
+    invoices: {
+      reference: ReferenceType.ONE_TO_MANY,
+      entity: () => Invoice,
+      mappedBy: (invoice: Invoice) => invoice.customer,
     },
     project: {
       reference: ReferenceType.MANY_TO_ONE,

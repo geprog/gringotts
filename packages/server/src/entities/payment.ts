@@ -5,13 +5,13 @@ import { Customer } from '~/entities/customer';
 import { Invoice } from '~/entities/invoice';
 import { Subscription } from '~/entities/subscription';
 
-export type PaymentStatus = 'pending' | 'paid' | 'failed';
+export type PaymentStatus = 'processing' | 'paid' | 'failed';
 
 export type Currency = 'EUR';
 
 export class Payment {
   _id: string = v4();
-  status: PaymentStatus = 'pending';
+  status: PaymentStatus = 'processing';
   type!: 'recurring' | 'one-off' | 'verification';
   currency!: Currency;
   customer!: Customer;

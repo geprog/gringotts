@@ -10,10 +10,11 @@ import { SubscriptionPeriod } from '~/entities/subscription_period';
 export class Subscription {
   _id: string = v4();
   anchorDate!: Date; // first date a user ever started a subscription for the object
-  status: 'active' | 'error' = 'active';
+  status: 'processing' | 'active' | 'error' = 'active';
   error?: string;
   lastPayment?: Date;
-  nextPayment!: Date;
+  currentPeriodStart!: Date;
+  currentPeriodEnd!: Date;
   customer!: Customer;
   changes = new Collection<SubscriptionChange>(this);
   createdAt: Date = new Date();
@@ -72,7 +73,8 @@ export const subscriptionSchema = new EntitySchema<Subscription>({
     status: { type: 'string', default: 'active' },
     error: { type: 'string', nullable: true },
     lastPayment: { type: Date, nullable: true },
-    nextPayment: { type: Date },
+    currentPeriodStart: { type: Date },
+    currentPeriodEnd: { type: Date },
     customer: {
       reference: ReferenceType.MANY_TO_ONE,
       entity: () => Customer,
