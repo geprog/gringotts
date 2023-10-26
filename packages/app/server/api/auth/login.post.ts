@@ -19,9 +19,9 @@ export default defineEventHandler(async (event) => {
   });
 
   try {
-    await client.customer.listCustomers();
+    await client.project.getProject('token-project');
   } catch (error) {
-    console.log(error);
+    console.error(error);
     throw createError({
       statusCode: 401,
       message: 'project-token is invalid',
