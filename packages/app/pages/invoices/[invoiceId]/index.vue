@@ -26,14 +26,12 @@
           @click="downloadInvoice"
         />
 
-        <template v-if="subscription?.customer">
-          <router-link :to="`/customers/${subscription.customer._id}`">
-            <UButton :label="subscription.customer.name" icon="i-ion-people" size="sm" />
-          </router-link>
-          <router-link :to="`/subscriptions/${subscription._id}`">
-            <UButton label="Subscription" icon="i-ion-md-refresh" size="sm" />
-          </router-link>
-        </template>
+        <router-link v-if="invoice.customer" :to="`/customers/${invoice.customer._id}`">
+          <UButton :label="invoice.customer.name" icon="i-ion-people" size="sm" />
+        </router-link>
+        <router-link v-if="invoice.subscription" :to="`/subscriptions/${invoice.subscription._id}`">
+          <UButton label="Subscription" icon="i-ion-md-refresh" size="sm" />
+        </router-link>
       </div>
 
       <UForm :state="invoice" class="flex flex-col gap-4">
@@ -43,6 +41,10 @@
 
         <UFormGroup label="Date" name="date">
           <DatePicker v-model="invoice.date" :disabled="disabled" />
+        </UFormGroup>
+
+        <UFormGroup v-if="invoice.customer" label="Customer" name="customer">
+          <UInput color="primary" variant="outline" v-model="invoice.customer.name" size="lg" disabled />
         </UFormGroup>
 
         <UFormGroup label="Amount" name="amount">
@@ -87,18 +89,6 @@
             </template>
           </UInput>
         </UFormGroup>
-
-        <template v-if="subscription && subscription.customer">
-          <UFormGroup label="Customer">
-            <UInput
-              color="primary"
-              variant="outline"
-              v-model="subscription.customer.name"
-              size="lg"
-              :disabled="disabled"
-            />
-          </UFormGroup>
-        </template>
 
         <!-- <UButton label="Save" type="submit" class="mx-auto" /> -->
       </UForm>
@@ -151,12 +141,4 @@ async function downloadInvoice() {
   preparingInvoice.value = false;
   window.open(data.url, '_blank');
 }
-
-const { data: subscription } = useAsyncData(async () => {
-  const subscriptionId = invoice.value?.subscription?._id;
-  if (!subscriptionId) return null;
-
-  const { data } = await client.subscription.getSubscription(subscriptionId);
-  return data;
-});
 </script>

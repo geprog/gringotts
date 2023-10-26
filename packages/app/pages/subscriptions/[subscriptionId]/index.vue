@@ -20,8 +20,12 @@
           <DatePicker v-model="subscription.lastPayment" disabled />
         </UFormGroup>
 
-        <UFormGroup label="Next payment" name="nextPayment">
-          <DatePicker v-model="subscription.nextPayment" disabled />
+        <UFormGroup label="Current period start" name="currentPeriodStart">
+          <DatePicker v-model="subscription.currentPeriodStart" disabled />
+        </UFormGroup>
+
+        <UFormGroup label="Current period end" name="currentPeriodEnd">
+          <DatePicker v-model="subscription.currentPeriodEnd" disabled />
         </UFormGroup>
 
         <UFormGroup label="Status" name="status">

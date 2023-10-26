@@ -96,12 +96,33 @@
         </template>
       </UTable>
     </UCard>
+
+    <UCard>
+      <h2>Invoices</h2>
+
+      <UTable :loading="invoicesPending" :rows="invoices || []" :columns="invoicesColumns" @select="selectInvoice">
+        <template #date-data="{ row }">
+          <span>{{ formatDate(row.date) }}</span>
+        </template>
+
+        <template #totalAmount-data="{ row }">
+          <span>{{ formatCurrency(row.totalAmount, row.currency) }}</span>
+        </template>
+
+        <template #status-data="{ row }">
+          <UBadge v-if="row.status === 'draft'" size="xs" label="Draft" color="primary" variant="subtle" />
+          <UBadge v-else-if="row.status === 'pending'" size="xs" label="Pending" color="amber" variant="subtle" />
+          <UBadge v-else-if="row.status === 'paid'" size="xs" label="Paid" color="emerald" variant="subtle" />
+          <UBadge v-else-if="row.status === 'failed'" size="xs" label="Failed" color="rose" variant="subtle" />
+        </template>
+      </UTable>
+    </UCard>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { ContentType } from '@geprog/gringotts-client';
-import type { PaymentMethod, Subscription } from '@geprog/gringotts-client';
+import type { Invoice, PaymentMethod, Subscription } from '@geprog/gringotts-client';
 
 const client = await useGringottsClient();
 const route = useRoute();
@@ -206,6 +227,37 @@ const { data: subscriptions, pending: subscriptionPending } = useAsyncData(async
 
 async function selectSubscription(row: Subscription) {
   await router.push(`/subscriptions/${row._id}`);
+}
+
+const invoicesColumns = [
+  {
+    key: 'number',
+    label: 'Number',
+    sortable: true,
+  },
+  {
+    key: 'date',
+    label: 'Date',
+    sortable: true,
+  },
+  {
+    key: 'status',
+    label: 'Status',
+    sortable: true,
+  },
+  {
+    key: 'totalAmount',
+    label: 'Total',
+    sortable: true,
+  },
+];
+const { data: invoices, pending: invoicesPending } = useAsyncData(async () => {
+  const { data } = await client.customer.listCustomerInvoices(customerId);
+  return data;
+});
+
+async function selectInvoice(row: Invoice) {
+  await router.push(`/invoices/${row._id}`);
 }
 
 const currency = 'EUR'; // TODO: use variable currency for balance

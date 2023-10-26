@@ -3,6 +3,10 @@
     <h1 class="text-xl">Invoices</h1>
 
     <UTable :loading="pending" :rows="invoices || []" :columns="invoiceColumns" @select="selectInvoice">
+      <template #customer-data="{ row }">
+        <span>{{ row.customer.name }}</span>
+      </template>
+
       <template #date-data="{ row }">
         <span>{{ formatDate(row.date) }}</span>
       </template>
@@ -31,6 +35,11 @@ const invoiceColumns = [
   {
     key: 'number',
     label: 'Number',
+    sortable: true,
+  },
+  {
+    key: 'customer',
+    label: 'Customer',
     sortable: true,
   },
   {
