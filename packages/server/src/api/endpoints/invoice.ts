@@ -157,6 +157,10 @@ export async function invoiceEndpoints(server: FastifyInstance): Promise<void> {
         return reply.code(404).send({ error: 'Invoice not found' });
       }
 
+      if (invoice.status === 'paid' || invoice.status === 'failed') {
+        return reply.code(400).send({ error: "Invoice is already paid or failed and can't be changed anymore" });
+      }
+
       const body = request.body as {
         status?: Invoice['status'];
       };
