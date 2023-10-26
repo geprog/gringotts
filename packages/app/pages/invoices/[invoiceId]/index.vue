@@ -17,6 +17,14 @@
           @click="downloadInvoice"
         />
 
+        <UButton
+          v-if="invoice.status === 'draft'"
+          label="Charge invoice"
+          icon="i-ion-bag-check-outline"
+          size="sm"
+          @click="chargeInvoice"
+        />
+
         <router-link v-if="invoice.customer" :to="`/customers/${invoice.customer._id}`">
           <UButton :label="invoice.customer.name" icon="i-ion-people" size="sm" />
         </router-link>
@@ -102,7 +110,7 @@ const client = await useGringottsClient();
 const route = useRoute();
 const invoiceId = route.params.invoiceId as string;
 
-const { data: invoice } = useAsyncData(async () => {
+const { data: invoice, refresh } = useAsyncData(async () => {
   const { data } = await client.invoice.getInvoice(invoiceId);
   return data;
 });
@@ -131,5 +139,12 @@ async function downloadInvoice() {
   const { data } = await client.invoice.generateInvoiceDownloadLink(invoiceId);
   preparingInvoice.value = false;
   window.open(data.url, '_blank');
+}
+
+async function chargeInvoice() {
+  await client.invoice.patchInvoice(invoiceId, {
+    status: 'pending',
+  });
+  await refresh();
 }
 </script>

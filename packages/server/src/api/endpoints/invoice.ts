@@ -112,6 +112,63 @@ export async function invoiceEndpoints(server: FastifyInstance): Promise<void> {
     },
   });
 
+  server.patch('/invoice/:invoiceId', {
+    schema: {
+      operationId: 'patchInvoice',
+      summary: 'Patch an invoice',
+      tags: ['invoice'],
+      params: {
+        type: 'object',
+        required: ['invoiceId'],
+        additionalProperties: false,
+        properties: {
+          invoiceId: { type: 'string' },
+        },
+      },
+      body: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          status: { type: 'string' },
+        },
+      },
+      response: {
+        200: {
+          $ref: 'SuccessResponse',
+        },
+        400: {
+          $ref: 'ErrorResponse',
+        },
+        404: {
+          $ref: 'ErrorResponse',
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      const project = await getProjectFromRequest(request);
+
+      const { invoiceId } = request.params as { invoiceId: string };
+      if (!invoiceId) {
+        return reply.code(400).send({ error: 'Missing invoiceId' });
+      }
+
+      const invoice = await database.invoices.findOne({ _id: invoiceId, project }, { populate: ['items', 'customer'] });
+      if (!invoice) {
+        return reply.code(404).send({ error: 'Invoice not found' });
+      }
+
+      const body = request.body as {
+        status?: Invoice['status'];
+      };
+
+      invoice.status = body.status ?? invoice.status;
+
+      await database.em.persistAndFlush(invoice);
+
+      await reply.send({ ok: true });
+    },
+  });
+
   server.get(
     '/invoice/:invoiceId/html',
     {
