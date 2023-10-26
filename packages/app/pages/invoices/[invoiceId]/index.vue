@@ -3,16 +3,7 @@
     <div class="flex justify-between">
       <h1 class="text-xl">Invoice: {{ invoice.number }}</h1>
 
-      <UBadge v-if="invoice.status === 'draft'" size="xs" label="Status: Draft" color="primary" variant="subtle" />
-      <UBadge
-        v-else-if="invoice.status === 'pending'"
-        size="xs"
-        label="Status: Pending"
-        color="amber"
-        variant="subtle"
-      />
-      <UBadge v-else-if="invoice.status === 'paid'" size="xs" label="Status: Paid" color="emerald" variant="subtle" />
-      <UBadge v-else-if="invoice.status === 'failed'" size="xs" label="Status: Failed" color="rose" variant="subtle" />
+      <StatusInvoice :invoice="invoice" />
     </div>
 
     <UCard>

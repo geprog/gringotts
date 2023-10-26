@@ -56,10 +56,7 @@
         </template>
 
         <template #status-data="{ row }">
-          <UBadge v-if="row.status === 'draft'" size="xs" label="Draft" color="primary" variant="subtle" />
-          <UBadge v-else-if="row.status === 'pending'" size="xs" label="Pending" color="amber" variant="subtle" />
-          <UBadge v-else-if="row.status === 'paid'" size="xs" label="Paid" color="emerald" variant="subtle" />
-          <UBadge v-else-if="row.status === 'failed'" size="xs" label="Failed" color="rose" variant="subtle" />
+          <StatusSubscription :subscription="row" />
         </template>
 
         <template #totalAmount-data="{ row }">
