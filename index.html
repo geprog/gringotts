@@ -16,7 +16,17 @@
 </a>
 <p><a href="https://www.npmjs.com/package/@geprog/gringotts-client"><img src="https://img.shields.io/npm/v/@geprog/gringotts-client" alt="npm version"></a>
 <a href="https://github.com/geprog/gringotts-payments/pkgs/container/gringotts"><img src="https://img.shields.io/docker/v/geprog/gringotts?label=docker" alt="docker image Version (latest by date)"></a></p>
-<p>Gringotts is an api service (maybe a frontend will follow at some point) which can be used as gateway between your payment provider and for example your SAAS application. It allows you to easily handle subscriptions, subscription changes and invoice generation for your users.</p>
+<p>Gringotts is a service which can be used as gateway between your payment provider and for example your SAAS application. It allows you to easily handle customers, subscriptions and invoice generation for your users.</p>
+<p><img src="./docs/screenshot.png" alt="Gringotts"></p>
+
+<a href="#some-current-opinions" id="some-current-opinions" style="color: inherit; text-decoration: none;">
+  <h2>Some (current) opinions</h2>
+</a>
+<ul>
+<li>Subscriptions are always monthly</li>
+<li>Subscription-periods start at the first day the customer started the subscription (exp. 2021-01-15 to 2021-02-14, 2021-02-15 to 2021-03-14, ...)</li>
+<li>Invoices are generated at the end of the subscription-period (exp. 2021-01-15 to 2021-02-14 =&gt; invoice is generated on 2021-02-14)</li>
+</ul>
 
 <a href="#usage" id="usage" style="color: inherit; text-decoration: none;">
   <h2>Usage</h2>
@@ -41,12 +51,12 @@
 <tbody><tr>
 <td>PORT</td>
 <td>Port on which the server should listen</td>
-<td>3000</td>
+<td>7171</td>
 </tr>
 <tr>
 <td>PUBLIC_URL</td>
 <td>Url on which the server is reachable</td>
-<td><a href="http://localhost:3000">http://localhost:3000</a></td>
+<td><a href="http://localhost:7171">http://localhost:7171</a></td>
 </tr>
 <tr>
 <td>POSTGRES_URL</td>
@@ -88,7 +98,7 @@
 <a href="#openapi-documention" id="openapi-documention" style="color: inherit; text-decoration: none;">
   <h3>OpenApi Documention</h3>
 </a>
-<p>The OpenApi documentation can be found at <code>https://&lt;PUBLIC_URL&gt;/docs</code> like <a href="http://localhost:3000/docs">http://localhost:3000/docs</a></p>
+<p>The OpenApi documentation can be found at <code>https://&lt;PUBLIC_URL&gt;/docs</code> like <a href="http://localhost:7171/docs">http://localhost:7171/docs</a></p>
 
 <a href="#development" id="development" style="color: inherit; text-decoration: none;">
   <h2>Development</h2>
