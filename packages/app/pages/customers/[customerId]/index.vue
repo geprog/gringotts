@@ -93,13 +93,23 @@
         <template #lastPayment-data="{ row }">
           <span v-if="row.lastPayment">{{ formatDate(row.lastPayment) }}</span>
         </template>
+
+        <template #currentPeriodEnd-data="{ row }">
+          <span>{{ formatDate(row.currentPeriodStart) }} - {{ formatDate(row.currentPeriodEnd) }}</span>
+        </template>
       </UTable>
     </UCard>
 
     <UCard>
       <h2>Invoices</h2>
 
-      <UTable :loading="invoicesPending" :rows="invoices || []" :columns="invoicesColumns" @select="selectInvoice">
+      <UTable
+        :loading="invoicesPending"
+        :rows="invoices || []"
+        :columns="invoicesColumns"
+        :sort="{ column: 'date', direction: 'desc' }"
+        @select="selectInvoice"
+      >
         <template #date-data="{ row }">
           <span>{{ formatDate(row.date) }}</span>
         </template>
@@ -150,6 +160,7 @@ const paymentMethodColumns = [
   {
     key: 'active',
     label: 'Active',
+    sortable: true,
   },
   {
     key: 'actions',
@@ -211,8 +222,8 @@ const subscriptionColumns = [
     sortable: true,
   },
   {
-    key: 'nextPayment',
-    label: 'Next payment',
+    key: 'currentPeriodEnd',
+    label: 'Current period',
     sortable: true,
   },
 ];

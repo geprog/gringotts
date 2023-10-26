@@ -2,7 +2,13 @@
   <div class="w-full">
     <h1 class="text-xl">Invoices</h1>
 
-    <UTable :loading="pending" :rows="invoices || []" :columns="invoiceColumns" @select="selectInvoice">
+    <UTable
+      :loading="pending"
+      :rows="invoices || []"
+      :columns="invoiceColumns"
+      :sort="{ column: 'date', direction: 'desc' }"
+      @select="selectInvoice"
+    >
       <template #customer-data="{ row }">
         <span>{{ row.customer.name }}</span>
       </template>
