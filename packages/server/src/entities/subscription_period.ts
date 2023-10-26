@@ -3,7 +3,6 @@ import { InvoiceItem } from '~/entities/invoice_item';
 import { Subscription } from '~/entities/subscription';
 import { SubscriptionChange } from '~/entities/subscription_change';
 import dayjs from '~/lib/dayjs';
-import { getPeriodFromAnchorDate } from '~/utils';
 
 type InvoiceSubscriptionItem = {
   start: Date;
@@ -24,7 +23,7 @@ export class SubscriptionPeriod {
     this.changes = subscription.changes
       .getItems()
       .filter((change) => {
-        const changeEnd = change.end || getPeriodFromAnchorDate(change.start, subscription.anchorDate).end;
+        const changeEnd = change.end || end;
         return dayjs(changeEnd).isBetween(start, end, 'day', '[]');
       })
       .sort((a, b) => a.start.getTime() - b.start.getTime());
@@ -44,7 +43,7 @@ export class SubscriptionPeriod {
 
     const periodDays = dayjs(this.end).diff(this.start);
     const diffMsToDates = (diffMs: number) => Math.round(diffMs / (1000 * 60 * 60 * 24));
-    const formatDate = (date: Date) => dayjs(date).format('DD.MM.YYYY HH:mm');
+    const formatDate = (date: Date) => dayjs(date).format('DD.MM.YYYY');
 
     let start = this.start;
     for (const [i, change] of this.changes.entries()) {

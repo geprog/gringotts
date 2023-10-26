@@ -4,6 +4,7 @@ import dayjs from '~/lib/dayjs';
 import { log } from '~/log';
 import { getPaymentProvider } from '~/payment_providers';
 import { getNextPeriod } from '~/utils';
+import { triggerWebhook } from '~/webhook';
 
 const pageLimit = 10; // fetch 10 items at a time and process them
 
@@ -19,8 +20,10 @@ export async function chargeCustomerInvoice(invoice: Invoice): Promise<void> {
     throw new Error('Customer has no active payment method');
   }
 
-  // add customer credit
-  if (customer.balance > 0) {
+  const amount = Invoice.roundPrice(invoice.totalAmount);
+
+  // add customer credit if amount is above 0 and customer has credit
+  if (customer.balance > 0 && amount > 0) {
     const creditAmount = Math.min(customer.balance, invoice.amount);
     invoice.items.add(
       new InvoiceItem({
@@ -33,9 +36,6 @@ export async function chargeCustomerInvoice(invoice: Invoice): Promise<void> {
     await database.em.persistAndFlush([customer]);
     log.debug({ customerId: customer._id, creditAmount }, 'Credit applied');
   }
-
-  // skip negative amounts (credits) and zero amounts
-  const amount = Invoice.roundPrice(invoice.totalAmount);
 
   const paymentDescription = `Invoice ${invoice.number}`;
 
@@ -56,6 +56,7 @@ export async function chargeCustomerInvoice(invoice: Invoice): Promise<void> {
 
   invoice.payment = payment;
 
+  // skip negative amounts (credits) and zero amounts
   if (amount > 0) {
     const paymentProvider = getPaymentProvider(project);
     if (!paymentProvider) {
@@ -68,6 +69,18 @@ export async function chargeCustomerInvoice(invoice: Invoice): Promise<void> {
     // set invoice and payment to paid immediately if the amount is 0 or negative
     invoice.status = 'paid';
     payment.status = 'paid';
+
+    const { subscription } = payment;
+    if (subscription) {
+      subscription.lastPayment = new Date();
+      await database.em.persistAndFlush([subscription]);
+      void triggerWebhook({
+        url: project.webhookUrl,
+        body: {
+          subscriptionId: subscription._id,
+        },
+      });
+    }
     log.debug(
       { invoiceId: invoice._id, paymentId: payment._id, amount },
       'Invoice and payment set to paid as the amount is 0 or negative',

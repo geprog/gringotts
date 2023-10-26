@@ -41,6 +41,10 @@ export class Subscription {
       this.changes[this.changes.count() - 1].end = data.changeDate;
     }
 
+    if (this.changes.getItems().filter((c) => c.end === undefined).length > 1) {
+      throw new Error('Only the last item is allowed to have no end date');
+    }
+
     this.changes.add(
       new SubscriptionChange({
         start: this.changes.count() === 0 ? this.anchorDate : (data.changeDate as Date),

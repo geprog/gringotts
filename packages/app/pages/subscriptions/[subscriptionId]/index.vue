@@ -3,6 +3,16 @@
     <h1 class="text-xl">Subscription: {{ subscription._id }}</h1>
 
     <UCard>
+      <div class="flex justify-end mb-2 gap-2 items-center">
+        <UButton
+          v-if="subscription.status === 'error'"
+          label="Reset errror"
+          icon="i-ion-md-undo"
+          size="sm"
+          @click="resetError"
+        />
+      </div>
+
       <UForm :state="subscription" class="flex flex-col gap-4">
         <UFormGroup v-if="subscription.customer" label="Customer" name="customer">
           <UInput color="primary" variant="outline" v-model="subscription.customer.name" size="lg" disabled />
@@ -89,7 +99,7 @@ const route = useRoute();
 const router = useRouter();
 const subscriptionId = route.params.subscriptionId as string;
 
-const { data: subscription } = useAsyncData(async () => {
+const { data: subscription, refresh } = useAsyncData(async () => {
   const { data } = await client.subscription.getSubscription(subscriptionId);
   return data;
 });
@@ -144,4 +154,12 @@ const { data: invoices, pending: invoicesPending } = useAsyncData(async () => {
   const { data } = await client.subscription.listSubscriptionInvoices(subscriptionId);
   return data;
 });
+
+async function resetError() {
+  await client.subscription.patchSubscription(subscriptionId, {
+    status: 'active',
+    error: '',
+  });
+  await refresh();
+}
 </script>

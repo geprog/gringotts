@@ -234,14 +234,14 @@ export async function projectEndpoints(server: FastifyInstance): Promise<void> {
         project.invoiceData = new ProjectInvoiceData();
       }
 
-      project.invoiceData.name = body.invoiceData?.name || project.invoiceData.name;
-      project.invoiceData.email = body.invoiceData?.email || project.invoiceData.email;
-      project.invoiceData.addressLine1 = body.invoiceData?.addressLine1 || project.invoiceData.addressLine1;
-      project.invoiceData.addressLine2 = body.invoiceData?.addressLine2 || project.invoiceData.addressLine2;
-      project.invoiceData.city = body.invoiceData?.city || project.invoiceData.city;
-      project.invoiceData.country = body.invoiceData?.country || project.invoiceData.country;
-      project.invoiceData.zipCode = body.invoiceData?.zipCode || project.invoiceData.zipCode;
-      project.invoiceData.logo = body.invoiceData?.logo || project.invoiceData.logo;
+      project.invoiceData.name = body.invoiceData?.name ?? project.invoiceData.name;
+      project.invoiceData.email = body.invoiceData?.email ?? project.invoiceData.email;
+      project.invoiceData.addressLine1 = body.invoiceData?.addressLine1 ?? project.invoiceData.addressLine1;
+      project.invoiceData.addressLine2 = body.invoiceData?.addressLine2 ?? project.invoiceData.addressLine2;
+      project.invoiceData.city = body.invoiceData?.city ?? project.invoiceData.city;
+      project.invoiceData.country = body.invoiceData?.country ?? project.invoiceData.country;
+      project.invoiceData.zipCode = body.invoiceData?.zipCode ?? project.invoiceData.zipCode;
+      project.invoiceData.logo = body.invoiceData?.logo ?? project.invoiceData.logo;
 
       await database.em.persistAndFlush(project);
 
