@@ -184,7 +184,7 @@ export async function subscriptionEndpoints(server: FastifyInstance): Promise<vo
         status?: Subscription['status'];
       };
 
-      if (body.units && body.pricePerUnit) {
+      if (body.units !== undefined && body.pricePerUnit !== undefined) {
         if (body.units < 1) {
           return reply.code(400).send({
             error: 'Units must be greater than 0',

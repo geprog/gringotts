@@ -1,4 +1,5 @@
 import { Collection, EntitySchema, ReferenceType } from '@mikro-orm/core';
+import dayjs from 'dayjs';
 import { v4 } from 'uuid';
 
 import { Customer } from '~/entities/customer';
@@ -33,16 +34,26 @@ export class Subscription {
    * @param data.changeDate Date when to end the current plan and start with a new one
    */
   changePlan(data: { pricePerUnit: number; units: number; changeDate?: Date }): void {
-    // set end date of last change if we have one
-    if (this.changes.count() > 0) {
-      if (data.changeDate === undefined) {
+    const changes = this.changes.getItems();
+
+    // set end date of existing changes
+    if (changes.length > 0) {
+      if (!data.changeDate) {
         throw new Error('changeDate is required if you already have a change');
       }
-      this.changes[this.changes.count() - 1].end = data.changeDate;
-    }
 
-    if (this.changes.getItems().filter((c) => c.end === undefined).length > 1) {
-      throw new Error('Only the last item is allowed to have no end date');
+      // sort changes in reverse order by start date
+      changes.sort((a, b) => b.start.getTime() - a.start.getTime());
+
+      let lastEnd = data.changeDate;
+      for (const change of changes) {
+        if (!change.end) {
+          change.end = lastEnd;
+        }
+        lastEnd = dayjs(change.start).subtract(1, 'second').toDate();
+      }
+
+      this.changes.set(changes);
     }
 
     this.changes.add(
