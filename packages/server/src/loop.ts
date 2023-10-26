@@ -45,7 +45,7 @@ export async function chargeCustomerInvoice(invoice: Invoice): Promise<void> {
   }
 
   const payment = new Payment({
-    amount,
+    amount: Math.max(amount, 0), // negative amounts are not allowed
     currency: project.currency,
     customer,
     type: 'recurring',
@@ -100,7 +100,8 @@ export async function chargeSubscriptions(): Promise<void> {
     );
 
     for await (const subscription of subscriptions) {
-      // TODO: should we lock subscription processing?
+      subscription.status = 'processing';
+      await database.em.persistAndFlush([subscription]);
 
       const { project, customer } = subscription;
 
@@ -140,6 +141,7 @@ export async function chargeSubscriptions(): Promise<void> {
         const nextPeriod = getNextPeriod(billingPeriod.start, subscription.anchorDate);
         subscription.currentPeriodStart = nextPeriod.start;
         subscription.currentPeriodEnd = nextPeriod.end;
+        subscription.status = 'active';
 
         await database.em.persistAndFlush([subscription, customer, invoice]);
 
