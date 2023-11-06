@@ -33,6 +33,7 @@ describe('Payment webhook endpoints', () => {
         status: 'processing',
         type: 'verification',
         description: 'Verification payment',
+        project: testData.project,
       });
 
       const persistAndFlush = vi.fn();

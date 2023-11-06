@@ -25,6 +25,19 @@ export class Payment {
   constructor(data?: Partial<Payment>) {
     Object.assign(this, data);
   }
+
+  toJSON(): Payment {
+    return {
+      ...this,
+      subscription: this.subscription?.toJSON(),
+      customer: this.customer.toJSON(),
+      invoice: this.invoice
+        ? {
+            _id: this.invoice?._id,
+          }
+        : undefined,
+    };
+  }
 }
 
 export const paymentSchema = new EntitySchema<Payment>({

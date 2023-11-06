@@ -53,6 +53,7 @@ export async function chargeCustomerInvoice(invoice: Invoice): Promise<void> {
     status: 'processing',
     description: paymentDescription,
     subscription: invoice.subscription,
+    project,
   });
 
   invoice.payment = payment;

@@ -1,11 +1,77 @@
 import { FastifyInstance } from 'fastify';
 
+import { getProjectFromRequest } from '~/api/helpers';
 import { database } from '~/database';
 import { getPaymentProvider } from '~/payment_providers';
 import { triggerWebhook } from '~/webhook';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function paymentEndpoints(server: FastifyInstance): Promise<void> {
+  server.get('/payment', {
+    schema: {
+      operationId: 'listPayments',
+      summary: 'List payments',
+      tags: ['payment'],
+      response: {
+        200: {
+          type: 'array',
+          items: {
+            $ref: 'Payment',
+          },
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      const project = await getProjectFromRequest(request);
+
+      const payments = await database.payments.find({ project }, { populate: ['customer', 'invoice', 'subscription'] });
+
+      await reply.send(payments.map((i) => i.toJSON()));
+    },
+  });
+
+  server.get('/payment/:paymentId', {
+    schema: {
+      operationId: 'getPayment',
+      summary: 'Get a payment',
+      tags: ['payment'],
+      params: {
+        type: 'object',
+        required: ['paymentId'],
+        additionalProperties: false,
+        properties: {
+          paymentId: { type: 'string' },
+        },
+      },
+      response: {
+        200: {
+          $ref: 'Payment',
+        },
+        404: {
+          $ref: 'ErrorResponse',
+        },
+      },
+    },
+    handler: async (request, reply) => {
+      const project = await getProjectFromRequest(request);
+
+      const { paymentId } = request.params as { paymentId: string };
+      if (!paymentId) {
+        return reply.code(400).send({ error: 'Missing paymentId' });
+      }
+
+      const payment = await database.payments.findOne(
+        { _id: paymentId, project },
+        { populate: ['customer', 'invoice'] },
+      );
+      if (!payment) {
+        return reply.code(404).send({ error: 'Payment not found' });
+      }
+
+      await reply.send(payment.toJSON());
+    },
+  });
+
   server.post('/payment/webhook/:projectId', {
     schema: { hide: true },
     handler: async (request, reply) => {

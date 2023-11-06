@@ -82,6 +82,7 @@ export async function paymentMethodEndpoints(server: FastifyInstance): Promise<v
         type: 'verification',
         customer,
         status: 'processing',
+        project,
       });
 
       const { checkoutUrl } = await paymentProvider.chargeForegroundPayment({

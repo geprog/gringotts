@@ -59,7 +59,10 @@ export function addSchemas(server: FastifyInstance): void {
       status: { type: 'string' },
       currency: { type: 'string' },
       amount: { type: 'number' },
-      description: { type: 'number' },
+      description: { type: 'string' },
+      invoice: { type: 'object', properties: { _id: { type: 'string' } }, additionalProperties: false },
+      customer: { $ref: 'Customer' },
+      subscription: { $ref: 'Subscription' },
     },
   });
 
