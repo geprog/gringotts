@@ -26,6 +26,7 @@ import { MigrationSetNextPaymentForSubscriptions } from '~/migrations/002_set_ne
 import { MigrationPaymentStatusFromPendingToProcessing } from '~/migrations/003_update_payment_status';
 import { MigrationUpdateInvoiceAddCustomerAndAllowOptionalSubscription } from '~/migrations/004_update_invoice_add_customer_make_subscription_optional';
 import { MigrationReplaceNextPaymentWithCurrentPeriod } from '~/migrations/005_update_status_optional_invoice_subscription';
+import { MigrationSetPaymentProject } from '~/migrations/006_set_payment_project';
 
 export class Database {
   orm!: MikroORM;
@@ -76,6 +77,10 @@ export class Database {
             {
               name: 'MigrationReplaceNextPaymentWithCurrentPeriod',
               class: MigrationReplaceNextPaymentWithCurrentPeriod,
+            },
+            {
+              name: 'MigrationSetPaymentProject',
+              class: MigrationSetPaymentProject,
             },
           ],
           disableForeignKeys: false,
