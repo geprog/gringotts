@@ -206,13 +206,17 @@ describe('Loop', () => {
 
     // then
     expect(persistAndFlush).toBeCalledTimes(2);
-    const [[updatedInvoice]] = persistAndFlush.mock.calls[1] as [[Invoice]];
+    const [[updatedInvoice, payment]] = persistAndFlush.mock.calls[1] as [[Invoice, Payment]];
     expect(updatedInvoice).toBeDefined();
     expect(updatedInvoice.items.getItems().find((i) => i.description === 'Credit')).toBeDefined();
     expect(updatedInvoice.amount).toStrictEqual(Invoice.roundPrice(invoiceAmount - balance));
     expect(updatedInvoice.totalAmount).toStrictEqual(
       Invoice.roundPrice((invoiceAmount - balance) * (1 + invoice.vatRate / 100)),
     );
+
+    expect(payment).toBeDefined();
+    expect(payment.amount).toStrictEqual(updatedInvoice.totalAmount);
+    expect(payment.status).toStrictEqual('processing');
   });
 
   it('should apply customer balance when charging and keep remaining balance', async () => {
@@ -242,20 +246,32 @@ describe('Loop', () => {
     customer.balance = balance;
     const invoiceAmount = invoice.amount;
 
+    const now = dayjs('2021-01-01').toDate();
+    vi.setSystemTime(now);
+
     // when
     await chargeCustomerInvoice(invoice);
 
     // then
-    expect(persistAndFlush).toBeCalledTimes(2);
+    expect(persistAndFlush).toBeCalledTimes(3);
 
     const [[updatedCustomer]] = persistAndFlush.mock.calls[0] as [[Customer]];
     expect(updatedCustomer).toBeDefined();
     expect(updatedCustomer.balance).toStrictEqual(balance - invoiceAmount);
 
-    const [[updatedInvoice]] = persistAndFlush.mock.calls[1] as [[Invoice]];
+    const [[updatedSubscription]] = persistAndFlush.mock.calls[1] as [[Subscription]];
+    expect(updatedSubscription).toBeDefined();
+    expect(updatedSubscription.lastPayment).toStrictEqual(now);
+
+    const [[updatedInvoice, payment]] = persistAndFlush.mock.calls[2] as [[Invoice, Payment]];
     expect(updatedInvoice).toBeDefined();
     expect(updatedInvoice.items.getItems().find((i) => i.description === 'Credit')).toBeDefined();
     expect(updatedInvoice.amount).toStrictEqual(0);
     expect(updatedInvoice.totalAmount).toStrictEqual(0);
+    expect(updatedInvoice.status).toStrictEqual('paid');
+
+    expect(payment).toBeDefined();
+    expect(payment.amount).toStrictEqual(updatedInvoice.totalAmount);
+    expect(payment.status).toStrictEqual('paid');
   });
 });

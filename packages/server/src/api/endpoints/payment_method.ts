@@ -205,9 +205,17 @@ export async function paymentMethodEndpoints(server: FastifyInstance): Promise<v
 
       const { paymentMethodId } = request.params as { paymentMethodId: string };
 
-      const paymentMethod = await database.paymentMethods.findOne({ _id: paymentMethodId, project });
+      const paymentMethod = await database.paymentMethods.findOne(
+        { _id: paymentMethodId, project },
+        { populate: ['customer'] },
+      );
       if (!paymentMethod) {
         return reply.code(404).send({ error: 'Payment-method not found' });
+      }
+
+      if (paymentMethod.customer.activePaymentMethod?._id === paymentMethod._id) {
+        paymentMethod.customer.activePaymentMethod = undefined;
+        await database.em.persistAndFlush(paymentMethod.customer);
       }
 
       await database.em.removeAndFlush(paymentMethod);
