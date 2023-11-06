@@ -20,7 +20,7 @@ export async function chargeCustomerInvoice(invoice: Invoice): Promise<void> {
     throw new Error('Customer has no active payment method');
   }
 
-  const amount = Invoice.roundPrice(invoice.totalAmount);
+  let amount = Invoice.roundPrice(invoice.totalAmount);
 
   // add customer credit if amount is above 0 and customer has credit
   if (customer.balance > 0 && amount > 0) {
@@ -34,6 +34,7 @@ export async function chargeCustomerInvoice(invoice: Invoice): Promise<void> {
     );
     customer.balance = Invoice.roundPrice(customer.balance - creditAmount);
     await database.em.persistAndFlush([customer]);
+    amount = Invoice.roundPrice(invoice.totalAmount);
     log.debug({ customerId: customer._id, creditAmount }, 'Credit applied');
   }
 

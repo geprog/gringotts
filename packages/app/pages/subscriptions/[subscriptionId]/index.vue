@@ -11,6 +11,10 @@
           size="sm"
           @click="resetError"
         />
+
+        <router-link v-if="subscription.customer" :to="`/customers/${subscription.customer._id}`">
+          <UButton :label="subscription.customer.name" icon="i-ion-people" size="sm" />
+        </router-link>
       </div>
 
       <UForm :state="subscription" class="flex flex-col gap-4">
