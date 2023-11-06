@@ -186,12 +186,13 @@ describe('Payment-method endpoints', () => {
       paymentProviderId: '123',
     };
 
-    const deleteMock = vi.fn();
+    const persistAndFlush = vi.fn();
+    const removeAndFlush = vi.fn();
 
     vi.spyOn(database, 'database', 'get').mockReturnValue({
       paymentMethods: {
         findOne() {
-          return Promise.resolve(new PaymentMethod(paymentMethodData));
+          return Promise.resolve(new PaymentMethod({ ...paymentMethodData, customer: testData.customer }));
         },
       },
       projects: {
@@ -200,7 +201,8 @@ describe('Payment-method endpoints', () => {
         },
       },
       em: {
-        removeAndFlush: deleteMock,
+        persistAndFlush,
+        removeAndFlush,
       },
     } as unknown as database.Database);
 
@@ -221,7 +223,9 @@ describe('Payment-method endpoints', () => {
     const paymentMethodResponse: { ok: boolean } = response.json();
     expect(paymentMethodResponse).toBeDefined();
     expect(paymentMethodResponse).toStrictEqual({ ok: true });
-    expect(deleteMock).toBeCalledTimes(1);
-    expect(deleteMock).toHaveBeenCalledWith(paymentMethodData);
+    expect(removeAndFlush).toBeCalledTimes(1);
+    expect(removeAndFlush).toHaveBeenCalledWith(paymentMethodData);
+
+    expect(persistAndFlush).toBeCalledTimes(1);
   });
 });

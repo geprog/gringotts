@@ -53,8 +53,12 @@
           />
         </UFormGroup>
 
-        <UFormGroup v-if="subscription.error" label="Error" name="error">
+        <UFormGroup label="Error" name="error">
           <UTextarea color="primary" variant="outline" v-model="subscription.error" size="lg" disabled />
+        </UFormGroup>
+
+        <UFormGroup label="Metadata" name="metadata">
+          <UTextarea color="primary" variant="outline" v-model="metadata" size="lg" disabled />
         </UFormGroup>
 
         <!-- <UButton label="Save" type="submit" class="mx-auto" /> -->
@@ -110,6 +114,15 @@ const subscriptionId = route.params.subscriptionId as string;
 const { data: subscription, refresh } = useAsyncData(async () => {
   const { data } = await client.subscription.getSubscription(subscriptionId);
   return data;
+});
+
+const metadata = computed({
+  get() {
+    return subscription.value?.metadata ? JSON.stringify(subscription.value.metadata, null, 2) : '';
+  },
+  set(metadata: string) {
+    // TODO
+  },
 });
 
 const subscriptionChangeColumns = [
