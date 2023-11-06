@@ -13,7 +13,7 @@ type Customer = {
 
 export class MigrationSetPaymentProject extends Migration {
   async up(): Promise<void> {
-    if (await this.ctx?.schema.hasColumn('payment', 'project__id')) {
+    if (!(await this.ctx?.schema.hasTable('payment')) || (await this.ctx?.schema.hasColumn('payment', 'project__id'))) {
       return;
     }
 
