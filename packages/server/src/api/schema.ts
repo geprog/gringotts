@@ -136,6 +136,7 @@ export function addSchemas(server: FastifyInstance): void {
     type: 'object',
     properties: {
       _id: { type: 'string' },
+      metadata: { type: 'object' },
       anchorDate: { type: 'string' },
       status: { type: 'string' },
       error: { type: 'string' },

@@ -20,6 +20,7 @@ export async function subscriptionEndpoints(server: FastifyInstance): Promise<vo
           pricePerUnit: { type: 'number' },
           units: { type: 'number' },
           customerId: { type: 'string' },
+          metadata: { type: 'object' },
         },
       },
       response: {
@@ -45,6 +46,7 @@ export async function subscriptionEndpoints(server: FastifyInstance): Promise<vo
         units: number;
         redirectUrl: string;
         customerId: string;
+        metadata?: Subscription['metadata'];
       };
 
       if (body.units < 1) {
@@ -85,6 +87,7 @@ export async function subscriptionEndpoints(server: FastifyInstance): Promise<vo
         currentPeriodEnd: currentPeriod.end,
         customer,
         project,
+        metadata: body.metadata,
       });
 
       subscription.changePlan({ units: body.units, pricePerUnit: body.pricePerUnit });
@@ -150,6 +153,7 @@ export async function subscriptionEndpoints(server: FastifyInstance): Promise<vo
           units: { type: 'number' },
           status: { type: 'string' },
           error: { type: 'string' },
+          metadata: { type: 'object' },
         },
       },
       response: {
@@ -182,6 +186,7 @@ export async function subscriptionEndpoints(server: FastifyInstance): Promise<vo
         units?: number;
         error?: string;
         status?: Subscription['status'];
+        metadata?: Subscription['metadata'];
       };
 
       if (body.units !== undefined && body.pricePerUnit !== undefined) {
@@ -202,6 +207,7 @@ export async function subscriptionEndpoints(server: FastifyInstance): Promise<vo
 
       subscription.error = body.error ?? subscription.error;
       subscription.status = body.status ?? subscription.status;
+      subscription.metadata = body.metadata ?? subscription.metadata;
 
       await database.em.persistAndFlush(subscription);
 
