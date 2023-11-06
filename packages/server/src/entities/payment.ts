@@ -3,7 +3,6 @@ import { v4 } from 'uuid';
 
 import { Customer } from '~/entities/customer';
 import { Invoice } from '~/entities/invoice';
-import { Project } from '~/entities/project';
 import { Subscription } from '~/entities/subscription';
 
 export type PaymentStatus = 'processing' | 'paid' | 'failed';
@@ -12,7 +11,6 @@ export type Currency = 'EUR';
 
 export class Payment {
   _id: string = v4();
-  project!: Project;
   status: PaymentStatus = 'processing';
   type!: 'recurring' | 'one-off' | 'verification';
   currency!: Currency;
@@ -44,10 +42,6 @@ export const paymentSchema = new EntitySchema<Payment>({
       reference: ReferenceType.MANY_TO_ONE,
       entity: () => Subscription,
       nullable: true,
-    },
-    project: {
-      reference: ReferenceType.MANY_TO_ONE,
-      entity: () => Project,
     },
     invoice: {
       reference: ReferenceType.ONE_TO_ONE,
