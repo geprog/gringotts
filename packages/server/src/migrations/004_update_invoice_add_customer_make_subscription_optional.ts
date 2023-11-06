@@ -17,7 +17,10 @@ type Subscription = {
 
 export class MigrationUpdateInvoiceAddCustomerAndAllowOptionalSubscription extends Migration {
   async up(): Promise<void> {
-    if (await this.ctx?.schema.hasColumn('invoice', 'customer__id')) {
+    if (
+      !(await this.ctx?.schema.hasTable('invoice')) ||
+      (await this.ctx?.schema.hasColumn('invoice', 'customer__id'))
+    ) {
       return;
     }
 

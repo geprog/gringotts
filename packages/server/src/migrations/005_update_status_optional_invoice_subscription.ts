@@ -14,7 +14,10 @@ type Subscription = {
 
 export class MigrationReplaceNextPaymentWithCurrentPeriod extends Migration {
   async up(): Promise<void> {
-    if (await this.ctx?.schema.hasColumn('subscription', 'current_period_start')) {
+    if (
+      !(await this.ctx?.schema.hasTable('subscription')) ||
+      (await this.ctx?.schema.hasColumn('subscription', 'current_period_start'))
+    ) {
       return;
     }
 

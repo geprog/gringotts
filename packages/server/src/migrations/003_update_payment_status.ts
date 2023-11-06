@@ -7,6 +7,10 @@ type Payment = {
 
 export class MigrationPaymentStatusFromPendingToProcessing extends Migration {
   async up(): Promise<void> {
+    if (!(await this.ctx?.schema.hasTable('payment'))) {
+      return;
+    }
+
     await this.ctx?.table<Payment>('payment').where({ status: 'pending' }).update({
       status: 'processing',
     });
