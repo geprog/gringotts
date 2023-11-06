@@ -34,7 +34,7 @@ export async function chargeCustomerInvoice(invoice: Invoice): Promise<void> {
     );
     customer.balance = Invoice.roundPrice(customer.balance - creditAmount);
     await database.em.persistAndFlush([customer]);
-    amount = Invoice.roundPrice(invoice.totalAmount);
+    amount = Invoice.roundPrice(invoice.totalAmount); // update amount from updated invoice
     log.debug({ customerId: customer._id, creditAmount }, 'Credit applied');
   }
 
