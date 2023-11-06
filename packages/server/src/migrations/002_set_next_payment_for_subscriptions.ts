@@ -17,7 +17,10 @@ type Subscription = {
 
 export class MigrationSetNextPaymentForSubscriptions extends Migration {
   async up(): Promise<void> {
-    if (await this.ctx?.schema.hasColumn('subscription', 'next_payment')) {
+    if (
+      !(await this.ctx?.schema.hasTable('subscription')) ||
+      (await this.ctx?.schema.hasColumn('subscription', 'next_payment'))
+    ) {
       return;
     }
 
