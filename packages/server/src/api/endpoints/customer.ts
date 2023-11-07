@@ -4,7 +4,6 @@ import { getProjectFromRequest } from '~/api/helpers';
 import { database } from '~/database';
 import { Customer, Project } from '~/entities';
 import { getPaymentProvider } from '~/payment_providers';
-import { getActiveUntilDate } from '~/utils';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function customerEndpoints(server: FastifyInstance): Promise<void> {
@@ -323,18 +322,7 @@ export async function customerEndpoints(server: FastifyInstance): Promise<void> 
 
       const subscriptions = await database.subscriptions.find({ project, customer }, { populate: ['changes'] });
 
-      const _subscriptions = subscriptions.map((subscription) => {
-        const activeUntil = subscription.lastPayment
-          ? getActiveUntilDate(subscription.lastPayment, subscription.anchorDate)
-          : undefined;
-
-        return {
-          ...subscription.toJSON(),
-          activeUntil,
-        };
-      });
-
-      await reply.send(_subscriptions);
+      await reply.send(subscriptions.map((subscription) => subscription.toJSON()));
     },
   });
 

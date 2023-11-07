@@ -146,7 +146,6 @@ export function addSchemas(server: FastifyInstance): void {
       lastPayment: { type: 'string' },
       currentPeriodStart: { type: 'string' },
       currentPeriodEnd: { type: 'string' },
-      activeUntil: { type: 'string' },
       customer: { $ref: 'Customer' },
       changes: {
         type: 'array',

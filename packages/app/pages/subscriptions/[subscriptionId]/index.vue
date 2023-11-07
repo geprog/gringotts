@@ -26,10 +26,6 @@
           <DatePicker v-model="subscription.anchorDate" disabled />
         </UFormGroup>
 
-        <UFormGroup label="Active until" name="activeUntil">
-          <DatePicker v-model="subscription.activeUntil" disabled />
-        </UFormGroup>
-
         <UFormGroup label="Last payment" name="lastPayment">
           <DatePicker v-model="subscription.lastPayment" disabled />
         </UFormGroup>
