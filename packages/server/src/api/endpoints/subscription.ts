@@ -3,7 +3,7 @@ import { FastifyInstance } from 'fastify';
 import { getProjectFromRequest } from '~/api/helpers';
 import { database } from '~/database';
 import { Subscription } from '~/entities';
-import { getActiveUntilDate, getPeriodFromAnchorDate } from '~/utils';
+import { getPeriodFromAnchorDate } from '~/utils';
 
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function subscriptionEndpoints(server: FastifyInstance): Promise<void> {
@@ -117,18 +117,7 @@ export async function subscriptionEndpoints(server: FastifyInstance): Promise<vo
 
       const subscriptions = await database.subscriptions.find({ project }, { populate: ['customer', 'changes'] });
 
-      const _subscriptions = subscriptions.map((subscription) => {
-        const activeUntil = subscription.lastPayment
-          ? getActiveUntilDate(subscription.lastPayment, subscription.anchorDate)
-          : undefined;
-
-        return {
-          ...subscription.toJSON(),
-          activeUntil,
-        };
-      });
-
-      await reply.send(_subscriptions);
+      await reply.send(subscriptions.map((subscription) => subscription.toJSON()));
     },
   });
 
@@ -250,16 +239,7 @@ export async function subscriptionEndpoints(server: FastifyInstance): Promise<vo
         return reply.code(404).send({ error: 'Subscription not found' });
       }
 
-      const activeUntil = subscription.lastPayment
-        ? getActiveUntilDate(subscription.lastPayment, subscription.anchorDate)
-        : undefined;
-
-      const _subscription = {
-        ...subscription.toJSON(),
-        activeUntil,
-      };
-
-      await reply.send(_subscription);
+      await reply.send(subscription.toJSON());
     },
   });
 

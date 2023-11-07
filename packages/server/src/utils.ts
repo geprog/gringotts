@@ -27,8 +27,3 @@ export function getPreviousPeriod(nextPayment: Date, anchorDate: Date): { start:
   const { start } = getPeriodFromAnchorDate(nextPayment, anchorDate);
   return getPeriodFromAnchorDate(dayjs(start).subtract(1, 'day').toDate(), anchorDate);
 }
-
-export function getActiveUntilDate(oldActiveUntil: Date, anchorDate: Date): Date {
-  const { end } = getPeriodFromAnchorDate(oldActiveUntil, anchorDate);
-  return end;
-}
