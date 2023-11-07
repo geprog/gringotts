@@ -149,6 +149,9 @@ export async function chargeSubscriptions(): Promise<void> {
           date: new Date(),
         });
 
+        subscription.cleanupChanges();
+        await database.em.persistAndFlush([subscription]);
+
         const period = new SubscriptionPeriod(subscription, billingPeriod.start, billingPeriod.end);
         period.getInvoiceItems().forEach((item) => {
           invoice.items.add(item);

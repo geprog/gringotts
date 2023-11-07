@@ -28,25 +28,15 @@ export class Subscription {
     Object.assign(this, data);
   }
 
-  /**
-   * End the current plan and start with a new one
-   * @param data.pricePerUnit Price per unit for the new plan
-   * @param data.units Units for the new plan
-   * @param data.changeDate Date when to end the current plan and start with a new one
-   */
-  changePlan(data: { pricePerUnit: number; units: number; changeDate?: Date }): void {
+  cleanupChanges(): void {
     const changes = this.changes.getItems();
 
     // set end date of existing changes
     if (changes.length > 0) {
-      if (!data.changeDate) {
-        throw new Error('changeDate is required if you already have a change');
-      }
-
       // sort changes in reverse order by start date
       changes.sort((a, b) => b.start.getTime() - a.start.getTime());
 
-      let lastEnd = data.changeDate;
+      let lastEnd: Date | undefined = undefined;
       for (const change of changes) {
         if (!change.end) {
           change.end = lastEnd;
@@ -56,7 +46,15 @@ export class Subscription {
 
       this.changes.set(changes);
     }
+  }
 
+  /**
+   * End the current plan and start with a new one
+   * @param data.pricePerUnit Price per unit for the new plan
+   * @param data.units Units for the new plan
+   * @param data.changeDate Date when to end the current plan and start with a new one
+   */
+  changePlan(data: { pricePerUnit: number; units: number; changeDate?: Date }): void {
     this.changes.add(
       new SubscriptionChange({
         start: this.changes.count() === 0 ? this.anchorDate : (data.changeDate as Date),
@@ -65,6 +63,8 @@ export class Subscription {
         subscription: this,
       }),
     );
+
+    this.cleanupChanges();
   }
 
   getPeriod(start: Date, end: Date): SubscriptionPeriod {
