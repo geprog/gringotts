@@ -41,6 +41,7 @@ export class Mocked implements PaymentProvider {
 
   // eslint-disable-next-line @typescript-eslint/require-await
   async createCustomer(customer: Customer): Promise<Customer> {
+    customer.paymentProviderId = 'mocked-123';
     return customer;
   }
 
