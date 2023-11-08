@@ -31,6 +31,13 @@ The container image can be found at `ghcr.io/geprog/gringotts`.
 | DATA_PATH           | Path to the data directory                                       | Local: ./data Container: /app/data                    |
 | GOTENBERG_URL       | Url to the gotenberg server                                      | http://localhost:3000                                 |
 | JWT_SECRET          | Secret used to sign jwt tokens                                   | supersecret                                           |
+| MAIL_FROM           | From address for emails `My Project <my-project@example.org>     |                                                       |
+| MAIL_HOST           | Hostname of the smtp server                                      |                                                       |
+| MAIL_PORT           | Port of the smtp server                                          | 25                                                    |
+| MAIL_USERNAME       | Username for the smtp server                                     |                                                       |
+| MAIL_PASSWORD       | Password for the smtp server                                     |                                                       |
+| MAIL_SECURE         | Use secure connection for the smtp server                        | false                                                 |
+| MAIL_REQUIRE_TLS    | Require tls for the smtp server                                  | false                                                 |
 
 To create a project on start you can set the `CREATE_PROJECT_DATA` environment variable to a json string like this:
 

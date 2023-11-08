@@ -17,6 +17,15 @@ export const config = {
   jwtSecret: process.env.JWT_SECRET as string,
   gotenbergUrl: process.env.GOTENBERG_URL || 'http://localhost:3030',
   dataPath: process.env.DATA_PATH || path.join(__dirname, '..', 'data'),
+  mail: {
+    host: process.env.MAIL_HOST,
+    port: parseInt(process.env.MAIL_PORT || '25'),
+    from: process.env.MAIL_FROM,
+    secure: process.env.MAIL_SECURE === 'true',
+    requireTLS: process.env.MAIL_REQUIRE_TLS === 'true',
+    username: process.env.MAIL_USERNAME,
+    password: process.env.MAIL_PASSWORD,
+  },
 };
 
 export function checkConfig(): void {

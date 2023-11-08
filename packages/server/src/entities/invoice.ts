@@ -1,6 +1,12 @@
 import { Collection, EntitySchema, ReferenceType } from '@mikro-orm/core';
+import fetch from 'cross-fetch';
+import NodeFormData from 'form-data';
+import fs from 'fs';
+import path from 'path';
+import stream from 'stream/promises';
 import { v4 } from 'uuid';
 
+import { config } from '~/config';
 import { Customer } from '~/entities/customer';
 import { InvoiceItem } from '~/entities/invoice_item';
 import { Currency, Payment } from '~/entities/payment';
@@ -27,7 +33,6 @@ export class Invoice {
   vatRate!: number;
   payment?: Payment;
   project!: Project;
-  file?: string;
 
   constructor(data?: Partial<Invoice>) {
     Object.assign(this, data);
@@ -63,6 +68,38 @@ export class Invoice {
       default:
         throw new Error('Currency not supported');
     }
+  }
+
+  async generateInvoicePdf(): Promise<void> {
+    const filePath = path.join(config.dataPath, 'invoices', this.getInvoicePath());
+    if (fs.existsSync(filePath)) {
+      return;
+    }
+
+    const formData = new NodeFormData() as unknown as FormData;
+    formData.append('url', `${config.publicUrl}/api/invoice/${this._id}/html?token=${this.project.apiToken}`);
+
+    const response = await fetch(`${config.gotenbergUrl}/forms/chromium/convert/url`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok || !response.body) {
+      throw new Error(`unexpected response ${response.statusText}`);
+    }
+
+    if (!fs.existsSync(path.dirname(filePath))) {
+      fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    }
+
+    // cast as response.body is a ReadableStream from DOM and not NodeJS.ReadableStream
+    const httpStream = response.body as unknown as NodeJS.ReadableStream;
+
+    await stream.pipeline(httpStream, fs.createWriteStream(filePath));
+  }
+
+  getInvoicePath(): string {
+    return path.join(this.project._id, `invoice-${this._id}.pdf`);
   }
 
   toString(): string {

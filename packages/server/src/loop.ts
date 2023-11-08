@@ -2,6 +2,7 @@ import { database } from '~/database';
 import { Invoice, InvoiceItem, Payment, SubscriptionPeriod } from '~/entities';
 import dayjs from '~/lib/dayjs';
 import { log } from '~/log';
+import { sendInvoiceMail } from '~/mail';
 import { getPaymentProvider } from '~/payment_providers';
 import { getNextPeriod } from '~/utils';
 import { triggerWebhook } from '~/webhook';
@@ -90,6 +91,8 @@ export async function chargeCustomerInvoice(invoice: Invoice): Promise<void> {
   }
 
   await database.em.persistAndFlush([invoice, payment]);
+
+  void sendInvoiceMail(invoice, customer);
 
   log.debug({ paymentId: payment._id }, 'Payment created & charged');
 }

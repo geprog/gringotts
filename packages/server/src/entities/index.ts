@@ -1,7 +1,7 @@
 import { Customer, customerSchema } from './customer';
 import { Invoice, invoiceSchema } from './invoice';
 import { InvoiceItem, invoiceItemSchema } from './invoice_item';
-import { Payment, paymentSchema } from './payment';
+import { Currency, Payment, paymentSchema } from './payment';
 import { PaymentMethod, paymentMethodSchema } from './payment_method';
 import { Project, projectSchema } from './project';
 import { ProjectInvoiceData, projectInvoiceDataSchema } from './project_invoice_data';
@@ -10,6 +10,7 @@ import { SubscriptionChange, subscriptionChangeSchema } from './subscription_cha
 import { SubscriptionPeriod } from './subscription_period';
 
 export {
+  Currency,
   Customer,
   customerSchema,
   Invoice,

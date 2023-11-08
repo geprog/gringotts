@@ -2,7 +2,9 @@ import { init as serverInit } from '~/api';
 import { checkConfig, config } from '~/config';
 import { database } from '~/database';
 import { loadNgrok } from '~/lib/development_proxy';
+import { log } from '~/log';
 import { startLoops } from '~/loop';
+import { init as mailInit } from '~/mail';
 
 async function start() {
   checkConfig();
@@ -12,6 +14,8 @@ async function start() {
   await database.init();
   await database.connect();
 
+  mailInit();
+
   startLoops();
 
   const server = await serverInit();
@@ -20,8 +24,7 @@ async function start() {
     // check if there is already a project
     const projectsAmount = await database.projects.count({});
     if (projectsAmount === 0) {
-      // eslint-disable-next-line no-console
-      console.log('Creating project ...', JSON.parse(process.env.CREATE_PROJECT_DATA));
+      log.info('Creating project ...', JSON.parse(process.env.CREATE_PROJECT_DATA));
       const response = await server.inject({
         method: 'POST',
         headers: {
@@ -40,8 +43,7 @@ async function start() {
   }
 
   try {
-    // eslint-disable-next-line no-console
-    console.log(`Starting server ${config.publicUrl} ...`);
+    log.info(`Starting server ${config.publicUrl} ...`);
     await server.listen({ port: config.port, host: '::' });
   } catch (err) {
     // eslint-disable-next-line no-console
