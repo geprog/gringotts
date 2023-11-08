@@ -1,16 +1,16 @@
 import dayjs from 'dayjs';
 import { beforeAll, describe, expect, it, MockContext, vi } from 'vitest';
 
-import { getFixtures } from '~/../test/fixtures';
 import { init as apiInit } from '~/api';
 import * as config from '~/config';
 import * as database from '~/database';
 import { Customer, Invoice, Project, Subscription } from '~/entities';
 import { getPaymentProvider } from '~/payment_providers';
+import { getFixtures, mockConfig } from '$/fixtures';
 
 describe('Subscription endpoints', () => {
   beforeAll(async () => {
-    vi.spyOn(config, 'config', 'get').mockReturnValue(getFixtures().config);
+    vi.spyOn(config, 'config', 'get').mockReturnValue(mockConfig);
 
     await database.database.init();
   });

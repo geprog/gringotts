@@ -96,24 +96,24 @@ export function getFixtures() {
   customer.paymentMethods.add(paymentMethod);
   customer.activePaymentMethod = paymentMethod;
 
-  const config: Config = {
-    port: 1234,
-    adminToken: '',
-    postgresUrl: 'postgres://postgres:postgres@localhost:5432/postgres',
-    publicUrl: '',
-    dataPath: '',
-    gotenbergUrl: '',
-    jwtSecret: '',
-    mail: {
-      from: '',
-      host: '',
-      port: 0,
-      secure: false,
-      password: '',
-      username: '',
-      requireTLS: false,
-    },
-  };
-
-  return { customer, subscription, invoice, project, paymentMethod, config };
+  return { customer, subscription, invoice, project, paymentMethod };
 }
+
+export const mockConfig: Config = {
+  port: 1234,
+  adminToken: '',
+  postgresUrl: 'postgres://postgres:postgres@localhost:5432/postgres',
+  publicUrl: '',
+  dataPath: '',
+  gotenbergUrl: '',
+  jwtSecret: '',
+  mail: {
+    from: '',
+    host: '',
+    port: 0,
+    secure: false,
+    password: '',
+    username: '',
+    requireTLS: false,
+  },
+};

@@ -1,15 +1,15 @@
 import { beforeAll, describe, expect, it, vi } from 'vitest';
 
-import { getFixtures } from '~/../test/fixtures';
 import { init as apiInit } from '~/api';
 import * as config from '~/config';
 import * as database from '~/database';
 import { Customer, PaymentMethod, Project } from '~/entities';
 import { getPaymentProvider } from '~/payment_providers';
+import { getFixtures, mockConfig } from '$/fixtures';
 
 describe('Payment-method endpoints', () => {
   beforeAll(async () => {
-    vi.spyOn(config, 'config', 'get').mockReturnValue(getFixtures().config);
+    vi.spyOn(config, 'config', 'get').mockReturnValue(mockConfig);
 
     await database.database.init();
   });
