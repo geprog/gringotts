@@ -28,6 +28,8 @@ export const config = {
   },
 };
 
+export type Config = typeof config;
+
 export function checkConfig(): void {
   const _config = config as Partial<typeof config>;
 

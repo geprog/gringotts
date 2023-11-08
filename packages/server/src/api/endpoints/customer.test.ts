@@ -8,15 +8,7 @@ import { Customer } from '~/entities';
 
 describe('Customer endpoints', () => {
   beforeAll(async () => {
-    vi.spyOn(config, 'config', 'get').mockReturnValue({
-      port: 1234,
-      adminToken: '',
-      postgresUrl: 'postgres://postgres:postgres@localhost:5432/postgres',
-      publicUrl: '',
-      dataPath: '',
-      gotenbergUrl: '',
-      jwtSecret: '',
-    });
+    vi.spyOn(config, 'config', 'get').mockReturnValue(getFixtures().config);
 
     await database.database.init();
   });
