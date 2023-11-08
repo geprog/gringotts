@@ -213,6 +213,7 @@ describe('Customer endpoints', () => {
       city: 'London',
       country: 'GB',
       zipCode: 'ENG-1234',
+      language: 'en',
     };
 
     const updateMock = vi.fn().mockResolvedValue(true);
