@@ -30,7 +30,6 @@ export function init(): void {
   });
 }
 
-
 export async function sendInvoiceMail(invoice: Invoice, customer: Customer): Promise<void> {
   if (!transporter) {
     return;

@@ -1,20 +1,20 @@
-import handlebars from 'handlebars';
+import handlebars, { TemplateDelegate } from 'handlebars';
 
 import { Currency, Customer, Invoice, Project } from '~/entities';
 import { formatDate } from '~/lib/dayjs';
 
-type TemplateContext = Record<string, any>;
+type TemplateContext = Record<string, unknown>;
 
-type Template<SubjectData extends TemplateContext, TextData extends TemplateContext> = {
-  subject: ReturnType<typeof handlebars.compile<SubjectData>>;
-  text: ReturnType<typeof handlebars.compile<TextData>>;
+type Template<SubjectContext extends TemplateContext, TextContext extends TemplateContext> = {
+  subject: TemplateDelegate<SubjectContext>;
+  text: TemplateDelegate<TextContext>;
 };
 
 type Languages = 'en' | 'de';
 
-type MultiLanguageTemplate<SubjectData extends TemplateContext, TextData extends TemplateContext> = {
-  subject: Record<Languages, Template<SubjectData, TextData>['subject']>;
-  text: Record<Languages, Template<SubjectData, TextData>['text']>;
+type MultiLanguageTemplate<SubjectContext extends TemplateContext, TextContext extends TemplateContext> = {
+  subject: Record<Languages, Template<SubjectContext, TextContext>['subject']>;
+  text: Record<Languages, Template<SubjectContext, TextContext>['text']>;
 };
 
 /** 
