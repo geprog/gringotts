@@ -17,15 +17,15 @@ type MultiLanguageTemplate<SubjectContext extends TemplateContext, TextContext e
   text: Record<Languages, Template<SubjectContext, TextContext>['text']>;
 };
 
-/** 
+/**
  * The template contexts must match the following type Record<string, { subject: TemplateContext; text: TemplateContext }>.
  * If this does not match the type Templates below will throw a typescript error.
  */
 type TemplateContexts = {
   newInvoice: {
-    subject: { project: Project; invoice: Invoice },
-    text: { customer: Customer; invoice: Invoice },
-  },
+    subject: { project: Project; invoice: Invoice };
+    text: { customer: Customer; invoice: Invoice };
+  };
 };
 
 type Templates = {
