@@ -31,7 +31,7 @@
           </div>
         </UFormGroup>
 
-        <UFormGroup label="Anchor date" name="anchorDate">
+        <UFormGroup label="Anchor / start date" name="anchorDate">
           <DatePicker v-model="subscription.anchorDate" disabled />
         </UFormGroup>
 
