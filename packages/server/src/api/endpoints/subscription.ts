@@ -140,7 +140,7 @@ export async function subscriptionEndpoints(server: FastifyInstance): Promise<vo
         properties: {
           pricePerUnit: { type: 'number' },
           units: { type: 'number' },
-          status: { type: 'string' },
+          status: { type: 'string', enum: ['active', 'error', 'paused', 'canceled'] },
           error: { type: 'string' },
           metadata: { type: 'object' },
         },
@@ -178,6 +178,14 @@ export async function subscriptionEndpoints(server: FastifyInstance): Promise<vo
         metadata?: Subscription['metadata'];
       };
 
+      subscription.metadata = body.metadata ?? subscription.metadata;
+
+      if (subscription.status === 'canceled') {
+        return reply.code(400).send({
+          error: 'Cannot change a canceled subscription',
+        });
+      }
+
       if (body.units !== undefined && body.pricePerUnit !== undefined) {
         if (body.units < 1) {
           return reply.code(400).send({
@@ -194,9 +202,15 @@ export async function subscriptionEndpoints(server: FastifyInstance): Promise<vo
         subscription.changePlan({ pricePerUnit: body.pricePerUnit, units: body.units, changeDate: new Date() });
       }
 
-      subscription.error = body.error ?? subscription.error;
       subscription.status = body.status ?? subscription.status;
-      subscription.metadata = body.metadata ?? subscription.metadata;
+      subscription.error = body.error ?? subscription.error;
+      if (body.error) {
+        subscription.status = 'error';
+      }
+
+      if (body.status === 'canceled') {
+        subscription.canceledAt = new Date();
+      }
 
       await database.em.persistAndFlush(subscription);
 

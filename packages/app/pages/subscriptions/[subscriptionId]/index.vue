@@ -1,25 +1,34 @@
 <template>
   <div v-if="subscription" class="w-full flex flex-col gap-4 max-w-4xl mx-auto">
-    <h1 class="text-xl">Subscription: {{ subscription._id }}</h1>
+    <div class="flex justify-between">
+      <h1 class="text-xl">Subscription: {{ subscription._id }}</h1>
+
+      <StatusSubscription :subscription="subscription" />
+    </div>
 
     <UCard>
       <div class="flex justify-end mb-2 gap-2 items-center">
-        <UButton
-          v-if="subscription.status === 'error'"
-          label="Reset errror"
-          icon="i-ion-md-undo"
-          size="sm"
-          @click="resetError"
-        />
-
-        <router-link v-if="subscription.customer" :to="`/customers/${subscription.customer._id}`">
-          <UButton :label="subscription.customer.name" icon="i-ion-people" size="sm" />
-        </router-link>
+        <UDropdown v-if="subscriptionActions[0].length > 0" :items="subscriptionActions">
+          <UButton label="Actions" trailing-icon="i-heroicons-chevron-down-20-solid" size="sm" />
+        </UDropdown>
       </div>
 
       <UForm :state="subscription" class="flex flex-col gap-4">
         <UFormGroup v-if="subscription.customer" label="Customer" name="customer">
-          <UInput color="primary" variant="outline" v-model="subscription.customer.name" size="lg" disabled />
+          <div class="flex w-full gap-2">
+            <UInput
+              color="primary"
+              variant="outline"
+              v-model="subscription.customer.name"
+              size="lg"
+              disabled
+              class="flex-grow"
+            />
+
+            <router-link v-if="subscription.customer" :to="`/customers/${subscription.customer._id}`">
+              <UButton :label="subscription.customer.name" icon="i-ion-people" size="lg" />
+            </router-link>
+          </div>
         </UFormGroup>
 
         <UFormGroup label="Anchor date" name="anchorDate">
@@ -101,6 +110,7 @@
 
 <script lang="ts" setup>
 import type { Invoice } from '@geprog/gringotts-client';
+import type { DropdownItem } from '@nuxt/ui/dist/runtime/types';
 
 const client = await useGringottsClient();
 const route = useRoute();
@@ -119,6 +129,42 @@ const metadata = computed({
   set(metadata: string) {
     // TODO
   },
+});
+
+const subscriptionActions = computed(() => {
+  const actions: DropdownItem[] = [];
+
+  if (subscription.value?.status === 'error') {
+    actions.push({
+      label: 'Reset error',
+      icon: 'i-ion-md-undo',
+      click: resetError,
+    });
+  }
+
+  if (subscription.value?.status === 'active') {
+    actions.push({
+      label: 'Pause subscription',
+      icon: 'i-ion-pause',
+      click: () => changeSubscriptionStatus('paused'),
+    });
+
+    actions.push({
+      label: 'Cancel subscription',
+      icon: 'i-ion-close',
+      click: () => changeSubscriptionStatus('canceled'),
+    });
+  }
+
+  if (subscription.value?.status === 'paused') {
+    actions.push({
+      label: 'Unpause subscription',
+      icon: 'i-ion-play',
+      click: () => changeSubscriptionStatus('active'),
+    });
+  }
+
+  return [actions];
 });
 
 const subscriptionChangeColumns = [
@@ -176,6 +222,13 @@ async function resetError() {
   await client.subscription.patchSubscription(subscriptionId, {
     status: 'active',
     error: '',
+  });
+  await refresh();
+}
+
+async function changeSubscriptionStatus(status: 'active' | 'paused' | 'canceled') {
+  await client.subscription.patchSubscription(subscriptionId, {
+    status,
   });
   await refresh();
 }
