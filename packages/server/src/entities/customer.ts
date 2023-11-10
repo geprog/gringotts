@@ -23,6 +23,7 @@ export class Customer {
   project!: Project;
   activePaymentMethod?: PaymentMethod;
   paymentMethods = new Collection<PaymentMethod>(this);
+  language = 'en';
 
   constructor(data?: Partial<Customer>) {
     Object.assign(this, data);
@@ -81,5 +82,6 @@ export const customerSchema = new EntitySchema<Customer>({
       mappedBy: (paymentMethod: PaymentMethod) => paymentMethod.customer,
     },
     activePaymentMethod: { reference: ReferenceType.MANY_TO_ONE, entity: () => PaymentMethod, nullable: true },
+    language: { type: 'string', default: 'en' },
   },
 });

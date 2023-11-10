@@ -1,3 +1,4 @@
+import type { Config } from '~/config';
 import { Customer, Invoice, InvoiceItem, PaymentMethod, Project, ProjectInvoiceData, Subscription } from '~/entities';
 import dayjs from '~/lib/dayjs';
 import { getPeriodFromAnchorDate } from '~/utils';
@@ -97,3 +98,22 @@ export function getFixtures() {
 
   return { customer, subscription, invoice, project, paymentMethod };
 }
+
+export const mockConfig: Config = {
+  port: 1234,
+  adminToken: '',
+  postgresUrl: 'postgres://postgres:postgres@localhost:5432/postgres',
+  publicUrl: '',
+  dataPath: '',
+  gotenbergUrl: '',
+  jwtSecret: '',
+  mail: {
+    from: '',
+    host: '',
+    port: 0,
+    secure: false,
+    password: '',
+    username: '',
+    requireTLS: false,
+  },
+};

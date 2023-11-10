@@ -9,7 +9,15 @@ import { getPaymentProvider } from '~/payment_providers';
 export async function customerEndpoints(server: FastifyInstance): Promise<void> {
   type CustomerUpdateBody = Pick<
     Customer,
-    'addressLine1' | 'addressLine2' | 'city' | 'country' | 'email' | 'name' | 'zipCode' | 'activePaymentMethod'
+    | 'addressLine1'
+    | 'addressLine2'
+    | 'city'
+    | 'country'
+    | 'email'
+    | 'name'
+    | 'zipCode'
+    | 'activePaymentMethod'
+    | 'language'
   >;
 
   server.addSchema({
@@ -25,6 +33,7 @@ export async function customerEndpoints(server: FastifyInstance): Promise<void> 
       city: { type: 'string' },
       country: { type: 'string' },
       activePaymentMethod: { $ref: 'PaymentMethod' },
+      language: { type: 'string' },
     },
   });
 
@@ -69,6 +78,7 @@ export async function customerEndpoints(server: FastifyInstance): Promise<void> 
         city: body.city,
         country: body.country,
         zipCode: body.zipCode,
+        language: body.language,
         project,
       });
 
@@ -208,6 +218,7 @@ export async function customerEndpoints(server: FastifyInstance): Promise<void> 
       customer.city = body.city || customer.city;
       customer.country = body.country || customer.country;
       customer.zipCode = body.zipCode || customer.zipCode;
+      customer.language = body.language || customer.language;
 
       if (body.activePaymentMethod?._id) {
         const paymentMethod = await database.paymentMethods.findOne({

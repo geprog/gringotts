@@ -119,6 +119,7 @@ export function addSchemas(server: FastifyInstance): void {
       invoiceCounter: { type: 'string' },
       balance: { type: 'number' },
       activePaymentMethod: { $ref: 'PaymentMethod' },
+      language: { type: 'string' },
     },
   });
 

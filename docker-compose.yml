@@ -1,6 +1,15 @@
 version: '3'
 
 services:
+  # app:
+  #   build: .
+  #   image: ghcr.io/geprog/gringotts:latest
+  #   ports:
+  #     - 7171:7171
+  #   env_file: .env
+  #   environment:
+  #     POSTGRES_URL: postgresql://postgres:pA_sw0rd@postgres:5432/postgres
+
   postgres:
     image: postgres:14.2
     ports:
@@ -15,6 +24,14 @@ services:
     image: gotenberg/gotenberg:7
     ports:
       - 3030:3000
+
+  mail:
+    image: mailhog/mailhog
+    ports:
+      - '127.0.0.1:1025:1025'
+      - '127.0.0.1:8025:8025'
+      - '[::1]:1025:1025'
+      - '[::1]:8025:8025'
 
 volumes:
   postgres-data:

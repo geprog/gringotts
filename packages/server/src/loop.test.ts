@@ -3,7 +3,7 @@ import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import * as config from '~/config';
 import * as databaseExports from '~/database';
-import { getFixtures } from '$/fixtures';
+import { getFixtures, mockConfig } from '$/fixtures';
 
 import { Customer, Invoice, Payment, Subscription } from './entities';
 import { chargeCustomerInvoice, chargePendingInvoices, chargeSubscriptions } from './loop';
@@ -11,15 +11,7 @@ import { getPaymentProvider } from './payment_providers';
 
 describe('Loop', () => {
   beforeAll(async () => {
-    vi.spyOn(config, 'config', 'get').mockReturnValue({
-      port: 1234,
-      adminToken: '',
-      postgresUrl: 'postgres://postgres:postgres@localhost:5432/postgres',
-      publicUrl: '',
-      dataPath: '',
-      gotenbergUrl: '',
-      jwtSecret: '',
-    });
+    vi.spyOn(config, 'config', 'get').mockReturnValue(mockConfig);
 
     await databaseExports.database.init();
   });
