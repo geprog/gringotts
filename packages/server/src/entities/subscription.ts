@@ -12,7 +12,7 @@ export class Subscription {
   _id: string = v4();
   metadata?: Record<string, unknown>;
   anchorDate!: Date; // first date a user ever started a subscription for the object
-  status: 'processing' | 'active' | 'error' = 'active';
+  status: 'processing' | 'active' | 'error' | 'paused' | 'canceled' = 'active';
   error?: string;
   lastPayment?: Date;
   currentPeriodStart!: Date;
@@ -21,6 +21,7 @@ export class Subscription {
   changes = new Collection<SubscriptionChange>(this);
   createdAt: Date = new Date();
   updatedAt: Date = new Date();
+  canceledAt?: Date;
   invoices = new Collection<Invoice>(this);
   project!: Project;
 
@@ -103,6 +104,7 @@ export const subscriptionSchema = new EntitySchema<Subscription>({
     },
     createdAt: { type: Date, onCreate: () => new Date() },
     updatedAt: { type: Date, onUpdate: () => new Date() },
+    canceledAt: { type: Date, nullable: true },
     invoices: {
       reference: ReferenceType.ONE_TO_MANY,
       entity: () => Invoice,

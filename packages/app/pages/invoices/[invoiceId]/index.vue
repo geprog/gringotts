@@ -25,9 +25,6 @@
           @click="chargeInvoice"
         />
 
-        <router-link v-if="invoice.customer" :to="`/customers/${invoice.customer._id}`">
-          <UButton :label="invoice.customer.name" icon="i-ion-people" size="sm" />
-        </router-link>
         <router-link v-if="invoice.subscription" :to="`/subscriptions/${invoice.subscription._id}`">
           <UButton label="Subscription" icon="i-ion-md-refresh" size="sm" />
         </router-link>
@@ -43,7 +40,20 @@
         </UFormGroup>
 
         <UFormGroup v-if="invoice.customer" label="Customer" name="customer">
-          <UInput color="primary" variant="outline" v-model="invoice.customer.name" size="lg" disabled />
+          <div class="flex gap-2">
+            <UInput
+              color="primary"
+              variant="outline"
+              v-model="invoice.customer.name"
+              size="lg"
+              disabled
+              class="flex-grow"
+            />
+
+            <router-link v-if="invoice.customer" :to="`/customers/${invoice.customer._id}`">
+              <UButton :label="invoice.customer.name" icon="i-ion-people" size="lg" />
+            </router-link>
+          </div>
         </UFormGroup>
 
         <UFormGroup label="Amount" name="amount">

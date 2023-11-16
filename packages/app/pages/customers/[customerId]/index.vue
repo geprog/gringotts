@@ -32,6 +32,17 @@
           <UInput color="primary" variant="outline" v-model="customer.country" size="lg" :disabled="disabled" />
         </UFormGroup>
 
+        <UFormGroup label="Language" name="language">
+          <USelectMenu
+            color="primary"
+            variant="outline"
+            v-model="customer.language"
+            :options="['en', 'de']"
+            size="lg"
+            :disabled="disabled"
+          />
+        </UFormGroup>
+
         <UFormGroup label="Balance" name="balance" required>
           <UInput
             color="primary"
