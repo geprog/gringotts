@@ -135,8 +135,6 @@ export async function chargeSubscriptions(): Promise<void> {
             { subscriptionId: subscription._id, customerId: customer._id },
             'Invoice for period already exists',
           );
-          // TODO: should we just ignore this? currently this sets the subscription to error state?
-          throw new Error('Invoice for period already exists');
         }
 
         customer.invoiceCounter += 1;
