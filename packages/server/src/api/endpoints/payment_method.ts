@@ -215,8 +215,7 @@ export async function paymentMethodEndpoints(server: FastifyInstance): Promise<v
       }
 
       if (paymentMethod.customer.activePaymentMethod?._id === paymentMethod._id) {
-        paymentMethod.customer.activePaymentMethod = undefined;
-        await database.em.persistAndFlush(paymentMethod.customer);
+        return reply.code(400).send({ error: 'Cannot delete active payment-method' });
       }
 
       await database.em.removeAndFlush(paymentMethod);

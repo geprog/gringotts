@@ -217,6 +217,14 @@ export async function chargePendingInvoices(): Promise<void> {
       } catch (e) {
         log.error('Error while invoice charging:', e);
         invoice.status = 'failed';
+
+        if (invoice.subscription) {
+          const { subscription } = invoice;
+          subscription.status = 'error';
+          subscription.error = (e as Error)?.message || (e as string);
+          await database.em.persistAndFlush([subscription]);
+        }
+
         await database.em.persistAndFlush([invoice]);
       }
     }
