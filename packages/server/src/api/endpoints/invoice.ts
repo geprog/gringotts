@@ -203,7 +203,7 @@ export async function invoiceEndpoints(server: FastifyInstance): Promise<void> {
         return reply.code(400).send({ error: 'Missing invoiceId' });
       }
 
-      const invoice = await database.invoices.findOne({ _id: invoiceId, project }, { populate: ['items'] });
+      const invoice = await database.invoices.findOne({ _id: invoiceId, project }, { populate: ['items', 'project'] });
       if (!invoice) {
         return reply.code(404).send({ error: 'Invoice not found' });
       }
