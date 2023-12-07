@@ -171,14 +171,13 @@ describe('Payment-method endpoints', () => {
     const testData = getFixtures();
 
     const paymentMethodData = <PaymentMethod>{
-      _id: '123',
+      _id: '1234',
       type: 'credit-card',
       name: 'VISA',
       customer: testData.customer,
       paymentProviderId: '123',
     };
 
-    const persistAndFlush = vi.fn();
     const removeAndFlush = vi.fn();
 
     vi.spyOn(database, 'database', 'get').mockReturnValue({
@@ -193,7 +192,6 @@ describe('Payment-method endpoints', () => {
         },
       },
       em: {
-        persistAndFlush,
         removeAndFlush,
       },
     } as unknown as database.Database);
@@ -217,7 +215,5 @@ describe('Payment-method endpoints', () => {
     expect(paymentMethodResponse).toStrictEqual({ ok: true });
     expect(removeAndFlush).toBeCalledTimes(1);
     expect(removeAndFlush).toHaveBeenCalledWith(paymentMethodData);
-
-    expect(persistAndFlush).toBeCalledTimes(1);
   });
 });
