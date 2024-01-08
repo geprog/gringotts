@@ -126,19 +126,6 @@ export async function chargeSubscriptions(): Promise<void> {
       const billingPeriod = { start: subscription.currentPeriodStart, end: subscription.currentPeriodEnd };
 
       try {
-        const existingInvoices = await database.invoices.find({
-          date: { $gte: billingPeriod.start, $lte: billingPeriod.end },
-          subscription,
-        });
-        if (existingInvoices.length > 0) {
-          log.error(
-            { subscriptionId: subscription._id, customerId: customer._id },
-            'Invoice for period already exists',
-          );
-          // TODO: should we just ignore this? currently this sets the subscription to error state?
-          throw new Error('Invoice for period already exists');
-        }
-
         customer.invoiceCounter += 1;
 
         const invoice = new Invoice({
@@ -149,7 +136,7 @@ export async function chargeSubscriptions(): Promise<void> {
           customer: subscription.customer,
           project,
           status: 'pending',
-          date: new Date(),
+          date: now, // now = subscription.currentPeriodEnd + 1 hour
         });
 
         subscription.cleanupChanges();
