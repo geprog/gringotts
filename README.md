@@ -63,5 +63,5 @@ pnpm i
 cp .env.example .env
 
 # start the server
-pnpm start
+pnpm run dev
 ```
