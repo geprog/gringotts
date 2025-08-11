@@ -10,7 +10,7 @@
       </div>
     </div>
     <div
-      class="hidden relative md:flex items-center justify-center bg-white md:bg-black h-screen bg-gradient-to-t from-blue-400/0 to-blue-400/20"
+      class="hidden relative md:flex items-center justify-center bg-white md:bg-black h-screen bg-linear-to-t from-blue-400/0 to-blue-400/20"
     >
       <div class="absolute inset-0 h-screen" aria-hidden="true">
         <canvas ref="canvas" />

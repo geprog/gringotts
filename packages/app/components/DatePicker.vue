@@ -18,7 +18,7 @@
           highlight: {
             color: 'blue',
             fillMode: 'outline',
-            class: '!bg-zinc-100 dark:!bg-zinc-800',
+            class: 'bg-zinc-100! dark:bg-zinc-800!',
           },
           dates: new Date(),
         }"

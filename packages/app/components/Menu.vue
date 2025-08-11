@@ -7,7 +7,7 @@
       <img src="/logo_light.svg" alt="CodeCaptain logo" class="w-8 dark:hidden" />
       <img src="/logo_dark.svg" alt="CodeCaptain dark logo" class="w-8 hidden dark:block" />
       <span
-        class="ml-2 text-transparent bg-gradient-to-tr from-gray-800 to-gray-400 dark:from-gray-100 dark:to-gray-400 bg-clip-text"
+        class="ml-2 text-transparent bg-linear-to-tr from-gray-800 to-gray-400 dark:from-gray-100 dark:to-gray-400 bg-clip-text"
         >Grin</span
       >
       <span>gotts</span>
@@ -52,7 +52,7 @@
             <UAvatar v-if="user.avatarUrl" :src="user.avatarUrl" size="md" alt="Avatar" />
 
             <div class="flex flex-row-reverse items-center gap-4 lg:gap-1 lg:items-start lg:flex-col">
-              <span class="text-ellipsis overflow-hidden whitespace-nowrap max-w-[8rem]">{{ user.name }}</span>
+              <span class="text-ellipsis overflow-hidden whitespace-nowrap max-w-32">{{ user.name }}</span>
               <span
                 class="inline-flex items-center font-medium py-0.5 text-xs uppercase rounded-md text-stone-800 dark:text-stone-300"
                 >FREE</span

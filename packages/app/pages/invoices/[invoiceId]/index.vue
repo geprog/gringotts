@@ -47,7 +47,7 @@
               v-model="invoice.customer.name"
               size="lg"
               disabled
-              class="flex-grow"
+              class="grow"
             />
 
             <router-link v-if="invoice.customer" :to="`/customers/${invoice.customer._id}`">
