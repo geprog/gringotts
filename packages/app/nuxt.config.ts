@@ -1,6 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  modules: ['nuxt-icon', '@nuxt/ui', '@pinia/nuxt'],
+  modules: ['@nuxt/ui', '@pinia/nuxt'],
   runtimeConfig: {
     auth: {
       name: 'nuxt-session',
@@ -13,9 +13,6 @@ export default defineNuxtConfig({
       },
     },
   },
-  ui: {
-    icons: ['mdi', 'simple-icons', 'heroicons', 'ion'],
-  },
   app: {
     head: {
       title: 'Gringotts',
@@ -25,6 +22,16 @@ export default defineNuxtConfig({
       ],
     },
   },
+
+  css: ['~/assets/css/main.css'],
+
+  icon: {
+    provider: 'server',
+    
+  },
+  
+  compatibilityDate: '2025-08-11'
+
   // nitro: {
   //   preset: 'node',
   // },

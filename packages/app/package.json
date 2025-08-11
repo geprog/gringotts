@@ -9,15 +9,16 @@
     "typecheck": "vue-tsc --noEmit"
   },
   "devDependencies": {
-    "@iconify/json": "^2.2.130",
-    "@nuxt/devtools": "latest",
-    "@nuxt/ui": "^2.9.0",
-    "@nuxtjs/tailwindcss": "^6.8.0",
+    "@iconify-json/heroicons": "^1.2.2",
+    "@iconify-json/ion": "^1.2.6",
+    "@iconify-json/mdi": "^1.2.3",
+    "@iconify-json/simple-icons": "^1.2.47",
+    "@nuxt/ui": "^3.3.0",
+    "@nuxtjs/tailwindcss": "^6.14.0",
     "@types/node": "^22.17.0",
-    "nuxt": "^3.7.4",
-    "nuxt-icon": "^0.5.0",
-    "typescript": "^5.1.6",
-    "vue-tsc": "^1.8.21"
+    "nuxt": "^3.16.0",
+    "typescript": "^5.6.3",
+    "vue-tsc": "^3.0.0"
   },
   "dependencies": {
     "@geprog/gringotts-client": "workspace:*",
