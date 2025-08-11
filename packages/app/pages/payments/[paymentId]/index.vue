@@ -20,23 +20,23 @@
       </div>
 
       <UForm :state="payment" class="flex flex-col gap-4">
-        <UFormGroup label="Description" name="description">
+        <UFormField label="Description" name="description">
           <UInput color="primary" variant="outline" v-model="payment.description" size="lg" disabled />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Type" name="type">
+        <UFormField label="Type" name="type">
           <UInput color="primary" variant="outline" v-model="payment.type" size="lg" disabled />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Amount" name="amount">
+        <UFormField label="Amount" name="amount">
           <UInput color="primary" variant="outline" v-model="payment._id" size="lg" disabled>
             <template #trailing>
               <span class="text-gray-500 dark:text-gray-400 text-xs">{{ payment.currency }}</span>
             </template>
           </UInput>
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Status" name="status">
+        <UFormField label="Status" name="status">
           <USelectMenu
             color="primary"
             variant="outline"
@@ -45,7 +45,7 @@
             size="lg"
             disabled
           />
-        </UFormGroup>
+        </UFormField>
       </UForm>
     </UCard>
   </div>

@@ -27,21 +27,21 @@ const client = await useGringottsClient();
 const subscriptionColumns = [
   {
     key: '_id',
-    label: 'ID',
+    header: 'ID',
   },
   {
     key: 'customer',
-    label: 'Customer',
+    header: 'Customer',
     sortable: true,
   },
   {
     key: 'status',
-    label: 'Status',
+    header: 'Status',
     sortable: true,
   },
   {
     key: 'currentPeriodEnd',
-    label: 'Current period',
+    header: 'Current period',
     sortable: true,
   },
 ];

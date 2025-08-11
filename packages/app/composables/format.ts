@@ -1,14 +1,14 @@
-import dayjs from 'dayjs';
+import dayjs, { type ConfigType } from 'dayjs';
 
-export function formatTime(date: Date) {
+export function formatTime(date: ConfigType) {
   return dayjs(date).format('HH:mm');
 }
 
-export function formatDate(date: Date) {
+export function formatDate(date: ConfigType) {
   return dayjs(date).format('DD.MM.YYYY');
 }
 
-export function formatDateTime(date: Date) {
+export function formatDateTime(date: ConfigType) {
   return dayjs(date).format('DD.MM.YYYY HH:mm');
 }
 

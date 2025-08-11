@@ -4,11 +4,11 @@
 
     <UCard v-if="project">
       <UForm :state="project" class="flex flex-col gap-4">
-        <UFormGroup label="Name" name="name">
+        <UFormField label="Name" name="name">
           <UInput color="primary" variant="outline" v-model="project.name" size="lg" disabled />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Payment provider" name="paymentProvider">
+        <UFormField label="Payment provider" name="paymentProvider">
           <USelectMenu
             color="primary"
             variant="outline"
@@ -17,13 +17,13 @@
             size="lg"
             disabled
           />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Webhook url" name="webhookUrl">
+        <UFormField label="Webhook url" name="webhookUrl">
           <UInput color="primary" variant="outline" v-model="project.webhookUrl" size="lg" disabled />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Currency" name="currency">
+        <UFormField label="Currency" name="currency">
           <USelectMenu
             color="primary"
             variant="outline"
@@ -32,15 +32,15 @@
             size="lg"
             disabled
           />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Vat rate" name="vatRate">
+        <UFormField label="Vat rate" name="vatRate">
           <UInput color="primary" variant="outline" v-model="project.vatRate" size="lg" disabled>
             <template #trailing>
               <span class="text-gray-500 dark:text-gray-400 text-xs">%</span>
             </template>
           </UInput>
-        </UFormGroup>
+        </UFormField>
 
         <!-- <UButton label="Save" type="submit" class="mx-auto" /> -->
       </UForm>
@@ -50,33 +50,33 @@
       <h2>Invoice data</h2>
 
       <UForm :state="project" class="flex flex-col gap-4">
-        <UFormGroup label="Name" name="name">
+        <UFormField label="Name" name="name">
           <UInput color="primary" variant="outline" v-model="project.invoiceData.name" size="lg" disabled />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Email" name="email">
+        <UFormField label="Email" name="email">
           <UInput color="primary" variant="outline" v-model="project.invoiceData.email" size="lg" disabled />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Address line 1" name="addressLine1">
+        <UFormField label="Address line 1" name="addressLine1">
           <UInput color="primary" variant="outline" v-model="project.invoiceData.addressLine1" size="lg" disabled />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Address line 2" name="addressLine2">
+        <UFormField label="Address line 2" name="addressLine2">
           <UInput color="primary" variant="outline" v-model="project.invoiceData.addressLine2" size="lg" disabled />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="City" name="city">
+        <UFormField label="City" name="city">
           <UInput color="primary" variant="outline" v-model="project.invoiceData.city" size="lg" disabled />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Zip" name="zipCode">
+        <UFormField label="Zip" name="zipCode">
           <UInput color="primary" variant="outline" v-model="project.invoiceData.zipCode" size="lg" disabled />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Country" name="country">
+        <UFormField label="Country" name="country">
           <UInput color="primary" variant="outline" v-model="project.invoiceData.country" size="lg" disabled />
-        </UFormGroup>
+        </UFormField>
 
         <!-- <UButton label="Save" type="submit" class="mx-auto" /> -->
       </UForm>

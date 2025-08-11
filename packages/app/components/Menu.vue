@@ -63,8 +63,8 @@
           <UIcon name="i-ion-chevron-expand-outline" />
         </button>
 
-        <template #panel>
-          <UVerticalNavigation :links="links" class="w-48" />
+        <template #content>
+          <UNavigationMenu orientation="vertical" :items="links" class="w-48" />
         </template>
       </UPopover>
     </div>
@@ -72,6 +72,8 @@
 </template>
 
 <script setup lang="ts">
+import { UNavigationMenu } from '#components';
+
 const { user, logout } = await useAuth();
 
 const colorMode = useColorMode();

@@ -8,13 +8,13 @@
 
     <UCard>
       <div class="flex justify-end mb-2 gap-2 items-center">
-        <UDropdown v-if="subscriptionActions[0].length > 0" :items="subscriptionActions">
+        <UDropdownMenu v-if="subscriptionActions[0].length > 0" :items="subscriptionActions">
           <UButton label="Actions" trailing-icon="i-heroicons-chevron-down-20-solid" size="sm" />
-        </UDropdown>
+        </UDropdownMenu>
       </div>
 
       <UForm :state="subscription" class="flex flex-col gap-4">
-        <UFormGroup v-if="subscription.customer" label="Customer" name="customer">
+        <UFormField v-if="subscription.customer" label="Customer" name="customer">
           <div class="flex w-full gap-2">
             <UInput
               color="primary"
@@ -29,25 +29,25 @@
               <UButton :label="subscription.customer.name" icon="i-ion-people" size="lg" />
             </router-link>
           </div>
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Anchor / start date" name="anchorDate">
+        <UFormField label="Anchor / start date" name="anchorDate">
           <DatePicker v-model="subscription.anchorDate" disabled />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Last payment" name="lastPayment">
+        <UFormField label="Last payment" name="lastPayment">
           <DatePicker v-model="subscription.lastPayment" disabled />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Current period start" name="currentPeriodStart">
+        <UFormField label="Current period start" name="currentPeriodStart">
           <DatePicker v-model="subscription.currentPeriodStart" disabled />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Current period end" name="currentPeriodEnd">
+        <UFormField label="Current period end" name="currentPeriodEnd">
           <DatePicker v-model="subscription.currentPeriodEnd" disabled />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Status" name="status">
+        <UFormField label="Status" name="status">
           <USelectMenu
             color="primary"
             variant="outline"
@@ -56,15 +56,15 @@
             size="lg"
             disabled
           />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Error" name="error">
+        <UFormField label="Error" name="error">
           <UTextarea color="primary" variant="outline" v-model="subscription.error" size="lg" disabled />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Metadata" name="metadata">
+        <UFormField label="Metadata" name="metadata">
           <UTextarea color="primary" variant="outline" v-model="metadata" size="lg" disabled />
-        </UFormGroup>
+        </UFormField>
 
         <!-- <UButton label="Save" type="submit" class="mx-auto" /> -->
       </UForm>
@@ -75,15 +75,17 @@
 
       <UTable :loading="invoicesPending" :rows="invoices || []" :columns="invoiceColumns" @select="selectInvoice">
         <template #date-data="{ row }">
-          <span v-if="row.date">{{ formatDate(row.date) }}</span>
+          <span v-if="row.original.date">{{ formatDate(row.original.date) }}</span>
         </template>
 
         <template #status-data="{ row }">
-          <StatusInvoice :invoice="row" />
+          <StatusInvoice :invoice="row.original" />
         </template>
 
         <template #totalAmount-data="{ row }">
-          <span>{{ formatCurrency(row.totalAmount, row.currency) }}</span>
+          <span v-if="row.original.totalAmount && row.original.currency">{{
+            formatCurrency(row.original.totalAmount, row.original.currency)
+          }}</span>
         </template>
       </UTable>
     </UCard>
@@ -97,11 +99,11 @@
         :sort="{ column: 'start', direction: 'desc' }"
       >
         <template #start-data="{ row }">
-          <span v-if="row.start">{{ formatDateTime(row.start) }}</span>
+          <span v-if="row.original.start">{{ formatDateTime(row.original.start) }}</span>
         </template>
 
         <template #end-data="{ row }">
-          <span v-if="row.end">{{ formatDateTime(row.end) }}</span>
+          <span v-if="row.original.end">{{ formatDateTime(row.original.end) }}</span>
         </template>
       </UTable>
     </UCard>
@@ -109,8 +111,8 @@
 </template>
 
 <script lang="ts" setup>
-import type { Invoice } from '@geprog/gringotts-client';
-import type { DropdownItem } from '@nuxt/ui/dist/runtime/types';
+import type { Invoice, SubscriptionChange } from '@geprog/gringotts-client';
+import type { DropdownMenuItem, TableColumn, TableRow } from '@nuxt/ui';
 
 const client = await useGringottsClient();
 const route = useRoute();
@@ -132,7 +134,7 @@ const metadata = computed({
 });
 
 const subscriptionActions = computed(() => {
-  const actions: DropdownItem[] = [];
+  const actions: DropdownMenuItem[] = [];
 
   if (subscription.value?.status === 'error') {
     actions.push({
@@ -167,50 +169,45 @@ const subscriptionActions = computed(() => {
   return [actions];
 });
 
-const subscriptionChangeColumns = [
+const subscriptionChangeColumns: TableColumn<SubscriptionChange>[] = [
   {
-    key: 'start',
-    label: 'Start',
-    sortable: true,
+    accessorKey: 'start',
+    header: 'Start',
   },
   {
-    key: 'end',
-    label: 'End',
-    sortable: true,
+    accessorKey: 'end',
+    header: 'End',
   },
   {
-    key: 'pricePerUnit',
-    label: 'Price per unit',
+    accessorKey: 'pricePerUnit',
+    header: 'Price per unit',
   },
   {
-    key: 'units',
-    label: 'Units',
+    accessorKey: 'units',
+    header: 'Units',
   },
 ];
 
-async function selectInvoice(row: Invoice) {
-  await router.push(`/invoices/${row._id}`);
+function selectInvoice(row: TableRow<Invoice>, _e?: Event) {
+  void router.push(`/invoices/${row.original._id}`);
 }
 
-const invoiceColumns = [
+const invoiceColumns: TableColumn<Invoice>[] = [
   {
-    key: 'number',
-    label: 'Number',
-    sortable: true,
+    accessorKey: 'number',
+    header: 'Number',
   },
   {
-    key: 'date',
-    label: 'Date',
-    sortable: true,
+    accessorKey: 'date',
+    header: 'Date',
   },
   {
-    key: 'status',
-    label: 'Status',
-    sortable: true,
+    accessorKey: 'status',
+    header: 'Status',
   },
   {
-    key: 'totalAmount',
-    label: 'Total',
+    accessorKey: 'totalAmount',
+    header: 'Total',
   },
 ];
 const { data: invoices, pending: invoicesPending } = useAsyncData(async () => {

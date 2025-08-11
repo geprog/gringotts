@@ -12,21 +12,28 @@ export default defineEventHandler(async (event) => {
     });
   }
 
+  console.log(`Validating project token: ${token}`);
+  
   const config = useRuntimeConfig();
   const client = gringottsClient(config.public.api.baseUrl, {
     customFetch: fetch,
     token,
   });
 
+  console.log('Checking if project token is valid...');
+  
+
   try {
     await client.project.getProject('token-project');
   } catch (error) {
     console.error(error);
+    console.log('Project token is invalid');
+    
     throw createError({
       statusCode: 401,
       message: 'project-token is invalid',
     });
-  }
+  }  
 
   const session = await useAuthSession(event);
   await session.update({

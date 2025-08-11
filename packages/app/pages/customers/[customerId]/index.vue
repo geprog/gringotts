@@ -4,35 +4,35 @@
 
     <UCard>
       <UForm :state="customer" class="flex flex-col gap-4">
-        <UFormGroup label="Name" name="name" required>
+        <UFormField label="Name" name="name" required>
           <UInput color="primary" variant="outline" v-model="customer.name" size="lg" required :disabled="disabled" />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Email" name="email" required>
+        <UFormField label="Email" name="email" required>
           <UInput color="primary" variant="outline" v-model="customer.email" size="lg" required :disabled="disabled" />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Address line 1" name="addressLine1">
+        <UFormField label="Address line 1" name="addressLine1">
           <UInput color="primary" variant="outline" v-model="customer.addressLine1" size="lg" :disabled="disabled" />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Address line 2" name="addressLine2">
+        <UFormField label="Address line 2" name="addressLine2">
           <UInput color="primary" variant="outline" v-model="customer.addressLine2" size="lg" :disabled="disabled" />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="City" name="city">
+        <UFormField label="City" name="city">
           <UInput color="primary" variant="outline" v-model="customer.city" size="lg" :disabled="disabled" />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Zip code" name="zipCode">
+        <UFormField label="Zip code" name="zipCode">
           <UInput color="primary" variant="outline" v-model="customer.zipCode" size="lg" :disabled="disabled" />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Country" name="country">
+        <UFormField label="Country" name="country">
           <UInput color="primary" variant="outline" v-model="customer.country" size="lg" :disabled="disabled" />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Language" name="language">
+        <UFormField label="Language" name="language">
           <USelectMenu
             color="primary"
             variant="outline"
@@ -41,9 +41,9 @@
             size="lg"
             :disabled="disabled"
           />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Balance" name="balance" required>
+        <UFormField label="Balance" name="balance" required>
           <UInput
             color="primary"
             variant="outline"
@@ -57,7 +57,7 @@
               <span class="text-gray-500 dark:text-gray-400 text-xs">{{ currency }}</span>
             </template>
           </UInput>
-        </UFormGroup>
+        </UFormField>
 
         <!-- <UButton label="Save" type="submit" class="mx-auto" /> -->
       </UForm>
@@ -81,9 +81,9 @@
         </template>
 
         <template #actions-data="{ row }">
-          <UDropdown :items="paymentMethodActions(row)">
+          <UDropdownMenu :items="paymentMethodActions(row)">
             <UButton color="gray" variant="ghost" icon="i-ion-ellipsis-horizontal" />
-          </UDropdown>
+          </UDropdownMenu>
         </template>
       </UTable>
     </UCard>
@@ -156,26 +156,26 @@ const { data: customer, refresh: updateCustomer } = useAsyncData(async () => {
 const paymentMethodColumns = [
   {
     key: '_id',
-    label: 'ID',
+    header: 'ID',
   },
   {
     key: 'name',
-    label: 'Name',
+    header: 'Name',
     sortable: true,
   },
   {
     key: 'type',
-    label: 'Type',
+    header: 'Type',
     sortable: true,
   },
   {
     key: 'active',
-    label: 'Active',
+    header: 'Active',
     sortable: true,
   },
   {
     key: 'actions',
-    label: 'Actions',
+    header: 'Actions',
   },
 ];
 const {
@@ -225,16 +225,16 @@ const paymentMethodActions = (row: PaymentMethod) => [
 const subscriptionColumns = [
   {
     key: '_id',
-    label: 'ID',
+    header: 'ID',
   },
   {
     key: 'status',
-    label: 'Status',
+    header: 'Status',
     sortable: true,
   },
   {
     key: 'currentPeriodEnd',
-    label: 'Current period',
+    header: 'Current period',
     sortable: true,
   },
 ];
@@ -250,22 +250,22 @@ async function selectSubscription(row: Subscription) {
 const invoicesColumns = [
   {
     key: 'number',
-    label: 'Number',
+    header: 'Number',
     sortable: true,
   },
   {
     key: 'date',
-    label: 'Date',
+    header: 'Date',
     sortable: true,
   },
   {
     key: 'status',
-    label: 'Status',
+    header: 'Status',
     sortable: true,
   },
   {
     key: 'totalAmount',
-    label: 'Total',
+    header: 'Total',
     sortable: true,
   },
 ];

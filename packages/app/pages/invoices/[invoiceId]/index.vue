@@ -31,15 +31,15 @@
       </div>
 
       <UForm :state="invoice" class="flex flex-col gap-4">
-        <UFormGroup label="Number" name="number">
+        <UFormField label="Number" name="number">
           <UInput color="primary" variant="outline" v-model="invoice.number" size="lg" :disabled="disabled" />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Date" name="date">
+        <UFormField label="Date" name="date">
           <DatePicker v-model="invoice.date" :disabled="disabled" />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup v-if="invoice.customer" label="Customer" name="customer">
+        <UFormField v-if="invoice.customer" label="Customer" name="customer">
           <div class="flex gap-2">
             <UInput
               color="primary"
@@ -54,33 +54,33 @@
               <UButton :label="invoice.customer.name" icon="i-ion-people" size="lg" />
             </router-link>
           </div>
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Amount" name="amount">
+        <UFormField label="Amount" name="amount">
           <UInput color="primary" variant="outline" v-model="invoice.amount" size="lg" :disabled="disabled">
             <template #trailing>
               <span class="text-gray-500 dark:text-gray-400 text-xs">{{ invoice.currency }}</span>
             </template>
           </UInput>
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Vat rate " name="vatRate">
+        <UFormField label="Vat rate " name="vatRate">
           <UInput color="primary" variant="outline" v-model="invoice.vatRate" size="lg" :disabled="disabled">
             <template #trailing>
               <span class="text-gray-500 dark:text-gray-400 text-xs">%</span>
             </template>
           </UInput>
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Vat amount" name="vatAmount">
+        <UFormField label="Vat amount" name="vatAmount">
           <UInput color="primary" variant="outline" v-model="invoice.vatAmount" size="lg" :disabled="disabled">
             <template #trailing>
               <span class="text-gray-500 dark:text-gray-400 text-xs">{{ invoice.currency }}</span>
             </template>
           </UInput>
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Currency" name="currency">
+        <UFormField label="Currency" name="currency">
           <USelectMenu
             color="primary"
             variant="outline"
@@ -89,15 +89,15 @@
             size="lg"
             :disabled="disabled"
           />
-        </UFormGroup>
+        </UFormField>
 
-        <UFormGroup label="Total amount" name="totalAmount">
+        <UFormField label="Total amount" name="totalAmount">
           <UInput color="primary" variant="outline" v-model="invoice.totalAmount" size="lg" :disabled="disabled">
             <template #trailing>
               <span class="text-gray-500 dark:text-gray-400 text-xs">{{ invoice.currency }}</span>
             </template>
           </UInput>
-        </UFormGroup>
+        </UFormField>
 
         <!-- <UButton label="Save" type="submit" class="mx-auto" /> -->
       </UForm>
@@ -131,15 +131,15 @@ const disabled = computed(() => invoice.value?.status !== 'draft');
 const invoiceItemColumns = [
   {
     key: 'description',
-    label: 'Description',
+    header: 'Description',
   },
   {
     key: 'pricePerUnit',
-    label: 'Price per unit',
+    header: 'Price per unit',
   },
   {
     key: 'units',
-    label: 'Units',
+    header: 'Units',
   },
 ];
 

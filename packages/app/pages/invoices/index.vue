@@ -37,27 +37,27 @@ const client = await useGringottsClient();
 const invoiceColumns = [
   {
     key: 'number',
-    label: 'Number',
+    header: 'Number',
     sortable: true,
   },
   {
     key: 'customer',
-    label: 'Customer',
+    header: 'Customer',
     sortable: true,
   },
   {
     key: 'date',
-    label: 'Date',
+    header: 'Date',
     sortable: true,
   },
   {
     key: 'status',
-    label: 'Status',
+    header: 'Status',
     sortable: true,
   },
   {
     key: 'totalAmount',
-    label: 'Total',
+    header: 'Total',
     sortable: true,
   },
 ];

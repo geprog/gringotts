@@ -27,21 +27,21 @@ const client = await useGringottsClient();
 const paymentColumns = [
   {
     key: '_id',
-    label: 'ID',
+    header: 'ID',
   },
   {
     key: 'description',
-    label: 'Description',
+    header: 'Description',
     sortable: true,
   },
   {
     key: 'status',
-    label: 'Status',
+    header: 'Status',
     sortable: true,
   },
   {
     key: 'amount',
-    label: 'Current period',
+    header: 'Current period',
     sortable: true,
   },
 ];

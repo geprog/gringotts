@@ -16,8 +16,6 @@
         <canvas ref="canvas" />
       </div>
     </div>
-
-    <UNotifications />
   </div>
 </template>
 
@@ -43,7 +41,7 @@ onErrorCaptured((err) => {
     title: 'Error',
     description: err.message,
     icon: 'i-ion-alert-circle-outline',
-    color: 'red',
+    color: 'error',
   });
 });
 </script>

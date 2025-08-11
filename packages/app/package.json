@@ -19,15 +19,16 @@
     "nuxt": "^3.16.0",
     "tailwindcss": "^4.1.11",
     "typescript": "^5.6.3",
+    "vue": "^3.5.18",
     "vue-tsc": "^3.0.0"
   },
   "dependencies": {
     "@geprog/gringotts-client": "workspace:*",
-    "@pinia/nuxt": "^0.5.1",
+    "@pinia/nuxt": "^0.11.2",
     "@popperjs/core": "^2.11.8",
     "cross-fetch": "^4.0.0",
     "dayjs": "^1.11.10",
-    "pinia": "^2.1.7",
+    "pinia": "^3.0.3",
     "v-calendar": "^3.1.2"
   }
 }

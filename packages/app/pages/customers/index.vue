@@ -19,21 +19,21 @@ const client = await useGringottsClient();
 const customerColumns = [
   {
     key: '_id',
-    label: 'ID',
+    header: 'ID',
   },
   {
     key: 'name',
-    label: 'Name',
+    header: 'Name',
     sortable: true,
   },
   {
     key: 'email',
-    label: 'Email',
+    header: 'Email',
     sortable: true,
   },
   {
     key: 'country',
-    label: 'Address',
+    header: 'Address',
     sortable: true,
   },
 ];
