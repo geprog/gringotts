@@ -11,6 +11,7 @@
   "devDependencies": {
     "@iconify-json/heroicons": "^1.2.2",
     "@iconify-json/ion": "^1.2.6",
+    "@iconify-json/lucide": "^1.2.62",
     "@iconify-json/mdi": "^1.2.3",
     "@iconify-json/simple-icons": "^1.2.47",
     "@nuxt/ui": "^3.3.0",

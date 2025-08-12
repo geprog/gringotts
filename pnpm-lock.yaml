@@ -196,6 +196,9 @@ importers:
       '@iconify-json/ion':
         specifier: ^1.2.6
         version: 1.2.6
+      '@iconify-json/lucide':
+        specifier: ^1.2.62
+        version: 1.2.62
       '@iconify-json/mdi':
         specifier: ^1.2.3
         version: 1.2.3
@@ -1094,6 +1097,9 @@ packages:
 
   '@iconify-json/ion@1.2.6':
     resolution: {integrity: sha512-JftEXKfjvJNn3SrGeSBrG/waRkjeTpLdMLNLwpAX4NgI14QgJoAeXEh2iZjNPqioAkeIgErX4Bi6mnFwpjk3BQ==}
+
+  '@iconify-json/lucide@1.2.62':
+    resolution: {integrity: sha512-K0KfhvP5YQZ2KraOgCm6jJbwwzQCVocvXcdMpDou5uLa48QnLBRW/dQ8VDGmxHTGpwF9EqLlvnUSinH2i6xs3Q==}
 
   '@iconify-json/mdi@1.2.3':
     resolution: {integrity: sha512-O3cLwbDOK7NNDf2ihaQOH5F9JglnulNDFV7WprU2dSoZu3h3cWH//h74uQAB87brHmvFVxIOkuBX2sZSzYhScg==}
@@ -8336,6 +8342,10 @@ snapshots:
       '@iconify/types': 2.0.0
 
   '@iconify-json/ion@1.2.6':
+    dependencies:
+      '@iconify/types': 2.0.0
+
+  '@iconify-json/lucide@1.2.62':
     dependencies:
       '@iconify/types': 2.0.0
 
