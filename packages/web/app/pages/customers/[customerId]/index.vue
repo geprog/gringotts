@@ -235,20 +235,18 @@ const paymentMethodActions = (row: PaymentMethod) => [
   ],
 ];
 
-const subscriptionColumns = [
+const subscriptionColumns: TableColumn<Subscription>[] = [
   {
-    key: '_id',
+    accessorKey: '_id',
     header: 'ID',
   },
   {
-    key: 'status',
-    header: 'Status',
-    sortable: true,
+    accessorKey: 'status',
+    header: ({ column }) => h(SortableHeader, { column, label: 'Status' }),
   },
   {
-    key: 'currentPeriodEnd',
-    header: 'Current period',
-    sortable: true,
+    accessorKey: 'currentPeriodEnd',
+    header: ({ column }) => h(SortableHeader, { column, label: 'Current period' }),
   },
 ];
 const { data: subscriptions, pending: subscriptionPending } = useAsyncData(async () => {
@@ -260,26 +258,22 @@ async function selectSubscription(row: TableRow<Subscription>, _e?: Event) {
   await router.push(`/subscriptions/${row.original._id}`);
 }
 
-const invoicesColumns = [
+const invoicesColumns: TableColumn<Invoice>[] = [
   {
-    key: 'number',
-    header: 'Number',
-    sortable: true,
+    accessorKey: 'number',
+    header: ({ column }) => h(SortableHeader, { column, label: 'Number' }),
   },
   {
-    key: 'date',
-    header: 'Date',
-    sortable: true,
+    accessorKey: 'date',
+    header: ({ column }) => h(SortableHeader, { column, label: 'Date' }),
   },
   {
-    key: 'status',
-    header: 'Status',
-    sortable: true,
+    accessorKey: 'status',
+    header: ({ column }) => h(SortableHeader, { column, label: 'Status' }),
   },
   {
-    key: 'totalAmount',
-    header: 'Total',
-    sortable: true,
+    accessorKey: 'totalAmount',
+    header: ({ column }) => h(SortableHeader, { column, label: 'Total' }),
   },
 ];
 const { data: invoices, pending: invoicesPending } = useAsyncData(async () => {

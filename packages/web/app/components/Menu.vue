@@ -74,7 +74,7 @@
 <script setup lang="ts">
 import { UNavigationMenu } from '#components';
 
-const { user, logout } = await useAuth();
+const { user, logout } = useAuth();
 
 const colorMode = useColorMode();
 
@@ -91,14 +91,14 @@ const links = computed(() => [
   {
     label: 'Theme',
     icon: isDark.value ? 'i-heroicons-moon-20-solid' : 'i-heroicons-sun-20-solid',
-    click: () => {
+    onSelect: () => {
       isDark.value = !isDark.value;
     },
   },
   {
     label: 'Logout',
     icon: 'i-ion-log-out-outline',
-    click: logout,
+    onSelect: logout,
   },
 ]);
 
