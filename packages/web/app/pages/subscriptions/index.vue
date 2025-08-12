@@ -3,16 +3,16 @@
     <h1 class="text-xl">Subscriptions</h1>
 
     <UTable :loading="pending" :data="subscriptions || []" :columns="subscriptionColumns" @select="selectSubscription">
-      <template #customer-data="{ row }">
-        <span>{{ row.customer.name }}</span>
+      <template #customer-cell="{ row }">
+        <span>{{ row.original.customer?.name }}</span>
       </template>
 
-      <template #status-data="{ row }">
-        <StatusSubscription :subscription="row" />
+      <template #status-cell="{ row }">
+        <StatusSubscription :subscription="row.original" />
       </template>
 
-      <template #currentPeriodEnd-data="{ row }">
-        <span>{{ formatDate(row.currentPeriodStart) }} - {{ formatDate(row.currentPeriodEnd) }}</span>
+      <template #currentPeriodEnd-cell="{ row }">
+        <span>{{ formatDate(row.original.currentPeriodStart) }} - {{ formatDate(row.original.currentPeriodEnd) }}</span>
       </template>
     </UTable>
   </div>
@@ -20,37 +20,36 @@
 
 <script lang="ts" setup>
 import type { Subscription } from '@geprog/gringotts-client';
+import type { TableColumn, TableRow } from '@nuxt/ui';
+import SortableHeader from '~/components/SortableHeader.vue';
 
+const client = useGringottsClient();
 const router = useRouter();
 
-const subscriptionColumns = [
+const subscriptionColumns: TableColumn<Subscription>[] = [
   {
-    key: '_id',
+    accessorKey: '_id',
     header: 'ID',
   },
   {
-    key: 'customer',
-    header: 'Customer',
-    sortable: true,
+    accessorKey: 'customer',
+    header: ({ column }) => h(SortableHeader, { column, label: 'Customer' }),
   },
   {
-    key: 'status',
-    header: 'Status',
-    sortable: true,
+    accessorKey: 'status',
+    header: ({ column }) => h(SortableHeader, { column, label: 'Status' }),
   },
   {
-    key: 'currentPeriodEnd',
-    header: 'Current period',
-    sortable: true,
+    accessorKey: 'currentPeriodEnd',
+    header: ({ column }) => h(SortableHeader, { column, label: 'Current period' }),
   },
 ];
 
-async function selectSubscription(row: Subscription) {
-  await router.push(`/subscriptions/${row._id}`);
+async function selectSubscription(row: TableRow<Subscription>, _e?: Event) {
+  await router.push(`/subscriptions/${row.original._id}`);
 }
 
 const { data: subscriptions, pending } = useAsyncData(async () => {
-  const client = await useGringottsClient();
   const { data } = await client.subscription.listSubscriptions();
   return data;
 });
