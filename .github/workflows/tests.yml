@@ -21,18 +21,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: 'pnpm'
 
-      - name: Cache pnpm modules
-        uses: actions/cache@v2
+      - uses: pnpm/action-setup@v4
         with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-
-
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 9
+          version: 10
           run_install: true
 
       - name: Unit test
@@ -51,18 +44,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: 'pnpm'
 
-      - name: Cache pnpm modules
-        uses: actions/cache@v2
+      - uses: pnpm/action-setup@v4
         with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-
-
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 9
+          version: 10
           run_install: true
 
       - name: Build client
@@ -90,18 +76,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: 'pnpm'
 
-      - name: Cache pnpm modules
-        uses: actions/cache@v2
+      - uses: pnpm/action-setup@v4
         with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-
-
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 9
+          version: 10
           run_install: true
 
       # needed to prepare the auto-generated files for the client package
@@ -125,18 +104,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: 'pnpm'
 
-      - name: Cache pnpm modules
-        uses: actions/cache@v2
+      - uses: pnpm/action-setup@v4
         with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-
-
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 9
+          version: 10
           run_install: true
 
       - name: Check format
