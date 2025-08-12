@@ -1,7 +1,7 @@
 <template>
-  <UBadge v-if="payment.status === 'processing'" size="xs" label="Processing" color="amber" variant="subtle" />
-  <UBadge v-else-if="payment.status === 'paid'" size="xs" label="Paid" color="emerald" variant="subtle" />
-  <UBadge v-else-if="payment.status === 'failed'" size="xs" label="Failed" color="rose" variant="subtle" />
+  <UBadge v-if="payment.status === 'processing'" size="xs" label="Processing" color="warning" variant="subtle" />
+  <UBadge v-else-if="payment.status === 'paid'" size="xs" label="Paid" color="success" variant="subtle" />
+  <UBadge v-else-if="payment.status === 'failed'" size="xs" label="Failed" color="error" variant="subtle" />
 </template>
 
 <script lang="ts" setup>
