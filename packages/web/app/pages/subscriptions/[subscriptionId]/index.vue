@@ -113,6 +113,7 @@
 <script lang="ts" setup>
 import type { Invoice, SubscriptionChange } from '@geprog/gringotts-client';
 import type { DropdownMenuItem, TableColumn, TableRow } from '@nuxt/ui';
+import SortableHeader from '~/components/SortableHeader.vue';
 
 const client = await useGringottsClient();
 const route = useRoute();
@@ -172,11 +173,11 @@ const subscriptionActions = computed(() => {
 const subscriptionChangeColumns: TableColumn<SubscriptionChange>[] = [
   {
     accessorKey: 'start',
-    header: 'Start',
+    header: ({ column }) => h(SortableHeader, { column, label: 'Start' }),
   },
   {
     accessorKey: 'end',
-    header: 'End',
+    header: ({ column }) => h(SortableHeader, { column, label: 'End' }),
   },
   {
     accessorKey: 'pricePerUnit',
@@ -195,15 +196,15 @@ function selectInvoice(row: TableRow<Invoice>, _e?: Event) {
 const invoiceColumns: TableColumn<Invoice>[] = [
   {
     accessorKey: 'number',
-    header: 'Number',
+    header: ({ column }) => h(SortableHeader, { column, label: 'Number' }),
   },
   {
     accessorKey: 'date',
-    header: 'Date',
+    header: ({ column }) => h(SortableHeader, { column, label: 'Date' }),
   },
   {
     accessorKey: 'status',
-    header: 'Status',
+    header: ({ column }) => h(SortableHeader, { column, label: 'Status' }),
   },
   {
     accessorKey: 'totalAmount',
