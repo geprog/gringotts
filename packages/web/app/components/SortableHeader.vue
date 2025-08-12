@@ -6,7 +6,6 @@ const props = defineProps<{
   label: string;
 }>();
 
-
 function handleClick() {
   const isSorted = props.column.getIsSorted();
   if (isSorted === 'asc') {
@@ -24,9 +23,21 @@ function handleClick() {
     color="neutral"
     variant="ghost"
     :label="props.label"
-    :icon="props.column.getIsSorted() === 'asc' ? 'i-lucide-arrow-up-narrow-wide' : props.column.getIsSorted() === 'desc' ? 'i-lucide-arrow-down-wide-narrow' : 'i-lucide-arrow-up-down'"
+    :icon="
+      props.column.getIsSorted() === 'asc'
+        ? 'i-lucide-arrow-up-narrow-wide'
+        : props.column.getIsSorted() === 'desc'
+        ? 'i-lucide-arrow-down-wide-narrow'
+        : 'i-lucide-arrow-up-down'
+    "
     class="-mx-2.5"
-    :aria-label="`Sort by ${props.column.getIsSorted() === 'asc' ? 'descending' : props.column.getIsSorted() === 'desc' ? 'unsorted' : 'ascending'}`"
+    :aria-label="`Sort by ${
+      props.column.getIsSorted() === 'asc'
+        ? 'descending'
+        : props.column.getIsSorted() === 'desc'
+        ? 'unsorted'
+        : 'ascending'
+    }`"
     @click="handleClick"
   />
 </template>

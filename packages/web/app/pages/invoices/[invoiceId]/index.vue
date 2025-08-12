@@ -41,14 +41,7 @@
 
         <UFormField v-if="invoice.customer" label="Customer" name="customer">
           <div class="flex gap-2">
-            <UInput
-              color="primary"
-              variant="outline"
-              v-model="invoice.customer.name"
-              size="lg"
-              disabled
-              class="grow"
-            />
+            <UInput color="primary" variant="outline" v-model="invoice.customer.name" size="lg" disabled class="grow" />
 
             <router-link v-if="invoice.customer" :to="`/customers/${invoice.customer._id}`">
               <UButton :label="invoice.customer.name" icon="i-ion-people" size="lg" />

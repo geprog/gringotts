@@ -106,7 +106,9 @@
         </template>
 
         <template #currentPeriodEnd-cell="{ row }">
-          <span>{{ formatDate(row.original.currentPeriodStart) }} - {{ formatDate(row.original.currentPeriodEnd) }}</span>
+          <span
+            >{{ formatDate(row.original.currentPeriodStart) }} - {{ formatDate(row.original.currentPeriodEnd) }}</span
+          >
         </template>
       </UTable>
     </UCard>

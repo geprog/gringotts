@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 
 export const useAuth = defineStore('auth', () => {
   const { data: user, refresh: updateSession } = useFetch('/api/user', {
-    deep: true
+    deep: true,
   });
 
   const isAuthenticated = computed(() => !!user.value?.token);
