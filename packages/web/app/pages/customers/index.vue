@@ -2,7 +2,11 @@
   <div class="w-full">
     <h1 class="text-xl">Customers</h1>
 
-    <UTable :loading="pending" :data="customers || []" :columns="customerColumns" @select="selectCustomer" />
+    <UTable :loading="pending" :data="customers || []" :columns="customerColumns" @select="selectCustomer">
+      <template #country-cell="{ row }">
+        <span>{{ row.original.country }}, {{ row.original.city }}</span>
+      </template>
+    </UTable>
   </div>
 </template>
 
@@ -42,11 +46,6 @@ const customerColumns: TableColumn<Customer>[] = [
         column,
         label: 'Address',
       }),
-    cell: ({ row }) => {
-      const country = row.original.country || '';
-      const city = row.original.city || '';
-      return `${country}, ${city}`;
-    },
   },
 ];
 

@@ -71,18 +71,18 @@
       </div>
 
       <UTable :loading="paymentMethodPending" :data="paymentMethods || []" :columns="paymentMethodColumns">
-        <template #active-data="{ row }">
+        <template #active-cell="{ row }">
           <UIcon
-            v-if="row._id === customer.activePaymentMethod?._id"
+            v-if="row.original._id === customer.activePaymentMethod?._id"
             name="i-mdi-check-decagram"
             class="text-green-500"
           />
           <div v-else />
         </template>
 
-        <template #actions-data="{ row }">
-          <UDropdownMenu :items="paymentMethodActions(row)">
-            <UButton color="gray" variant="ghost" icon="i-ion-ellipsis-horizontal" />
+        <template #actions-cell="{ row }">
+          <UDropdownMenu :items="paymentMethodActions(row.original)">
+            <UButton color="neutral" variant="ghost" icon="i-ion-ellipsis-horizontal" />
           </UDropdownMenu>
         </template>
       </UTable>
@@ -97,16 +97,16 @@
         :columns="subscriptionColumns"
         @select="selectSubscription"
       >
-        <template #status-data="{ row }">
-          <StatusSubscription :subscription="row" />
+        <template #status-cell="{ row }">
+          <StatusSubscription :subscription="row.original" />
         </template>
 
-        <template #lastPayment-data="{ row }">
-          <span v-if="row.lastPayment">{{ formatDate(row.lastPayment) }}</span>
+        <template #lastPayment-cell="{ row }">
+          <span v-if="row.original.lastPayment">{{ formatDate(row.original.lastPayment) }}</span>
         </template>
 
-        <template #currentPeriodEnd-data="{ row }">
-          <span>{{ formatDate(row.currentPeriodStart) }} - {{ formatDate(row.currentPeriodEnd) }}</span>
+        <template #currentPeriodEnd-cell="{ row }">
+          <span>{{ formatDate(row.original.currentPeriodStart) }} - {{ formatDate(row.original.currentPeriodEnd) }}</span>
         </template>
       </UTable>
     </UCard>
@@ -121,16 +121,18 @@
         :sort="{ column: 'date', direction: 'desc' }"
         @select="selectInvoice"
       >
-        <template #date-data="{ row }">
-          <span>{{ formatDate(row.date) }}</span>
+        <template #date-cell="{ row }">
+          <span>{{ formatDate(row.original.date) }}</span>
         </template>
 
-        <template #totalAmount-data="{ row }">
-          <span>{{ formatCurrency(row.totalAmount, row.currency) }}</span>
+        <template #totalAmount-cell="{ row }">
+          <span v-if="row.original.totalAmount && row.original.currency">{{
+            formatCurrency(row.original.totalAmount, row.original.currency)
+          }}</span>
         </template>
 
-        <template #status-data="{ row }">
-          <StatusInvoice :invoice="row" />
+        <template #status-cell="{ row }">
+          <StatusInvoice :invoice="row.original" />
         </template>
       </UTable>
     </UCard>
@@ -140,8 +142,10 @@
 <script lang="ts" setup>
 import { ContentType } from '@geprog/gringotts-client';
 import type { Invoice, PaymentMethod, Subscription } from '@geprog/gringotts-client';
-import type { TableColumn } from '@nuxt/ui';
+import type { TableColumn, TableRow } from '@nuxt/ui';
+import SortableHeader from '~/components/SortableHeader.vue';
 
+const client = useGringottsClient();
 const route = useRoute();
 const router = useRouter();
 const customerId = route.params.customerId as string;
@@ -155,26 +159,35 @@ const { data: customer, refresh: updateCustomer } = useAsyncData(async () => {
 
 const paymentMethodColumns: TableColumn<PaymentMethod>[] = [
   {
-    key: '_id',
+    accessorKey: '_id',
     header: 'ID',
   },
   {
-    key: 'name',
-    header: 'Name',
-    sortable: true,
+    accessorKey: 'name',
+    header: ({ column }) =>
+      h(SortableHeader, {
+        column,
+        label: 'Name',
+      }),
   },
   {
-    key: 'type',
-    header: 'Type',
-    sortable: true,
+    accessorKey: 'type',
+    header: ({ column }) =>
+      h(SortableHeader, {
+        column,
+        label: 'Type',
+      }),
   },
   {
-    key: 'active',
-    header: 'Active',
-    sortable: true,
+    accessorKey: 'active',
+    header: ({ column }) =>
+      h(SortableHeader, {
+        column: column,
+        label: 'Active',
+      }),
   },
   {
-    key: 'actions',
+    accessorKey: 'actions',
     header: 'Actions',
   },
 ];
@@ -243,8 +256,8 @@ const { data: subscriptions, pending: subscriptionPending } = useAsyncData(async
   return data;
 });
 
-async function selectSubscription(row: Subscription) {
-  await router.push(`/subscriptions/${row._id}`);
+async function selectSubscription(row: TableRow<Subscription>, _e?: Event) {
+  await router.push(`/subscriptions/${row.original._id}`);
 }
 
 const invoicesColumns = [
@@ -274,8 +287,8 @@ const { data: invoices, pending: invoicesPending } = useAsyncData(async () => {
   return data;
 });
 
-async function selectInvoice(row: Invoice) {
-  await router.push(`/invoices/${row._id}`);
+async function selectInvoice(row: TableRow<Invoice>, _e?: Event) {
+  await router.push(`/invoices/${row.original._id}`);
 }
 
 const currency = 'EUR'; // TODO: use variable currency for balance
