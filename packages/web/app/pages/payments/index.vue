@@ -3,16 +3,18 @@
     <h1 class="text-xl">Payments</h1>
 
     <UTable :loading="pending" :data="payments || []" :columns="paymentColumns" @select="selectPayment">
-      <template #customer-data="{ row }">
-        <span>{{ row.customer.name }}</span>
+      <template #customer-cell="{ row }">
+        <span>{{ row.original.customer?.name }}</span>
       </template>
 
-      <template #amount-data="{ row }">
-        <span>{{ formatCurrency(row.amount, row.currency) }}</span>
+      <template #amount-cell="{ row }">
+        <span v-if="row.original.amount && row.original.currency">
+          {{ formatCurrency(row.original.amount, row.original.currency) }}
+        </span>
       </template>
 
-      <template #status-data="{ row }">
-        <StatusPayment :payment="row" />
+      <template #status-cell="{ row }">
+        <StatusPayment :payment="row.original" />
       </template>
     </UTable>
   </div>
@@ -20,34 +22,33 @@
 
 <script lang="ts" setup>
 import type { Payment } from '@geprog/gringotts-client';
+import type { TableColumn, TableRow } from '@nuxt/ui';
+import SortableHeader from '~/components/SortableHeader.vue';
 
 const router = useRouter();
-const client = await useGringottsClient();
+const client = useGringottsClient();
 
-const paymentColumns = [
+const paymentColumns: TableColumn<Payment>[] = [
   {
-    key: '_id',
+    accessorKey: '_id',
     header: 'ID',
   },
   {
-    key: 'description',
-    header: 'Description',
-    sortable: true,
+    accessorKey: 'description',
+    header: ({ column }) => h(SortableHeader, { column, label: 'Description' }),
   },
   {
-    key: 'status',
-    header: 'Status',
-    sortable: true,
+    accessorKey: 'status',
+    header: ({ column }) => h(SortableHeader, { column, label: 'Status' }),
   },
   {
-    key: 'amount',
-    header: 'Current period',
-    sortable: true,
+    accessorKey: 'amount',
+    header: ({ column }) => h(SortableHeader, { column, label: 'Current period' }),
   },
 ];
 
-async function selectPayment(row: Payment) {
-  await router.push(`/payments/${row._id}`);
+async function selectPayment(row: TableRow<Payment>, _e?: Event) {
+  await router.push(`/payments/${row.original._id}`);
 }
 
 const { data: payments, pending } = useAsyncData(async () => {

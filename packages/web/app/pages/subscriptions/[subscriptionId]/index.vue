@@ -8,7 +8,7 @@
 
     <UCard>
       <div class="flex justify-end mb-2 gap-2 items-center">
-        <UDropdownMenu v-if="subscriptionActions[0].length > 0" :items="subscriptionActions">
+        <UDropdownMenu v-if="subscriptionActions[0] && subscriptionActions[0].length > 0" :items="subscriptionActions">
           <UButton label="Actions" trailing-icon="i-heroicons-chevron-down-20-solid" size="sm" />
         </UDropdownMenu>
       </div>
@@ -74,15 +74,15 @@
       <h2>Invoices</h2>
 
       <UTable :loading="invoicesPending" :data="invoices || []" :columns="invoiceColumns" @select="selectInvoice">
-        <template #date-data="{ row }">
+        <template #date-cell="{ row }">
           <span v-if="row.original.date">{{ formatDate(row.original.date) }}</span>
         </template>
 
-        <template #status-data="{ row }">
+        <template #status-cell="{ row }">
           <StatusInvoice :invoice="row.original" />
         </template>
 
-        <template #totalAmount-data="{ row }">
+        <template #totalAmount-cell="{ row }">
           <span v-if="row.original.totalAmount && row.original.currency">{{
             formatCurrency(row.original.totalAmount, row.original.currency)
           }}</span>
@@ -98,11 +98,11 @@
         :columns="subscriptionChangeColumns"
         :sort="{ column: 'start', direction: 'desc' }"
       >
-        <template #start-data="{ row }">
+        <template #start-cell="{ row }">
           <span v-if="row.original.start">{{ formatDateTime(row.original.start) }}</span>
         </template>
 
-        <template #end-data="{ row }">
+        <template #end-cell="{ row }">
           <span v-if="row.original.end">{{ formatDateTime(row.original.end) }}</span>
         </template>
       </UTable>

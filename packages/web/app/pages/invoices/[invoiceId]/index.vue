@@ -107,8 +107,14 @@
       <h2>Items</h2>
 
       <UTable :data="invoice.items || []" :columns="invoiceItemColumns">
-        <template #description-data="{ row }">
-          <div class="whitespace-pre-wrap">{{ row.description }}</div>
+        <template #description-cell="{ row }">
+          <div class="whitespace-pre-wrap">{{ row.original?.description }}</div>
+        </template>
+        <template #pricePerUnit-cell="{ row }">
+          <span>{{ row.original?.pricePerUnit }}</span>
+        </template>
+        <template #units-cell="{ row }">
+          <span>{{ row.original?.units }}</span>
         </template>
       </UTable>
     </UCard>
@@ -116,7 +122,10 @@
 </template>
 
 <script lang="ts" setup>
-const client = await useGringottsClient();
+import type { InvoiceItem } from '@geprog/gringotts-client';
+import type { TableColumn } from '@nuxt/ui';
+
+const client = useGringottsClient();
 const route = useRoute();
 const invoiceId = route.params.invoiceId as string;
 
@@ -128,17 +137,17 @@ const { data: invoice, refresh } = useAsyncData(async () => {
 // none-draft invoices are not allowed to be changed anymore
 const disabled = computed(() => invoice.value?.status !== 'draft');
 
-const invoiceItemColumns = [
+const invoiceItemColumns: TableColumn<InvoiceItem>[] = [
   {
-    key: 'description',
+    accessorKey: 'description',
     header: 'Description',
   },
   {
-    key: 'pricePerUnit',
+    accessorKey: 'pricePerUnit',
     header: 'Price per unit',
   },
   {
-    key: 'units',
+    accessorKey: 'units',
     header: 'Units',
   },
 ];
