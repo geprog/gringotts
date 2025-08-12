@@ -52,7 +52,7 @@ jobs:
 
       # install app again to respect shamefully hoisted dependencies
       - name: Build app
-        working-directory: packages/app/
+        working-directory: packages/web/
         run: |
           pnpm install
           pnpm build

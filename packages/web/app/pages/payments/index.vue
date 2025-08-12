@@ -2,7 +2,7 @@
   <div class="w-full">
     <h1 class="text-xl">Payments</h1>
 
-    <UTable :loading="pending" :rows="payments || []" :columns="paymentColumns" @select="selectPayment">
+    <UTable :loading="pending" :data="payments || []" :columns="paymentColumns" @select="selectPayment">
       <template #customer-data="{ row }">
         <span>{{ row.customer.name }}</span>
       </template>

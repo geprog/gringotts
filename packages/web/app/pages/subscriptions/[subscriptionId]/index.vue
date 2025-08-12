@@ -73,7 +73,7 @@
     <UCard>
       <h2>Invoices</h2>
 
-      <UTable :loading="invoicesPending" :rows="invoices || []" :columns="invoiceColumns" @select="selectInvoice">
+      <UTable :loading="invoicesPending" :data="invoices || []" :columns="invoiceColumns" @select="selectInvoice">
         <template #date-data="{ row }">
           <span v-if="row.original.date">{{ formatDate(row.original.date) }}</span>
         </template>
@@ -94,7 +94,7 @@
       <h2>Changes</h2>
 
       <UTable
-        :rows="subscription.changes || []"
+        :data="subscription.changes || []"
         :columns="subscriptionChangeColumns"
         :sort="{ column: 'start', direction: 'desc' }"
       >

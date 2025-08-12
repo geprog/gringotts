@@ -27,10 +27,9 @@ export default defineNuxtConfig({
 
   icon: {
     provider: 'server',
-    
   },
-  
-  compatibilityDate: '2025-08-11'
+
+  compatibilityDate: '2025-08-11',
 
   // nitro: {
   //   preset: 'node',

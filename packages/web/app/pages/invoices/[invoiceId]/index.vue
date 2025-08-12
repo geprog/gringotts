@@ -106,7 +106,7 @@
     <UCard>
       <h2>Items</h2>
 
-      <UTable :rows="invoice.items || []" :columns="invoiceItemColumns">
+      <UTable :data="invoice.items || []" :columns="invoiceItemColumns">
         <template #description-data="{ row }">
           <div class="whitespace-pre-wrap">{{ row.description }}</div>
         </template>

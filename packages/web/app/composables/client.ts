@@ -1,8 +1,8 @@
 import { gringottsClient } from '@geprog/gringotts-client';
 
-export async function useGringottsClient() {
+export function useGringottsClient() {
   const auth = useAuth();
-  await auth.load();
+  // await auth.load();
   const user = auth.user;
 
   if (!user) {

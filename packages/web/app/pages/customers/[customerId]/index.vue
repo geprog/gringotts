@@ -70,7 +70,7 @@
         <UButton label="Add payment method" icon="i-ion-plus" class="ml-auto" size="sm" @click="addNewPaymentMethod" />
       </div>
 
-      <UTable :loading="paymentMethodPending" :rows="paymentMethods || []" :columns="paymentMethodColumns">
+      <UTable :loading="paymentMethodPending" :data="paymentMethods || []" :columns="paymentMethodColumns">
         <template #active-data="{ row }">
           <UIcon
             v-if="row._id === customer.activePaymentMethod?._id"
@@ -93,7 +93,7 @@
 
       <UTable
         :loading="subscriptionPending"
-        :rows="subscriptions || []"
+        :data="subscriptions || []"
         :columns="subscriptionColumns"
         @select="selectSubscription"
       >
@@ -116,7 +116,7 @@
 
       <UTable
         :loading="invoicesPending"
-        :rows="invoices || []"
+        :data="invoices || []"
         :columns="invoicesColumns"
         :sort="{ column: 'date', direction: 'desc' }"
         @select="selectInvoice"
@@ -140,8 +140,8 @@
 <script lang="ts" setup>
 import { ContentType } from '@geprog/gringotts-client';
 import type { Invoice, PaymentMethod, Subscription } from '@geprog/gringotts-client';
+import type { TableColumn } from '@nuxt/ui';
 
-const client = await useGringottsClient();
 const route = useRoute();
 const router = useRouter();
 const customerId = route.params.customerId as string;
@@ -153,7 +153,7 @@ const { data: customer, refresh: updateCustomer } = useAsyncData(async () => {
   return data;
 });
 
-const paymentMethodColumns = [
+const paymentMethodColumns: TableColumn<PaymentMethod>[] = [
   {
     key: '_id',
     header: 'ID',

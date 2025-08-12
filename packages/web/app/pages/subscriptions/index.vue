@@ -2,7 +2,7 @@
   <div class="w-full">
     <h1 class="text-xl">Subscriptions</h1>
 
-    <UTable :loading="pending" :rows="subscriptions || []" :columns="subscriptionColumns" @select="selectSubscription">
+    <UTable :loading="pending" :data="subscriptions || []" :columns="subscriptionColumns" @select="selectSubscription">
       <template #customer-data="{ row }">
         <span>{{ row.customer.name }}</span>
       </template>
@@ -22,7 +22,6 @@
 import type { Subscription } from '@geprog/gringotts-client';
 
 const router = useRouter();
-const client = await useGringottsClient();
 
 const subscriptionColumns = [
   {
@@ -51,6 +50,7 @@ async function selectSubscription(row: Subscription) {
 }
 
 const { data: subscriptions, pending } = useAsyncData(async () => {
+  const client = await useGringottsClient();
   const { data } = await client.subscription.listSubscriptions();
   return data;
 });

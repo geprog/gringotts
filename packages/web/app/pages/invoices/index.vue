@@ -4,7 +4,7 @@
 
     <UTable
       :loading="pending"
-      :rows="invoices || []"
+      :data="invoices || []"
       :columns="invoiceColumns"
       :sort="{ column: 'date', direction: 'desc' }"
       @select="selectInvoice"

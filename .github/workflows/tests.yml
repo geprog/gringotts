@@ -71,7 +71,7 @@ jobs:
 
       # install app again to respect shamefully hoisted dependencies
       - name: Install app
-        working-directory: packages/app/
+        working-directory: packages/web/
         run: pnpm install
 
       - name: Typecheck

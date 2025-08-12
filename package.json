@@ -19,9 +19,9 @@
     "pnpm": "10"
   },
   "pnpm": {
-    "overrides": {
-    },
+    "overrides": {},
     "ignoredBuiltDependencies": [
+      "@parcel/watcher",
       "esbuild",
       "ngrok",
       "vue-demi"
