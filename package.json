@@ -22,6 +22,7 @@
     "overrides": {},
     "ignoredBuiltDependencies": [
       "@parcel/watcher",
+      "@tailwindcss/oxide",
       "esbuild",
       "ngrok",
       "vue-demi"
