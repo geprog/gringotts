@@ -1,23 +1,3 @@
-<script setup lang="ts">
-import type { Column } from '@tanstack/vue-table';
-
-const props = defineProps<{
-  column: Column<any>;
-  label: string;
-}>();
-
-function handleClick() {
-  const isSorted = props.column.getIsSorted();
-  if (isSorted === 'asc') {
-    props.column.toggleSorting(true); // go to desc
-  } else if (isSorted === 'desc') {
-    props.column.clearSorting(); // go to unsorted
-  } else {
-    props.column.toggleSorting(false); // go to asc
-  }
-}
-</script>
-
 <template>
   <UButton
     color="neutral"
@@ -41,3 +21,23 @@ function handleClick() {
     @click="handleClick"
   />
 </template>
+
+<script setup lang="ts">
+import type { Column } from '@tanstack/vue-table';
+
+const props = defineProps<{
+  column: Column<any>;
+  label: string;
+}>();
+
+function handleClick() {
+  const isSorted = props.column.getIsSorted();
+  if (isSorted === 'asc') {
+    props.column.toggleSorting(true); // go to desc
+  } else if (isSorted === 'desc') {
+    props.column.clearSorting(); // go to unsorted
+  } else {
+    props.column.toggleSorting(false); // go to asc
+  }
+}
+</script>
