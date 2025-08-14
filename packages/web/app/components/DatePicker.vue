@@ -1,5 +1,5 @@
 <template>
-  <UPopover :popper="{ placement: 'bottom-start' }" class="w-full">
+  <UPopover v-model:open="open" :content="{ side: 'bottom' }" class="w-full">
     <UButton
       icon="i-heroicons-calendar-days-20-solid"
       :label="label"
@@ -7,7 +7,7 @@
       class="w-full"
       :disabled="disabled"
     />
-    <template #panel="{ close }">
+    <template #content>
       <VCalendarDatePicker
         v-model="innerModel"
         transparent
@@ -28,7 +28,7 @@
         trim-weeks
         :first-day-of-week="2"
         :disabled="disabled"
-        @close="close"
+        @close="open = false"
       />
     </template>
   </UPopover>
@@ -40,6 +40,7 @@ import 'v-calendar/dist/style.css';
 
 const colorMode = useColorMode();
 const isDark = computed(() => colorMode.value === 'dark');
+const open = ref(false);
 
 const props = withDefaults(
   defineProps<{
