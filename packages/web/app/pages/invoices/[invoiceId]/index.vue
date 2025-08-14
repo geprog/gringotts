@@ -78,7 +78,7 @@
             color="primary"
             variant="outline"
             v-model="invoice.currency"
-            :options="['EUR', 'USD']"
+            :items="['EUR', 'USD']"
             size="lg"
             :disabled="disabled"
           />

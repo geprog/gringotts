@@ -41,7 +41,7 @@
             color="primary"
             variant="outline"
             v-model="payment.status"
-            :options="['active', 'error']"
+            :items="['active', 'error']"
             size="lg"
             disabled
           />

@@ -52,7 +52,7 @@
             color="primary"
             variant="outline"
             v-model="subscription.status"
-            :options="['active', 'error']"
+            :items="['active', 'error']"
             size="lg"
             disabled
           />

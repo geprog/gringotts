@@ -37,7 +37,7 @@
             color="primary"
             variant="outline"
             v-model="customer.language"
-            :options="['en', 'de']"
+            :items="['en', 'de']"
             size="lg"
             :disabled="disabled"
           />

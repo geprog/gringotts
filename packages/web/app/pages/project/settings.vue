@@ -13,7 +13,7 @@
             color="primary"
             variant="outline"
             v-model="project.paymentProvider"
-            :options="['mollie', 'mocked']"
+            :items="['mollie', 'mocked']"
             size="lg"
             disabled
           />
@@ -28,7 +28,7 @@
             color="primary"
             variant="outline"
             v-model="project.currency"
-            :options="['EUR', 'USD']"
+            :items="['EUR', 'USD']"
             size="lg"
             disabled
           />
@@ -85,7 +85,7 @@
 </template>
 
 <script setup lang="ts">
-const client = await useGringottsClient();
+const client = useGringottsClient();
 
 const { data: project } = useAsyncData(async () => {
   const { data } = await client.project.getProject('token-project');
