@@ -17,10 +17,10 @@ export async function useAuthSession(event: H3Event) {
   return session;
 }
 
-export async function getUser(event: H3Event): Promise<User | undefined> {
+export async function getUser(event: H3Event): Promise<User | null> {
   const session = await useAuthSession(event);
   if (!session.data?.token) {
-    return undefined;
+    return null;
   }
 
   return {
