@@ -165,7 +165,7 @@ export async function chargeSubscriptions(): Promise<void> {
           'Subscription charged & invoiced',
         );
       } catch (e) {
-        log.error('Error while subscription charging:', e);
+        log.error(e, 'Error while subscription charging:');
         subscription.status = 'error';
         subscription.error = (e as Error)?.message || (e as string);
         await database.em.persistAndFlush([subscription]);
@@ -202,7 +202,7 @@ export async function chargePendingInvoices(): Promise<void> {
       try {
         await chargeCustomerInvoice(invoice);
       } catch (e) {
-        log.error('Error while invoice charging:', e);
+        log.error(e, 'Error while invoice charging:');
         invoice.status = 'failed';
 
         if (invoice.subscription) {

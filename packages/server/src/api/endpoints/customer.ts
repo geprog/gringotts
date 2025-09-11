@@ -198,6 +198,9 @@ export async function customerEndpoints(server: FastifyInstance): Promise<void> 
         404: {
           $ref: 'ErrorResponse',
         },
+        500: {
+          $ref: 'ErrorResponse',
+        },
       },
     },
     handler: async (request, reply) => {
@@ -267,6 +270,9 @@ export async function customerEndpoints(server: FastifyInstance): Promise<void> 
           $ref: 'ErrorResponse',
         },
         404: {
+          $ref: 'ErrorResponse',
+        },
+        500: {
           $ref: 'ErrorResponse',
         },
       },

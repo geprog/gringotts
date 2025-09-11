@@ -4,7 +4,8 @@ import fastifyReplyFrom from '@fastify/reply-from';
 import fastifyStatic from '@fastify/static';
 import fastifySwagger from '@fastify/swagger';
 import fastifyView from '@fastify/view';
-import fastify, { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
+import fastify from 'fastify';
 import Handlebars from 'handlebars';
 import path from 'path';
 import pino from 'pino';
@@ -22,7 +23,7 @@ import { addSchemas } from './schema';
 // api routes -> static files -> nuxt -> 404
 
 export async function init(): Promise<FastifyInstance> {
-  const logger =
+  const loggerInstance =
     process.env.NODE_ENV === 'test'
       ? pino(
           {},
@@ -34,7 +35,7 @@ export async function init(): Promise<FastifyInstance> {
       : log;
 
   const server = fastify({
-    logger,
+    loggerInstance,
     // disableRequestLogging: process.env.NODE_ENV === 'production',
     disableRequestLogging: true,
   });
@@ -93,7 +94,6 @@ export async function init(): Promise<FastifyInstance> {
   );
 
   await server.register(fastifySwagger, {
-    routePrefix: '/docs',
     swagger: {
       info: {
         title: 'Gringotts api',
@@ -122,7 +122,6 @@ export async function init(): Promise<FastifyInstance> {
         return json.$id as string;
       },
     },
-    exposeRoute: true,
   });
 
   addSchemas(server);

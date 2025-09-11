@@ -18,15 +18,15 @@ export async function apiEndpoints(server: FastifyInstance): Promise<void> {
       return;
     }
 
-    if (request.routerPath === '/api/invoice/download') {
+    if (request.routeOptions.url === '/api/invoice/download') {
       return;
     }
 
-    if (request.routerPath === '/api/payment/webhook/:projectId') {
+    if (request.routeOptions.url === '/api/payment/webhook/:projectId') {
       return;
     }
 
-    if (request.routerPath === '/api/mocked/checkout/:paymentId') {
+    if (request.routeOptions.url === '/api/mocked/checkout/:paymentId') {
       return;
     }
 
@@ -37,7 +37,7 @@ export async function apiEndpoints(server: FastifyInstance): Promise<void> {
       return reply;
     }
 
-    if (request.routerPath?.startsWith('/api/project') && request.url !== '/api/project/token-project') {
+    if (request.routeOptions.url?.startsWith('/api/project') && request.url !== '/api/project/token-project') {
       if (apiToken === config.adminToken) {
         request.admin = true;
         return;

@@ -196,6 +196,9 @@ export async function paymentMethodEndpoints(server: FastifyInstance): Promise<v
             ok: { type: 'boolean' },
           },
         },
+        400: {
+          $ref: 'ErrorResponse',
+        },
         404: {
           $ref: 'ErrorResponse',
         },

@@ -75,6 +75,9 @@ export async function mockedCheckoutEndpoints(server: FastifyInstance): Promise<
         400: {
           $ref: 'ErrorResponse',
         },
+        404: {
+          $ref: 'ErrorResponse',
+        },
         500: {
           $ref: 'ErrorResponse',
         },
