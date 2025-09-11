@@ -4,16 +4,15 @@ import fastifyReplyFrom from '@fastify/reply-from';
 import fastifyStatic from '@fastify/static';
 import fastifySwagger from '@fastify/swagger';
 import fastifyView from '@fastify/view';
-import fastify, { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
+import fastify from 'fastify';
 import Handlebars from 'handlebars';
 import path from 'path';
-import pino from 'pino';
 
 import { config } from '~/config';
 import { Invoice } from '~/entities';
 import { Currency } from '~/entities/payment';
 import { formatDate } from '~/lib/dayjs';
-import { log } from '~/log';
 
 import { apiEndpoints } from './endpoints';
 import { addSchemas } from './schema';
@@ -22,19 +21,20 @@ import { addSchemas } from './schema';
 // api routes -> static files -> nuxt -> 404
 
 export async function init(): Promise<FastifyInstance> {
-  const logger =
-    process.env.NODE_ENV === 'test'
-      ? pino(
-          {},
-          {
-            // eslint-disable-next-line no-console
-            write: (data: string) => console.log(data),
-          },
-        )
-      : log;
-
   const server = fastify({
-    logger,
+    logger: {
+      level: process.env.LOG_LEVEL || 'info',
+      transport:
+        process.env.NODE_ENV === 'production'
+          ? undefined
+          : {
+              target: 'pino-pretty',
+              options: {
+                translateTime: 'HH:MM:ss Z',
+                ignore: 'pid,hostname',
+              },
+            },
+    },
     // disableRequestLogging: process.env.NODE_ENV === 'production',
     disableRequestLogging: true,
   });
@@ -93,7 +93,6 @@ export async function init(): Promise<FastifyInstance> {
   );
 
   await server.register(fastifySwagger, {
-    routePrefix: '/docs',
     swagger: {
       info: {
         title: 'Gringotts api',
@@ -122,7 +121,6 @@ export async function init(): Promise<FastifyInstance> {
         return json.$id as string;
       },
     },
-    exposeRoute: true,
   });
 
   addSchemas(server);

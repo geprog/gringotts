@@ -47,6 +47,9 @@ export async function paymentEndpoints(server: FastifyInstance): Promise<void> {
         200: {
           $ref: 'Payment',
         },
+        400: {
+          $ref: 'ErrorResponse',
+        },
         404: {
           $ref: 'ErrorResponse',
         },

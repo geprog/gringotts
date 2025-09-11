@@ -24,23 +24,16 @@ jobs:
         with:
           fetch-depth: 0
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          run_install: true
+
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '22'
-
-      - name: Cache pnpm modules
-        uses: actions/cache@v2
-        with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-
-
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 9
-          run_install: true
+          cache: 'pnpm'
 
       - name: Build client
         working-directory: packages/client/
@@ -52,7 +45,7 @@ jobs:
 
       # install app again to respect shamefully hoisted dependencies
       - name: Build app
-        working-directory: packages/app/
+        working-directory: packages/web/
         run: |
           pnpm install
           pnpm build
@@ -92,24 +85,17 @@ jobs:
           git config --global user.name "$(git --no-pager log --format=format:'%an' -n 1)"
           git config --global user.email "$(git --no-pager log --format=format:'%ae' -n 1)"
 
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          run_install: true
+
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
-
-      - name: Cache pnpm modules
-        uses: actions/cache@v2
-        with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-
-
-      - uses: pnpm/action-setup@v2
-        with:
-          version: 9
-          run_install: true
+          cache: 'pnpm'
 
       - name: Build
         working-directory: packages/client/

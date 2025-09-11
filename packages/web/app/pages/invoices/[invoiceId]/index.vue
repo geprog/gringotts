@@ -1,0 +1,162 @@
+<template>
+  <div v-if="invoice" class="w-full flex flex-col gap-4 max-w-4xl mx-auto">
+    <div class="flex justify-between">
+      <h1 class="text-xl">Invoice: {{ invoice.number }}</h1>
+
+      <StatusInvoice :invoice="invoice" />
+    </div>
+
+    <UCard>
+      <div class="flex justify-end mb-2 gap-2 items-center">
+        <UButton
+          v-if="invoice.status !== 'draft'"
+          :loading="preparingInvoice"
+          label="Download"
+          icon="i-ion-download"
+          size="sm"
+          @click="downloadInvoice"
+        />
+
+        <UButton
+          v-if="invoice.status === 'draft'"
+          label="Charge invoice"
+          icon="i-ion-bag-check-outline"
+          size="sm"
+          @click="chargeInvoice"
+        />
+
+        <router-link v-if="invoice.subscription" :to="`/subscriptions/${invoice.subscription._id}`">
+          <UButton label="Subscription" icon="i-ion-md-refresh" size="sm" />
+        </router-link>
+      </div>
+
+      <UForm :state="invoice" class="flex flex-col gap-4">
+        <UFormField label="Number" name="number">
+          <UInput color="primary" variant="outline" v-model="invoice.number" size="lg" :disabled="disabled" />
+        </UFormField>
+
+        <UFormField label="Date" name="date">
+          <DatePicker v-model="invoice.date" :disabled="disabled" />
+        </UFormField>
+
+        <UFormField v-if="invoice.customer" label="Customer" name="customer">
+          <div class="flex gap-2">
+            <UInput color="primary" variant="outline" v-model="invoice.customer.name" size="lg" disabled class="grow" />
+
+            <router-link v-if="invoice.customer" :to="`/customers/${invoice.customer._id}`">
+              <UButton :label="invoice.customer.name" icon="i-ion-people" size="lg" />
+            </router-link>
+          </div>
+        </UFormField>
+
+        <UFormField label="Amount" name="amount">
+          <UInput color="primary" variant="outline" v-model="invoice.amount" size="lg" :disabled="disabled">
+            <template #trailing>
+              <span class="text-gray-500 dark:text-gray-400 text-xs">{{ invoice.currency }}</span>
+            </template>
+          </UInput>
+        </UFormField>
+
+        <UFormField label="Vat rate " name="vatRate">
+          <UInput color="primary" variant="outline" v-model="invoice.vatRate" size="lg" :disabled="disabled">
+            <template #trailing>
+              <span class="text-gray-500 dark:text-gray-400 text-xs">%</span>
+            </template>
+          </UInput>
+        </UFormField>
+
+        <UFormField label="Vat amount" name="vatAmount">
+          <UInput color="primary" variant="outline" v-model="invoice.vatAmount" size="lg" :disabled="disabled">
+            <template #trailing>
+              <span class="text-gray-500 dark:text-gray-400 text-xs">{{ invoice.currency }}</span>
+            </template>
+          </UInput>
+        </UFormField>
+
+        <UFormField label="Currency" name="currency">
+          <USelectMenu
+            color="primary"
+            variant="outline"
+            v-model="invoice.currency"
+            :items="['EUR', 'USD']"
+            size="lg"
+            :disabled="disabled"
+          />
+        </UFormField>
+
+        <UFormField label="Total amount" name="totalAmount">
+          <UInput color="primary" variant="outline" v-model="invoice.totalAmount" size="lg" :disabled="disabled">
+            <template #trailing>
+              <span class="text-gray-500 dark:text-gray-400 text-xs">{{ invoice.currency }}</span>
+            </template>
+          </UInput>
+        </UFormField>
+
+        <!-- <UButton label="Save" type="submit" class="mx-auto" /> -->
+      </UForm>
+    </UCard>
+
+    <UCard>
+      <h2>Items</h2>
+
+      <UTable :data="invoice.items || []" :columns="invoiceItemColumns">
+        <template #description-cell="{ row }">
+          <div class="whitespace-pre-wrap">{{ row.original?.description }}</div>
+        </template>
+        <template #pricePerUnit-cell="{ row }">
+          <span>{{ row.original?.pricePerUnit }}</span>
+        </template>
+        <template #units-cell="{ row }">
+          <span>{{ row.original?.units }}</span>
+        </template>
+      </UTable>
+    </UCard>
+  </div>
+</template>
+
+<script lang="ts" setup>
+import type { InvoiceItem } from '@geprog/gringotts-client';
+import type { TableColumn } from '@nuxt/ui';
+
+const client = useGringottsClient();
+const route = useRoute();
+const invoiceId = route.params.invoiceId as string;
+
+const { data: invoice, refresh } = useAsyncData(async () => {
+  const { data } = await client.invoice.getInvoice(invoiceId);
+  return data;
+});
+
+// none-draft invoices are not allowed to be changed anymore
+const disabled = computed(() => invoice.value?.status !== 'draft');
+
+const invoiceItemColumns: TableColumn<InvoiceItem>[] = [
+  {
+    accessorKey: 'description',
+    header: 'Description',
+  },
+  {
+    accessorKey: 'pricePerUnit',
+    header: 'Price per unit',
+  },
+  {
+    accessorKey: 'units',
+    header: 'Units',
+  },
+];
+
+const preparingInvoice = ref(false);
+async function downloadInvoice() {
+  preparingInvoice.value = true;
+  const { data } = await client.invoice.generateInvoiceDownloadLink(invoiceId);
+  preparingInvoice.value = false;
+  window.open(data.url, '_blank');
+}
+
+async function chargeInvoice() {
+  await client.invoice.patchInvoice(invoiceId, {
+    status: 'pending',
+  });
+  await refresh();
+}
+</script>

@@ -36,7 +36,7 @@ export async function sendInvoiceMail(invoice: Invoice, customer: Customer): Pro
   }
 
   if (invoice.totalAmount === 0) {
-    log.debug('Skipping sending mail for 0 amount invoice', { invoiceId: invoice._id });
+    log.debug({ invoiceId: invoice._id }, 'Skipping sending mail for 0 amount invoice');
     return;
   }
 

@@ -50,6 +50,9 @@ export async function invoiceEndpoints(server: FastifyInstance): Promise<void> {
         200: {
           $ref: 'Invoice',
         },
+        400: {
+          $ref: 'ErrorResponse',
+        },
         404: {
           $ref: 'ErrorResponse',
         },

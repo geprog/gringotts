@@ -1,0 +1,35 @@
+{
+  "name": "@geprog/gringotts-web",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "typecheck": "nuxt typecheck"
+  },
+  "devDependencies": {
+    "@iconify-json/heroicons": "^1.2.2",
+    "@iconify-json/ion": "^1.2.6",
+    "@iconify-json/lucide": "^1.2.62",
+    "@iconify-json/mdi": "^1.2.3",
+    "@iconify-json/simple-icons": "^1.2.47",
+    "@nuxt/ui": "^3.3.0",
+    "@tanstack/vue-table": "^8.21.3",
+    "@types/node": "^22.17.0",
+    "nuxt": "^4.0.3",
+    "tailwindcss": "^4.1.11",
+    "typescript": "^5.6.3",
+    "vue": "^3.5.18",
+    "vue-tsc": "^3.0.0"
+  },
+  "dependencies": {
+    "@geprog/gringotts-client": "workspace:*",
+    "@pinia/nuxt": "^0.11.2",
+    "@popperjs/core": "^2.11.8",
+    "cross-fetch": "^4.0.0",
+    "dayjs": "^1.11.10",
+    "pinia": "^3.0.3",
+    "v-calendar": "^3.1.2"
+  }
+}

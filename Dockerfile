@@ -1,11 +1,11 @@
-FROM node:18-alpine as overmind
+FROM node:22.17.1-alpine AS overmind
 WORKDIR /app
 RUN apk add --update curl gzip
 RUN curl https://github.com/DarthSim/overmind/releases/download/v2.4.0/overmind-v2.4.0-linux-amd64.gz -L -o overmind.gz
 RUN gunzip overmind.gz
 RUN chmod +x overmind
 
-FROM node:18-alpine
+FROM node:22.17.1-alpine
 ENV NODE_ENV=production
 ENV DATA_PATH=/app/data
 RUN apk --no-cache add ca-certificates tmux
